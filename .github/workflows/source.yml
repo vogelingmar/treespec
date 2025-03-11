@@ -1,0 +1,69 @@
+name: Code Quality Checks
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  black:
+    runs-on: ubuntu-latest
+    container:
+      image: vogelingmar/treespec
+      volumes:
+        - ${{ github.workspace }}:/github/workspace
+    steps:
+      - name: Checkout out repository
+        uses: actions/checkout@v4
+      - name: Analysing the code with black
+        shell: bash
+        run: |
+          pwd
+          ls
+          source /workspace/venv/bin/activate
+          cd /github/workspace/
+          python -m pip install --upgrade .'[dev, docs]'
+          black src --check --verbose --diff --color --line-length 120
+          black test --check --verbose --diff --color --line-length 120
+
+  mypy:
+    runs-on: ubuntu-latest
+    container:
+      image: vogelingmar/treespec
+      volumes:
+        - ${{ github.workspace }}:/github/workspace
+    steps:
+      - name: Checkout out repository
+        uses: actions/checkout@v4
+      - name: Analysing the code with mypy
+        shell: bash
+        run: |
+          source /workspace/venv/bin/activate
+          cd /github/workspace/
+          python -m pip install --upgrade .'[dev, docs]'
+          mypy . --warn-unused-ignores --show-error-codes --no-incremental
+
+  pylint:
+    runs-on: ubuntu-latest
+    container:
+      image: vogelingmar/treespec
+      volumes:
+        - ${{ github.workspace }}:/github/workspace
+    steps:
+      - name: Checkout out repository
+        uses: actions/checkout@v4
+      - name: Analysing the code with pylint
+        shell: bash
+        run: |
+          source /workspace/venv/bin/activate
+          cd /github/workspace/
+          python -m pip install --upgrade .'[dev, docs]'
+          pylint src --rcfile=.rcfile
+          pylint test --rcfile=.rcfile --disable duplicate-code --disable missing-function-docstring --disable too-many-positional-arguments
