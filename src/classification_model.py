@@ -58,9 +58,9 @@ class ClassificationModel(L.LightningModule):
 
         # make one final test
         # Save the fine-tuned model
-        torch.save(self.model.state_dict(), "resnet50_finetuned.pth")
+        torch.save(self.model.state_dict(), "io/models/resnet50_finetuned.pth")
 
-    def predict(self, img: str = "/home/ingmar/Documents/repos/PercepTree/PercepTreeV1/output/bark_screenshots/beech/bark_4116_box_00_angle_-6.11.jpg"):
+    def predict(self, img: str = "/home/ingmar/Documents/repos/treespec/src/io/datasets/sauen/beech/bark_4116_box_00_angle_-6.11.jpg"):
 
         picture = decode_image(img)
         batch = self.weights.transforms()(picture).unsqueeze(0)

@@ -173,3 +173,6 @@ MNIST/
 
 # PyPI configuration file
 .pypirc
+pictures/
+datasets/
+models/

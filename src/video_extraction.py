@@ -24,10 +24,10 @@ from detectron2.utils.video_visualizer import VideoVisualizer
 
 #  model and video variables
 model_name = 'X-101_RGB_60k.pth'
-video_path = '/home/ingmar/Documents/repos/PercepTree/PercepTreeV1/output/1min_example.mp4'
-#corrected_video_path = '/home/ingmar/Documents/repos/PercepTree/PercepTreeV1/output/corrected_video.mp4'
+video_path = '/data/training data/Sauen_Mapping_Dataset/20fps_Sauen.mp4'
+#corrected_video_path = '/home/ingmar/Documents/repos/treespec/src/io/videos/corrected_video.mp4'
 corrected_video_path = '/data/training data/Sauen_Mapping_Dataset/cropped_20fps_Sauen.mp4'
-bark_dir = '/home/ingmar/Documents/repos/PercepTree/PercepTreeV1/output/bark_screenshots/'
+bark_dir = '/home/ingmar/Documents/repos/treespec/src/io/pictures/'
 
 if __name__ == "__main__":
     torch.cuda.is_available()
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = 5
     cfg.MODEL.MASK_ON = True
     
-    cfg.OUTPUT_DIR = '/home/ingmar/Documents/repos/PercepTree/PercepTreeV1/output/' 
+    cfg.OUTPUT_DIR = '/home/ingmar/Documents/repos/treespec/src/io/models/' 
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, model_name)
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
     # cfg.INPUT.MIN_SIZE_TEST = 0  # no resize at test time
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # VIDEO recorder
     # Grab the stats from image1 to use for the resultant video
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')   
-    video = cv2.VideoWriter("pred_and_track_00.mp4",fourcc, 5, (w, h))  
+    video = cv2.VideoWriter("/io/videos/pred_and_track_00.mp4",fourcc, 5, (w, h))  
     
     # Check if camera opened successfully
     if (vcap.isOpened()== False):

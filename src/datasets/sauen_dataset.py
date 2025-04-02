@@ -8,7 +8,7 @@ class Sauen_Dataset(L.LightningDataModule):
     def setup(self, transforms):
 
             dataset = datasets.ImageFolder(
-                '/home/ingmar/Documents/repos/PercepTree/PercepTreeV1/output/bark_screenshots/',
+                '/home/ingmar/Documents/repos/treespec/src/io/datasets/sauen/',
                 transform=transforms
             )
 
