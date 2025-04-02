@@ -1,3 +1,5 @@
+""" Classification Model using ResNet50 to classify the barks from the Sauen Dataset. """
+
 from torchvision.io import decode_image
 from torchvision.models import resnet50, ResNet50_Weights
 import torch
