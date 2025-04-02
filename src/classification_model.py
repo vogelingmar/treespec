@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 import pytorch_lightning as L
 
-from sauen_dataset import Sauen_Dataset
+from datasets.sauen_dataset import Sauen_Dataset
 
 class ClassificationModel(L.LightningModule):
 

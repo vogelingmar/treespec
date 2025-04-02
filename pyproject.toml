@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "treespec"
+version = "0.1.0"
+description = "A project for tree detection and analysis using Detectron2 and PyTorch Lightning."
+authors = [
+    { name = "Ingmar Vogel", email = "ingmar.vogel@student.hpi.uni-potsdam.de" }
+]
+license = { text = "MIT" }
+
+dependencies = [
+    "torch",
+    "torchvision",
+    "pytorch-lightning",
+    "opencv-python",
+    "ffmpeg-python",
+    "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
+]
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.setuptools.package-data]
+"src" = ["*.py"]
