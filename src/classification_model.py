@@ -4,7 +4,6 @@ from torchvision.io import decode_image
 from torchvision.models import resnet50, ResNet50_Weights
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import pytorch_lightning as L
 
 from datasets.sauen_dataset import Sauen_Dataset
@@ -18,49 +17,39 @@ class ClassificationModel(L.LightningModule):
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         self.dataset = dataset
         self.dataset.setup(transforms=self.weights.transforms())
+        self.criterion = nn.CrossEntropyLoss()
 
-    def train(self):
-        self.model.train()
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+    def forward(self, x):
+        return self.model(x)
+    
+    def training_step(self, batch, batch_idx):
+        inputs, labels = batch
+        outputs = self.model(inputs)
+        loss = self.criterion(outputs, labels)
+        self.log("train_loss", loss, prog_bar=True)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        inputs, labels = batch
+        outputs = self.model(inputs)
+        val_loss = self.criterion(outputs, labels)
+        self.log("val_loss", val_loss)
 
-        num_epochs = 10
-        for epoch in range(num_epochs):
-            self.model.train()
-            running_loss = 0.0
-            for inputs, labels in self.dataset.train_dataloader():
-            
-                # Zero the parameter gradients
-                optimizer.zero_grad()
+    def test_step(self, batch, batch_idx):
+        inputs, labels = batch
+        outputs = self.model(inputs)
+        test_loss = self.criterion(outputs, labels)
+        self.log("test_loss", test_loss)
 
-                # Forward pass
-                outputs = self.model(inputs)
-                loss = criterion(outputs, labels)
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=0.001)
+    
+    def pumpen(self):
+        trainer = L.Trainer(max_epochs=100)
 
-                # Backward pass and optimization
-                loss.backward()
-                optimizer.step()
+        trainer.fit(model = self, train_dataloaders=self.dataset.train_dataloader(), val_dataloaders=self.dataset.val_dataloader())
 
-                running_loss += loss.item()
-
-            print(f"Epoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(self.dataset.train_dataloader())}")
-
-            # Validation loop
-            self.model.eval()
-            correct = 0
-            total = 0
-            with torch.no_grad():
-                for inputs, labels in self.dataset.val_dataloader():
-                    outputs = self.model(inputs)
-                    _, predicted = torch.max(outputs, 1)
-                    total += labels.size(0)
-                    correct += (predicted == labels).sum().item()
-
-            print(f"Validation Accuracy: {100 * correct / total:.2f}%")
-
-        # make one final test
-        # Save the fine-tuned model
-        torch.save(self.model.state_dict(), "io/models/resnet50_finetuned.pth")
+        trainer.test(model=self, dataloaders=self.dataset.test_dataloader())
 
     def predict(self, img: str = "/home/ingmar/Documents/repos/treespec/src/io/datasets/sauen/beech/bark_4116_box_00_angle_-6.11.jpg"):
 
@@ -69,7 +58,7 @@ class ClassificationModel(L.LightningModule):
 
         self.model.eval()
         with torch.no_grad():
-            prediction = self.model(batch).squeeze(0).softmax(0)
+            prediction = self.forward(batch).squeeze(0).softmax(0)
             class_id = prediction.argmax().item()
             score = prediction[class_id].item()
 
@@ -77,3 +66,6 @@ class ClassificationModel(L.LightningModule):
         category_name = custom_categories[class_id]
 
         print(f"{category_name}: {100 * score:.1f}%")
+
+
+        #torch.save(self.model.state_dict(), "io/models/resnet50_finetuned.pth")
