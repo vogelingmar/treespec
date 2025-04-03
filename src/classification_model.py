@@ -44,12 +44,14 @@ class ClassificationModel(L.LightningModule):
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=0.001)
     
+    # TODO: has to be changed
     def pumpen(self):
         trainer = L.Trainer(max_epochs=100)
 
         trainer.fit(model = self, train_dataloaders=self.dataset.train_dataloader(), val_dataloaders=self.dataset.val_dataloader())
 
         trainer.test(model=self, dataloaders=self.dataset.test_dataloader())
+        #torch.save(self.model.state_dict(), "io/models/resnet50_finetuned.pth")
 
     def predict(self, img: str = "/home/ingmar/Documents/repos/treespec/src/io/datasets/sauen/beech/bark_4116_box_00_angle_-6.11.jpg"):
 
@@ -67,5 +69,3 @@ class ClassificationModel(L.LightningModule):
 
         print(f"{category_name}: {100 * score:.1f}%")
 
-
-        #torch.save(self.model.state_dict(), "io/models/resnet50_finetuned.pth")
