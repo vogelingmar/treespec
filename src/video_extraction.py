@@ -115,7 +115,7 @@ if __name__ == "__main__":
                 # Crop the frame based on the bounding box coordinates
                 cropped_box = crop_frame[y1:y2, x1:x2]
 
-                if (x2 - x1) * (y2 - y1) >= 120000 and (x2 - x1) >= 220 and (y2 - y1) >= 970:
+                if (x2 - x1) * (y2 - y1) >= 200000:
                     angle = (480 - ((x1 + x2)/2)) / 32 # approximates angle of tree to the camera ortientation
                     screenshot_filename = f"bark_{nframes:04d}_box_{i:02d}_angle_{angle:.2f}.jpg"  # Name screenshot by frame index and box index
                     screenshot_path = os.path.join(bark_dir, screenshot_filename)

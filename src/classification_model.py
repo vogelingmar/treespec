@@ -46,7 +46,7 @@ class ClassificationModel(L.LightningModule):
     
     # TODO: has to be changed
     def pumpen(self):
-        trainer = L.Trainer(max_epochs=100)
+        trainer = L.Trainer(max_epochs=15)
 
         trainer.fit(model = self, train_dataloaders=self.dataset.train_dataloader(), val_dataloaders=self.dataset.val_dataloader())
 

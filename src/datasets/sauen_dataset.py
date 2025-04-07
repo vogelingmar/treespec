@@ -10,7 +10,7 @@ class Sauen_Dataset(L.LightningDataModule):
     def setup(self, transforms):
 
             dataset = datasets.ImageFolder(
-                '/home/ingmar/Documents/repos/treespec/src/io/datasets/sauen/',
+                '/home/ingmar/Documents/repos/treespec/src/io/datasets/sauen_big/',
                 transform=transforms
             )
 
