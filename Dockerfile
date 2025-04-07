@@ -1,11 +1,5 @@
-# Use an official Python base image
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
@@ -15,19 +9,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a venv for the installs
-RUN python3 -m venv venv
-
-# Activate the venv
-RUN source venv/bin/activate
-
-RUN setup.sh
-
-# Create a working directory
+ADD . /workspace/treespec
 WORKDIR /workspace
 
-# Copy the project files into the container
-COPY . /workspace
+RUN python3 -m venv /workspace/venv
+RUN /workspace/venv/bin/pip install --upgrade pip wheel setuptools
+RUN /workspace/venv/bin/pip install torch torchvision
+WORKDIR /workspace/treespec
+RUN /workspace/venv/bin/pip install .
 
-# Set the entrypoint for the container
-ENTRYPOINT ["/bin/bash"]
+RUN echo ". /workspace/venv/bin/activate" >> ~/.bashrc
+
+ENTRYPOINT ["/bin/bash", "-l", "-c"]
