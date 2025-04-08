@@ -19,6 +19,32 @@ dependencies = [
     "ffmpeg-python",
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git"
 ]
+[project.optional-dependencies]
+dev = [
+    "black",
+    "hypothesis",
+    "mypy",
+    "pandas-stubs",
+    "pre-commit",
+    "pylint",
+    "pytest",
+    "pytest-cov",
+    "pytest-httpserver",
+    "types-tqdm",
+]
+docs = [
+    "sphinx",
+    "sphinx-copybutton",
+    "sphinx-design",
+    "sphinx-docsearch",
+    "sphinxawesome-theme",
+    "sphinx-sitemap",
+    "sphinxcontrib-jsmath",
+    "sphinxcontrib-katex",
+    "sphinxcontrib-napoleon",
+    "sphinx_mdinclude",
+]
+
 
 [tool.setuptools]
 packages = ["src"]

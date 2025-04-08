@@ -10,14 +10,23 @@ from datasets.sauen_dataset import Sauen_Dataset
 
 class ClassificationModel(L.LightningModule):
 
-    def __init__(self, num_classes: int = 3, dataset: L.LightningDataModule = Sauen_Dataset()):
+    def __init__(self, 
+                 model_weights: int = ResNet50_Weights.DEFAULT, #change type
+                 model: int = resnet50, #change type 
+                 num_classes: int = 3, 
+                 dataset: L.LightningDataModule = Sauen_Dataset,
+                 loss_function: int = nn.CrossEntropyLoss,
+                 learning_rate: float = 0.001,
+                 batch_size: int = 5):
+        
         super(ClassificationModel, self).__init__()
-        self.weights = ResNet50_Weights.DEFAULT
-        self.model = resnet50(weights=self.weights)
+        self.model_weights = model_weights
+        self.model = model(weights=self.model_weights)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
-        self.dataset = dataset
-        self.dataset.setup(transforms=self.weights.transforms())
-        self.criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+        self.dataset = dataset()
+        self.dataset.setup(transforms=self.model_weights.transforms(), batch_size=batch_size)
+        self.criterion = loss_function(label_smoothing=0.1, weight=self.dataset.loss_weights())
+        self.learning_rate = learning_rate
 
     def forward(self, x):
         return self.model(x)
@@ -42,7 +51,7 @@ class ClassificationModel(L.LightningModule):
         self.log("test_loss", test_loss)
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=0.001)
+        return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
     
     # TODO: has to be changed
     def pumpen(self):
@@ -56,7 +65,7 @@ class ClassificationModel(L.LightningModule):
     def predict(self, img: str = "/home/ingmar/Documents/repos/treespec/src/io/datasets/sauen/beech/bark_4116_box_00_angle_-6.11.jpg"):
 
         picture = decode_image(img)
-        batch = self.weights.transforms()(picture).unsqueeze(0)
+        batch = self.model_weights.transforms()(picture).unsqueeze(0)
 
         self.model.eval()
         with torch.no_grad():
@@ -68,4 +77,3 @@ class ClassificationModel(L.LightningModule):
         category_name = custom_categories[class_id]
 
         print(f"{category_name}: {100 * score:.1f}%")
-
