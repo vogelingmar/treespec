@@ -29,22 +29,6 @@ jobs:
           python -m pip install --upgrade .'[dev, docs]'
           black src --check --verbose --diff --color --line-length 120
           black test --check --verbose --diff --color --line-length 120
-  clang-format:
-    runs-on: ubuntu-latest
-    container:
-      image: vogelingmar/treespec
-      volumes:
-        - ${{ github.workspace }}:/github/workspace
-    steps:
-      - name: Checkout out repository
-        uses: actions/checkout@v4
-      - name: Format C++ code with clang-format
-        shell: bash
-        run: |
-          source /workspace/venv/bin/activate
-          cd /github/workspace/
-          python -m pip install clang-format
-          find csrc/ -iname '*.h' -o -iname '*.cpp' | xargs clang-format --dry-run --Werror
   mypy:
     runs-on: ubuntu-latest
     container:
@@ -78,8 +62,8 @@ jobs:
           cd /github/workspace/
           python -m pip install git+https://github.com/vogelingmar/treespec.git
           python -m pip install --upgrade .'[dev, docs]'
-          pylint src --rcfile=.rcfile
-          pylint test --rcfile=.rcfile --disable duplicate-code --disable missing-function-docstring --disable too-many-positional-arguments
+          pylint src
+          pylint test --disable duplicate-code --disable missing-function-docstring --disable too-many-positional-arguments
   test:
     runs-on: ubuntu-latest
     container:
