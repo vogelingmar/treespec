@@ -17,7 +17,7 @@ class ClassificationModel(L.LightningModule):
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         self.dataset = dataset
         self.dataset.setup(transforms=self.weights.transforms())
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
 
     def forward(self, x):
         return self.model(x)

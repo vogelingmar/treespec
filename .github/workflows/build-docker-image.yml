@@ -32,14 +32,14 @@ jobs:
         run: |
           latest_version=$(git tag -l 'v[0-9]*\.[0-9]*\.[0-9]*' | sort | tail -1)
           echo "latest_version=${latest_version:1}" >> $GITHUB_ENV
-      - name: Build and push a docker image with pointtorch installation (version tag)
-        uses: elgohr/Publish-Docker-Github-Action@v5
-        with:
-          name: vogelingmar/treespec:${{ env.latest_version }}
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          dockerfile: Dockerfile
-          context: .
+      #- name: Build and push a docker image with pointtorch installation (version tag)
+       # uses: elgohr/Publish-Docker-Github-Action@v5
+        #with:
+         # name: vogelingmar/treespec:${{ env.latest_version }}
+          #username: ${{ secrets.DOCKER_HUB_USER }}
+          #password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          #dockerfile: Dockerfile
+          #context: .
       - name: Build and push a docker image with pointtorch installation (latest tag)
         uses: elgohr/Publish-Docker-Github-Action@v5
         with:

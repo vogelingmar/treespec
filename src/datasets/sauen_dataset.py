@@ -33,3 +33,6 @@ class Sauen_Dataset(L.LightningDataModule):
     def test_dataloader(self):
         return data.DataLoader(self.test)
     
+    def loss_weights(self):
+        return torch.tensor([1.0, 1.0, 1.0])
+    
