@@ -5,6 +5,7 @@ from torchvision.models import resnet50, ResNet50_Weights
 import torch
 from torch import nn
 import pytorch_lightning as L
+import torchmetrics
 
 from datasets.sauen.sauen_dataset import Sauen_Dataset
 
@@ -46,6 +47,15 @@ class ClassificationModel(L.LightningModule):
         #    label_smoothing=0.1, weight=self.dataset.loss_weights()
         #)
         self.learning_rate = learning_rate
+        self.f1 = torchmetrics.F1Score(
+            num_classes=num_classes, task="multiclass", average="macro", compute_on_step=False
+        )
+        self.precision = torchmetrics.Precision(
+            num_classes=num_classes, task="multiclass", average="macro", compute_on_step=False
+        )
+        self.recall = torchmetrics.Recall(
+            num_classes=num_classes, task="multiclass", average="macro", compute_on_step=False
+        )
 
     def forward(self, x):
         r"""
