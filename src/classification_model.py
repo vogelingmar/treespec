@@ -29,33 +29,24 @@ class ClassificationModel(L.LightningModule):
         model_weights: int = ResNet50_Weights.DEFAULT,  # change type
         model: int = resnet50,  # change type
         num_classes: int = 3,
-        dataset: L.LightningDataModule = Sauen_Dataset,
         loss_function: int = nn.CrossEntropyLoss,
         learning_rate: float = 0.001,
-        batch_size: int = 5,
     ):
-
         super(ClassificationModel, self).__init__()
         self.model_weights = model_weights
         self.model = model(weights=self.model_weights)
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
-        #self.dataset = dataset()
-        #self.dataset.setup(
-        #    transforms=self.model_weights.transforms(), batch_size=batch_size
-        #)
-        #self.criterion = loss_function(
-        #    label_smoothing=0.1, weight=self.dataset.loss_weights()
-        #)
         self.learning_rate = learning_rate
-        self.f1 = torchmetrics.F1Score(
-            num_classes=num_classes, task="multiclass", average="macro", compute_on_step=False
+        self.loss_function = loss_function
+
+        self.accuracy = torchmetrics.Accuracy(
+            num_classes=num_classes, task="multiclass"
         )
+        self.f1 = torchmetrics.F1Score(num_classes=num_classes, task="multiclass")
         self.precision = torchmetrics.Precision(
-            num_classes=num_classes, task="multiclass", average="macro", compute_on_step=False
+            num_classes=num_classes, task="multiclass"
         )
-        self.recall = torchmetrics.Recall(
-            num_classes=num_classes, task="multiclass", average="macro", compute_on_step=False
-        )
+        self.recall = torchmetrics.Recall(num_classes=num_classes, task="multiclass")
 
     def forward(self, x):
         r"""
@@ -73,14 +64,38 @@ class ClassificationModel(L.LightningModule):
         """
         return self.model(x)
 
+    def calculate_metrics(self, outputs, labels):
+        r"""
+        The function calculating the metrics of the classification model.
+
+        Args:
+            outputs: The output of the model.
+            labels: The labels of the data.
+
+        Returns:
+            accuracy, f1, precision, recall
+
+        Shape:
+            - :code:`outputs`: idk
+            - :code:`labels`: idk
+            - Output: idk
+
+        """
+        accuracy = self.accuracy(outputs, labels)
+        f1 = self.f1(outputs, labels)
+        precision = self.precision(outputs, labels)
+        recall = self.recall(outputs, labels)
+
+        return accuracy, f1, precision, recall
+
     def training_step(self, batch, batch_idx):
         r"""
         The function describing the training step of the classification model.
 
-        Args: 
+        Args:
             batch: The batch of data to be used for training.
             batch_idx: The index of the batch.
-        
+
         Returns:
             The loss of the model from the training step.
 
@@ -96,16 +111,30 @@ class ClassificationModel(L.LightningModule):
 
         """
         inputs, labels = batch
-        outputs = self.model(inputs)
-        loss = self.criterion(outputs, labels)
-        self.log("train_loss", loss, prog_bar=True)
+        outputs = self.forward(inputs)
+        loss = self.loss_function(outputs, labels)
+
+        accuracy, f1, precision, recall = self.calculate_metrics(outputs, labels)
+        self.log_dict(
+            {
+                "train_loss": loss,
+                "train_accuracy": accuracy,
+                "train_f1": f1,
+                "train_precision": precision,
+                "train_recall": recall,
+            },
+            prog_bar=True,
+            on_step=False,
+            on_epoch=True,
+        )
+
         return loss
 
     def validation_step(self, batch, batch_idx):
         r"""
         The function describing the validation step of the classification model.
 
-        Args: 
+        Args:
             batch: The batch of data to be used for training.
             batch_idx: The index of the batch.
 
@@ -120,15 +149,15 @@ class ClassificationModel(L.LightningModule):
 
         """
         inputs, labels = batch
-        outputs = self.model(inputs)
-        val_loss = self.criterion(outputs, labels)
+        outputs = self.forward(inputs)
+        val_loss = self.loss_function(outputs, labels)
         self.log("val_loss", val_loss)
 
     def test_step(self, batch, batch_idx):
         r"""
         The function describing the validation step of the classification model.
 
-        Args: 
+        Args:
             batch: The batch of data to be used for training.
             batch_idx: The index of the batch.
 
@@ -143,8 +172,8 @@ class ClassificationModel(L.LightningModule):
 
         """
         inputs, labels = batch
-        outputs = self.model(inputs)
-        test_loss = self.criterion(outputs, labels)
+        outputs = self.forward(inputs)
+        test_loss = self.loss_function(outputs, labels)
         self.log("test_loss", test_loss)
 
     def configure_optimizers(self):
@@ -155,21 +184,6 @@ class ClassificationModel(L.LightningModule):
         """
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
-    # TODO: has to be changed
-    def pumpen(self):
-        trainer = L.Trainer(max_epochs=15)
-
-        trainer.fit(
-            model=self,
-            train_dataloaders=self.dataset.train_dataloader(),
-            val_dataloaders=self.dataset.val_dataloader(),
-        )
-
-        trainer.test(model=self, dataloaders=self.dataset.test_dataloader())
-        # torch.save(self.model.state_dict(), "io/models/resnet50_finetuned.pth")
-
-#= "/home/ingmar/Documents/repos/treespec/src/io/datasets/sauen
-# /beech/bark_4116_box_00_angle_-6.11.jpg"
     def predict(
         self,
         img: str,
