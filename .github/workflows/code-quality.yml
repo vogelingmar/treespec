@@ -85,8 +85,6 @@ jobs:
           cd /github/workspace/
           python -m pip install git+https://github.com/vogelingmar/treespec.git
           python -m pip install --upgrade .'[dev, docs]'
-          # install CPU version of spconv (pointtorch depends on the cuda version but the CI runner has no GPU)
-          python -m pip install --upgrade spconv
           coverage run -m pytest
           coverage-badge -f -o coverage.svg
       - name: Commit coverage badge

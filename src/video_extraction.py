@@ -21,13 +21,11 @@ setup_logger()
 
 
 #  model and video variables
-model_name = "X-101_RGB_60k.pth"
-video_path = "/data/training data/Sauen_Mapping_Dataset/20fps_Sauen.mp4"
+MODEL_NAME = "X-101_RGB_60k.pth"
+VIDEO_PATH = "/data/training data/Sauen_Mapping_Dataset/20fps_Sauen.mp4"
 # corrected_video_path = '/home/ingmar/Documents/repos/treespec/src/io/videos/corrected_video.mp4'
-corrected_video_path = (
-    "/data/training data/Sauen_Mapping_Dataset/cropped_20fps_Sauen.mp4"
-)
-bark_dir = "/home/ingmar/Documents/repos/treespec/src/io/pictures/"
+CORRECTED_VIDEO_PATH = "/data/training data/Sauen_Mapping_Dataset/cropped_20fps_Sauen.mp4"
+BARK_DIR = "/home/ingmar/Documents/repos/treespec/src/io/pictures/"
 
 if __name__ == "__main__":
     torch.cuda.is_available()
@@ -36,11 +34,7 @@ if __name__ == "__main__":
     # All configurables are listed in /repos/detectron2/detectron2/config/defaults.py
     cfg = get_cfg()
     cfg.INPUT.MASK_FORMAT = "bitmask"
-    cfg.merge_from_file(
-        model_zoo.get_config_file(
-            "COCO-Keypoints/keypoint_rcnn_X_101_32x8d_FPN_3x.yaml"
-        )
-    )
+    cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_X_101_32x8d_FPN_3x.yaml"))
 
     cfg.DATASETS.TRAIN = ()
     cfg.DATASETS.TEST = ()
@@ -53,7 +47,7 @@ if __name__ == "__main__":
     cfg.MODEL.MASK_ON = True
 
     cfg.OUTPUT_DIR = "/home/ingmar/Documents/repos/treespec/src/io/models/"
-    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, model_name)
+    cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, MODEL_NAME)
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
     # cfg.INPUT.MIN_SIZE_TEST = 0  # no resize at test time
 
@@ -69,7 +63,7 @@ if __name__ == "__main__":
     # crop=in_w/3:in_h/3:in_w/3:in_h/3, transpose=1').run()
 
     # Get one video frame
-    vcap = cv2.VideoCapture(corrected_video_path)
+    vcap = cv2.VideoCapture(CORRECTED_VIDEO_PATH)
 
     # get vcap property
     w = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -118,20 +112,14 @@ if __name__ == "__main__":
                 cropped_box = crop_frame[y1:y2, x1:x2]
 
                 if (x2 - x1) * (y2 - y1) >= 200000:
-                    angle = (
-                        480 - ((x1 + x2) / 2)
-                    ) / 32  # approximates angle of tree to the camera ortientation
-                    screenshot_filename = (
-                        f"bark_{nframes:04d}_box_{i:02d}_angle_{angle:.2f}.jpg"
-                    )
+                    angle = (480 - ((x1 + x2) / 2)) / 32  # approximates angle of tree to the camera ortientation
+                    screenshot_filename = f"bark_{nframes:04d}_box_{i:02d}_angle_{angle:.2f}.jpg"
                     # Name screenshot by frame index and box index
-                    screenshot_path = os.path.join(bark_dir, screenshot_filename)
+                    screenshot_path = os.path.join(BARK_DIR, screenshot_filename)
                     cv2.imwrite(screenshot_path, cropped_box)  # Save the cropped box
                     i += 1
 
-            out = vid_vis.draw_instance_predictions(
-                crop_frame, outputs_pred["instances"].to("cpu")
-            )
+            out = vid_vis.draw_instance_predictions(crop_frame, outputs_pred["instances"].to("cpu"))
 
             vid_frame = out.get_image()
             video.write(vid_frame)
