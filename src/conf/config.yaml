@@ -9,8 +9,8 @@ Files:
   predict_video: /home/user/videos/predicted_output.mp4
 
 TrainParams:
-  model: resnet50
-  model_weights: resnet50_default
+  model: resnet152
+  model_weights: resnet152_default
   dataset: sauen
   num_classes: 3
   epoch_count: 20

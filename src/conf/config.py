@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class Directories:
     bark_dir: str
     output_dir: str
+
 
 @dataclass
 class Files:
@@ -11,6 +13,7 @@ class Files:
     video: str
     corrected_video: str
     predict_video: str
+
 
 @dataclass
 class TrainParams:
@@ -21,6 +24,7 @@ class TrainParams:
     batch_size: int
     lr: float
     loss_function: str
+
 
 @dataclass
 class TreespecConfig:
