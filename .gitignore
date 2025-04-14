@@ -177,3 +177,5 @@ models/
 pictures/
 videos/
 images/
+.vscode/
+outputs/

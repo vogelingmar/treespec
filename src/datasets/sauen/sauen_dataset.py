@@ -1,5 +1,6 @@
 """Sauen Dataset"""
 
+from typing import Optional
 import torch
 from torch.utils import data
 from torchvision import datasets  # type: ignore
@@ -37,7 +38,7 @@ class SauenDataset(L.LightningDataModule):
         # add download path for the images of the dataset
         pass
 
-    def setup(self, transform: Transform | None):
+    def setup(self, transform: Optional[Transform] = None):
         r"""
         Creates training (80%), validation (10%) and testing (10%) datasets from the folder structure at data_dir.
 
@@ -56,7 +57,7 @@ class SauenDataset(L.LightningDataModule):
 
         self.train, self.val, self.test = data.random_split(self.dataset, [train_size, val_size, test_size])
 
-    def train_dataloader(self, augmentation: Transform | None):
+    def train_dataloader(self, augmentation: Optional[Transform] = None):
         r"""
         Applies data augmentations to the training dataset and returns a dataloader for the training set.
 

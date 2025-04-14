@@ -1,0 +1,20 @@
+Directories:
+  bark_dir: /home/user/bark
+  output_dir: /home/user/output
+
+Files:
+  model: /home/user/bark/models/resnet50.pth
+  video: /home/user/videos/input.mp4
+  corrected_video: /home/user/videos/corrected_output.mp4
+  predict_video: /home/user/videos/predicted_output.mp4
+
+TrainParams:
+  model: resnet50
+  model_weights: resnet50_default
+  dataset: sauen
+  num_classes: 3
+  epoch_count: 20
+  batch_size: 5
+  num_workers: 27
+  learning_rate: 0.001
+  loss_function: cross_entropy
