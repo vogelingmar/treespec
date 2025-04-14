@@ -222,7 +222,8 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         img_path: str,
     ):
         r"""
-        The predict function of the classification model. Input is a path to an image thats class should be predicted.
+        The predict function of the classification model. 
+        Input is a path to an image thats class should be predicted.
         """
 
         picture = decode_image(img_path)

@@ -55,7 +55,9 @@ class SauenDataset(L.LightningDataModule):
         test_size = int(0.1 * total_size)
         train_size = total_size - val_size - test_size
 
-        self.train, self.val, self.test = data.random_split(self.dataset, [train_size, val_size, test_size])
+        self.train, self.val, self.test = data.random_split(
+            self.dataset, [train_size, val_size, test_size]
+        )
 
     def train_dataloader(self, augmentation: Optional[Transform] = None):
         r"""

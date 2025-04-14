@@ -19,11 +19,19 @@ class Files:
 class TrainParams:
     model: str
     model_weights: str
+    dataset: str
     num_classes: int
     epoch_count: int
     batch_size: int
-    lr: float
+    num_workers: int
+    learning_rate: float
     loss_function: str
+    use_augmentations: bool
+
+
+# TODO: create extra dataset config
+
+# TODO: change video recognition class structure
 
 
 @dataclass

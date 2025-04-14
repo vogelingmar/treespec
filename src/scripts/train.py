@@ -47,6 +47,22 @@ def main(cfg: TreespecConfig):
     }
 
     default_transforms = model_weights_dict[cfg.TrainParams.model_weights].transforms()
+    # TODO: experiment with data augmentations
+    if cfg.TrainParams.use_augmentations is True:
+        train_augmentations = v2.Compose(
+            [
+                v2.RandomResizedCrop(size=(224, 224)),
+                v2.RandomHorizontalFlip(0.2),
+                v2.RandomVerticalFlip(0.4),
+                v2.RandomRotation(15),
+                v2.RandomPerspective(distortion_scale=0.3),
+                v2.ColorJitter(),
+                default_transforms,
+            ]
+        )
+    else:
+        train_augmentations = default_transforms
+
     dataset = dataset_dict[cfg.TrainParams.dataset](
         batch_size=cfg.TrainParams.batch_size, num_workers=cfg.TrainParams.num_workers
     )
@@ -64,19 +80,6 @@ def main(cfg: TreespecConfig):
     )
 
     trainer = L.Trainer(max_epochs=cfg.TrainParams.epoch_count, log_every_n_steps=10)
-
-    # TODO: experiment with data augmentations
-    train_augmentations = v2.Compose(
-        [
-            # v2.RandomResizedCrop(size=(224, 224)),
-            # v2.RandomHorizontalFlip(0.2),
-            # v2.RandomVerticalFlip(0.4),
-            # v2.RandomRotation(15),
-            # v2.RandomPerspective(distortion_scale=0.3),
-            # v2.ColorJitter(),
-            default_transforms,
-        ]
-    )
 
     trainer.fit(
         model=model,

@@ -7,7 +7,9 @@ from models.classification_model import ClassificationModel
 
 
 def test_forward():
-    classification_model = ClassificationModel(model_weights=ResNet50_Weights.DEFAULT, num_classes=3)
+    classification_model = ClassificationModel(
+        model_weights=ResNet50_Weights.DEFAULT, num_classes=3
+    )
     img_path = "/home/ingmar/Documents/repos/treespec/src/datasets/sauen/images/sauen_v2/beech/bark_4068_box_00_angle_-5.34.jpg"
     picture = decode_image(img_path)
     transforms = ResNet50_Weights.DEFAULT.transforms()
@@ -16,8 +18,11 @@ def test_forward():
 
     assert prediction.shape == (1, 3)
 
+
 def test_calculate_metrics():
-    classification_model = ClassificationModel(model_weights=ResNet50_Weights.DEFAULT, num_classes=3)
+    classification_model = ClassificationModel(
+        model_weights=ResNet50_Weights.DEFAULT, num_classes=3
+    )
     outputs = torch.tensor([[0.1, 0.2, 0.7], [0.3, 0.4, 0.3]])
     labels = torch.tensor([2, 2])
     accuracy, f1, precision, recall = classification_model.calculate_metrics(outputs, labels)
@@ -26,8 +31,11 @@ def test_calculate_metrics():
     assert precision.item() == 0.5
     assert recall.item() == 0.5
 
+
 def test_training():
-    classification_model = ClassificationModel(model_weights=ResNet50_Weights.DEFAULT, num_classes=3)
+    classification_model = ClassificationModel(
+        model_weights=ResNet50_Weights.DEFAULT, num_classes=3
+    )
     outputs = torch.tensor([[0.1, 0.2, 0.7], [0.3, 0.4, 0.3], [0.3, 0.4, 0.3]])
     labels = torch.tensor([2, 2, 2])
     batch = [outputs, labels]

@@ -18,3 +18,4 @@ TrainParams:
   num_workers: 27
   learning_rate: 0.001
   loss_function: cross_entropy
+  use_augmentations: false
