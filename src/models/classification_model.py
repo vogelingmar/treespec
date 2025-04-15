@@ -71,6 +71,41 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         """
 
         return self.model(x)
+    
+    def calculate_per_class_metrics(self, outputs: torch.Tensor, labels: torch.Tensor):
+        r"""
+        Calculate TP, FP, FN, TN, precision, recall, and F1-score per class.
+
+        Args:
+            outputs: The output predictions of the model.
+            labels: The ground truth labels.
+
+        Returns:
+            A dictionary containing per-class metrics.
+        """
+        # Compute confusion matrix
+        confusion_matrix = self.confusion_matrix(outputs, labels)
+
+        # Extract TP, FP, FN, TN per class
+        tp = torch.diag(confusion_matrix)
+        fp = confusion_matrix.sum(dim=0) - tp
+        fn = confusion_matrix.sum(dim=1) - tp
+        tn = confusion_matrix.sum() - (tp + fp + fn)
+
+        # Compute precision, recall, and F1-score per class
+        precision = tp / (tp + fp + 1e-8)
+        recall = tp / (tp + fn + 1e-8)
+        f1_score = 2 * (precision * recall) / (precision + recall + 1e-8)
+
+        return {
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
+            "tn": tn,
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1_score,
+        }
 
     def calculate_metrics(self, outputs: torch.Tensor, labels: torch.Tensor):
         r"""
@@ -122,6 +157,8 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         outputs = self.forward(inputs)
         loss = self.loss_function(outputs, labels)
 
+        per_class_metrics = self.calculate_per_class_metrics(outputs, labels)
+
         accuracy, f1, precision, recall = self.calculate_metrics(outputs, labels)
         self.log_dict(
             {
@@ -135,6 +172,18 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             on_step=False,
             on_epoch=True,
         )
+
+        # Log per-class metrics
+        for i, (precision, recall, f1) in enumerate(
+            zip(
+                per_class_metrics["precision"],
+                per_class_metrics["recall"],
+                per_class_metrics["f1_score"],
+            )
+        ):
+            self.log(f"val_precision_class_{i}", precision)
+            self.log(f"val_recall_class_{i}", recall)
+            self.log(f"val_f1_class_{i}", f1)
 
         return loss
 
@@ -160,6 +209,8 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         outputs = self.forward(inputs)
         val_loss = self.loss_function(outputs, labels)
 
+        per_class_metrics = self.calculate_per_class_metrics(outputs, labels)
+
         accuracy, f1, precision, recall = self.calculate_metrics(outputs, labels)
         self.log_dict(
             {
@@ -170,6 +221,18 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
                 "val_recall": recall,
             },
         )
+
+         # Log per-class metrics
+        for i, (precision, recall, f1) in enumerate(
+            zip(
+                per_class_metrics["precision"],
+                per_class_metrics["recall"],
+                per_class_metrics["f1_score"],
+            )
+        ):
+            self.log(f"val_precision_class_{i}", precision)
+            self.log(f"val_recall_class_{i}", recall)
+            self.log(f"val_f1_class_{i}", f1)
 
     def test_step(self, batch: list, batch_idx: int):
         r"""
@@ -193,6 +256,8 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         outputs = self.forward(inputs)
         test_loss = self.loss_function(outputs, labels)
 
+        per_class_metrics = self.calculate_per_class_metrics(outputs, labels)
+
         accuracy, f1, precision, recall = self.calculate_metrics(outputs, labels)
         self.log_dict(
             {
@@ -203,6 +268,18 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
                 "test_recall": recall,
             },
         )
+
+         # Log per-class metrics
+        for i, (precision, recall, f1) in enumerate(
+            zip(
+                per_class_metrics["precision"],
+                per_class_metrics["recall"],
+                per_class_metrics["f1_score"],
+            )
+        ):
+            self.log(f"val_precision_class_{i}", precision)
+            self.log(f"val_recall_class_{i}", recall)
+            self.log(f"val_f1_class_{i}", f1)
 
     def predict_step(self, batch: list, batch_idx: int):
 

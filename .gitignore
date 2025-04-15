@@ -180,3 +180,5 @@ images/
 .vscode/
 outputs/
 io/
+
+.DS_Store
