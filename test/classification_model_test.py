@@ -25,7 +25,9 @@ def test_calculate_metrics():
     )
     outputs = torch.tensor([[0.1, 0.2, 0.7], [0.3, 0.4, 0.3]])
     labels = torch.tensor([2, 2])
-    accuracy, f1, precision, recall = classification_model.calculate_metrics(outputs, labels)
+    accuracy, f1, precision, recall = classification_model.calculate_metrics(
+        outputs, labels
+    )
     assert accuracy.item() == 0.5
     assert f1.item() == 0.5
     assert precision.item() == 0.5

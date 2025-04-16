@@ -9,11 +9,14 @@ from torchvision.io import decode_image  # type: ignore
 from torchvision.models import resnet50  # ignore: import-untyped
 from torchvision.models._api import WeightsEnum  # ignore: import-untyped
 import torchmetrics
+from torchmetrics import ConfusionMatrix
 
 import pytorch_lightning as L
 
 
-class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instance-attributes
+class ClassificationModel(
+    L.LightningModule
+):  # pylint: disable=too-many-instance-attributes
     r"""
     The tree species classification model of the treespec pipeline.
 
@@ -21,10 +24,8 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         model_weights: The weights to be used to initialize the model.
         model: The model to be used for classification.
         num_classes: The number of classes to be differentiated by the model.
-        dataset: The dataset to be used for the model.
         loss_function: The loss function to be used for training.
         learning_rate: The learning rate to be used for training.
-        batch_size: The batch size to be used for training.
     """
 
     def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -39,21 +40,32 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         self.model_weights = model_weights
         self.model = model(weights=self.model_weights)
 
-        # Modify classification head based on model architecture
-        if hasattr(self.model, "fc"):  # For ResNet-like models
+        if hasattr(self.model, "fc"):
             self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
-        elif hasattr(self.model, "head"):  # For Swin Transformer-like models
+        elif hasattr(self.model, "head"):
             self.model.head = nn.Linear(self.model.head.in_features, num_classes)
         else:
-            raise AttributeError("The model does not have a recognized classification head.")
+            raise AttributeError(
+                "The model does not have a recognized classification head."
+            )
 
         self.loss_function = loss_function
         self.learning_rate = learning_rate
 
-        self.accuracy = torchmetrics.Accuracy(num_classes=num_classes, task="multiclass")
-        self.f1 = torchmetrics.F1Score(num_classes=num_classes, task="multiclass")
-        self.precision = torchmetrics.Precision(num_classes=num_classes, task="multiclass")
-        self.recall = torchmetrics.Recall(num_classes=num_classes, task="multiclass")
+        self.avg_accuracy = torchmetrics.Accuracy(
+            num_classes=num_classes, task="multiclass"
+        )
+        self.avg_f1 = torchmetrics.F1Score(num_classes=num_classes, task="multiclass")
+        self.avg_precision = torchmetrics.Precision(
+            num_classes=num_classes, task="multiclass"
+        )
+        self.avg_recall = torchmetrics.Recall(
+            num_classes=num_classes, task="multiclass"
+        )
+
+        self.confusion_matrix = ConfusionMatrix(
+            num_classes=num_classes, task="multiclass"
+        )
 
     def forward(self, x: torch.Tensor):
         r"""
@@ -71,20 +83,23 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         """
 
         return self.model(x)
-    
-    def calculate_per_class_metrics(self, outputs: torch.Tensor, labels: torch.Tensor):
+
+    def calculate_per_class_metrics(
+        self, predictions: torch.Tensor, labels: torch.Tensor
+    ):
         r"""
-        Calculate TP, FP, FN, TN, precision, recall, and F1-score per class.
+        Calculate TP, FP, TN, FN, precision, recall, and F1-score for each class.
 
         Args:
-            outputs: The output predictions of the model.
-            labels: The ground truth labels.
+            predictions: The output predictions of the model.
+            labels: The ground truth labels of the input.
 
         Returns:
             A dictionary containing per-class metrics.
         """
+
         # Compute confusion matrix
-        confusion_matrix = self.confusion_matrix(outputs, labels)
+        confusion_matrix = self.confusion_matrix(predictions, labels)
 
         # Extract TP, FP, FN, TN per class
         tp = torch.diag(confusion_matrix)
@@ -100,36 +115,82 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         return {
             "tp": tp,
             "fp": fp,
-            "fn": fn,
             "tn": tn,
+            "fn": fn,
             "precision": precision,
             "recall": recall,
             "f1_score": f1_score,
         }
 
-    def calculate_metrics(self, outputs: torch.Tensor, labels: torch.Tensor):
+    def _common_steps(self, batch: list, batch_idx: int, stage: str):
         r"""
-        The function calculating the metrics of the classification model.
+        The function describing the common steps of the training step,
+        validations step and test step of the classification model.
 
         Args:
-            outputs: The output of the model.
-            labels: The labels of the data.
+            batch: The batch of data to be used for training.
+            batch_idx: The index of the batch.
+            stage: The stage of the model (train, val, test).
 
         Returns:
-            accuracy, f1, precision, recall
+            The loss of the model during the step.
 
         Shape:
-            - :code:`outputs`: idk
-            - :code:`labels`: idk
+            - :code:`batch`: :math:`(I_k, L_k)`
+            - :code:`batch_idx`: b
+            - :code:`stage`: str
             - Output: idk
+
+            | where
+            |
+            | :math:`I_k = \text{ k-th input image of the batch encoded as tensor}`
+            | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
-        accuracy = self.accuracy(outputs, labels)
-        f1 = self.f1(outputs, labels)
-        precision = self.precision(outputs, labels)
-        recall = self.recall(outputs, labels)
+        inputs, labels = batch
+        predictions = self.forward(inputs)
 
-        return accuracy, f1, precision, recall
+        loss = self.loss_function(predictions, labels)
+
+        self.log_dict(
+            {
+                f"{stage}_loss": loss,
+                f"{stage}_accuracy": self.avg_accuracy(predictions, labels),
+                f"{stage}_f1": self.avg_f1(predictions, labels),
+                f"{stage}_precision": self.avg_precision(predictions, labels),
+                f"{stage}_recall": self.avg_recall(predictions, labels),
+            },
+            prog_bar=True,
+            on_step=False,
+            on_epoch=True,
+        )
+
+        per_class_metrics = self.calculate_per_class_metrics(predictions, labels)
+
+        for i, (precision, recall, f1, tp, fp, tn, fn) in enumerate(
+            zip(
+                per_class_metrics["f1_score"],
+                per_class_metrics["precision"],
+                per_class_metrics["recall"],
+                per_class_metrics["tp"],
+                per_class_metrics["fp"],
+                per_class_metrics["tn"],
+                per_class_metrics["fn"],
+            )
+        ):
+            self.log_dict(
+                {
+                    f"test_precision_class_{i}": precision.float(),
+                    f"test_recall_class_{i}": recall.float(),
+                    f"test_f1_score_class_{i}": f1.float(),
+                    f"test_tp_class_{i}": tp.float(),
+                    f"test_fp_class_{i}": fp.float(),
+                    f"test_tn_class_{i}": tn.float(),
+                    f"test_fn_class_{i}": fn.float(),
+                }
+            )
+
+        return loss
 
     def training_step(self, batch: list, batch_idx: int):
         r"""
@@ -153,39 +214,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
-        inputs, labels = batch
-        outputs = self.forward(inputs)
-        loss = self.loss_function(outputs, labels)
-
-        per_class_metrics = self.calculate_per_class_metrics(outputs, labels)
-
-        accuracy, f1, precision, recall = self.calculate_metrics(outputs, labels)
-        self.log_dict(
-            {
-                "train_loss": loss,
-                "train_accuracy": accuracy,
-                "train_f1": f1,
-                "train_precision": precision,
-                "train_recall": recall,
-            },
-            prog_bar=True,
-            on_step=False,
-            on_epoch=True,
-        )
-
-        # Log per-class metrics
-        for i, (precision, recall, f1) in enumerate(
-            zip(
-                per_class_metrics["precision"],
-                per_class_metrics["recall"],
-                per_class_metrics["f1_score"],
-            )
-        ):
-            self.log(f"val_precision_class_{i}", precision)
-            self.log(f"val_recall_class_{i}", recall)
-            self.log(f"val_f1_class_{i}", f1)
-
-        return loss
+        return self._common_steps(batch, batch_idx, "train")
 
     def validation_step(self, batch: list, batch_idx: int):
         r"""
@@ -205,34 +234,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
-        inputs, labels = batch
-        outputs = self.forward(inputs)
-        val_loss = self.loss_function(outputs, labels)
-
-        per_class_metrics = self.calculate_per_class_metrics(outputs, labels)
-
-        accuracy, f1, precision, recall = self.calculate_metrics(outputs, labels)
-        self.log_dict(
-            {
-                "val_loss": val_loss,
-                "val_accuracy": accuracy,
-                "val_f1": f1,
-                "val_precision": precision,
-                "val_recall": recall,
-            },
-        )
-
-         # Log per-class metrics
-        for i, (precision, recall, f1) in enumerate(
-            zip(
-                per_class_metrics["precision"],
-                per_class_metrics["recall"],
-                per_class_metrics["f1_score"],
-            )
-        ):
-            self.log(f"val_precision_class_{i}", precision)
-            self.log(f"val_recall_class_{i}", recall)
-            self.log(f"val_f1_class_{i}", f1)
+        self._common_steps(batch, batch_idx, "val")
 
     def test_step(self, batch: list, batch_idx: int):
         r"""
@@ -252,38 +254,37 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
-        inputs, labels = batch
-        outputs = self.forward(inputs)
-        test_loss = self.loss_function(outputs, labels)
-
-        per_class_metrics = self.calculate_per_class_metrics(outputs, labels)
-
-        accuracy, f1, precision, recall = self.calculate_metrics(outputs, labels)
-        self.log_dict(
-            {
-                "test_loss": test_loss,
-                "test_accuracy": accuracy,
-                "test_f1": f1,
-                "test_precision": precision,
-                "test_recall": recall,
-            },
-        )
-
-         # Log per-class metrics
-        for i, (precision, recall, f1) in enumerate(
-            zip(
-                per_class_metrics["precision"],
-                per_class_metrics["recall"],
-                per_class_metrics["f1_score"],
-            )
-        ):
-            self.log(f"val_precision_class_{i}", precision)
-            self.log(f"val_recall_class_{i}", recall)
-            self.log(f"val_f1_class_{i}", f1)
+        self._common_steps(batch, batch_idx, "test")
 
     def predict_step(self, batch: list, batch_idx: int):
+        r"""
+        The predict step of the classification model.
 
-        pass
+        Args:
+            batch: The batch of data to be used for training.
+            batch_idx: The index of the batch.
+
+        Returns:
+            The class id and the score of the prediction.
+
+        Shape:
+            - :code:`batch`: :math:`(I_k, L_k)`
+            - :code:`batch_idx`: b
+            - Output: (class_id, score)
+
+            | where
+            |
+            | :math:`I_k = \text{ k-th input image of the batch encoded as tensor}`
+            | :math:`L_k = \text{ k-th class index of the k-th input index}`
+            | :math:`class_id = \text{ id of the predicted class}`
+            | :math:`score = \text{ score of the predicted class}`
+        """
+
+        predictions = self.forward(batch).squeeze(0).softmax(0)
+        class_id = predictions.argmax().item()
+        score = predictions[class_id].item()
+
+        return class_id, score
 
     def configure_optimizers(self):
         r"""
@@ -299,8 +300,10 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         img_path: str,
     ):
         r"""
-        The predict function of the classification model. 
-        Input is a path to an image thats class should be predicted.
+        The predict function of the classification model.
+
+        Args:
+            img_path: The path to the image to be predicted.
         """
 
         picture = decode_image(img_path)

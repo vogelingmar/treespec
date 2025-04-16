@@ -9,8 +9,6 @@ from torchvision.models import (
     ResNet152_Weights,
     swin_v2_b,
     Swin_V2_B_Weights,
-    vit_l_32,
-    ViT_L_32_Weights,
 )
 import pytorch_lightning as L
 import hydra
@@ -31,13 +29,11 @@ def main(cfg: TreespecConfig):
         "resnet50": resnet50,
         "resnet152": resnet152,
         "swin_transformer": swin_v2_b,
-        "vision_transformer": vit_l_32,
     }
     model_weights_dict = {
         "resnet50_default": ResNet50_Weights.DEFAULT,
         "resnet152_default": ResNet152_Weights.DEFAULT,
         "swin_default": Swin_V2_B_Weights.DEFAULT,
-        "vit_default": ViT_L_32_Weights.DEFAULT,
     }
     dataset_dict = {
         "sauen": SauenDataset,
