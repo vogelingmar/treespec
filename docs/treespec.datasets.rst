@@ -1,10 +1,10 @@
-datasets package
-================
+treespec.datasets package
+=========================
 
 Module contents
 ---------------
 
-.. automodule:: datasets
+.. automodule:: treespec.datasets
    :members:
    :show-inheritance:
    :undoc-members:

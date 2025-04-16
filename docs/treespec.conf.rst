@@ -1,13 +1,13 @@
-conf package
-============
+treespec.conf package
+=====================
 
 Submodules
 ----------
 
-conf.config module
-------------------
+treespec.conf.config module
+---------------------------
 
-.. automodule:: conf.config
+.. automodule:: treespec.conf.config
    :members:
    :show-inheritance:
    :undoc-members:
@@ -15,7 +15,7 @@ conf.config module
 Module contents
 ---------------
 
-.. automodule:: conf
+.. automodule:: treespec.conf
    :members:
    :show-inheritance:
    :undoc-members:

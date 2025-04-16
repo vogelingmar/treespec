@@ -3,7 +3,7 @@ import torch
 from torchvision.models import resnet50, ResNet50_Weights
 from torchvision.io import decode_image
 
-from models.classification_model import ClassificationModel
+from src.models.classification_model import ClassificationModel
 
 
 def test_forward():

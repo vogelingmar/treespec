@@ -16,7 +16,7 @@ from detectron2.utils.logger import setup_logger
 
 
 class Lumberjack:
-    """
+    r"""
     Lumberjack automatically extracts tree images from a video.
 
     Args:
@@ -72,7 +72,7 @@ class Lumberjack:
         video: str,
         corrected: bool = True,
     ):
-        """
+        r"""
         The process video function takes a video and chops tree images from it.
 
         Args:
