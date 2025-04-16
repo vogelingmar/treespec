@@ -22,26 +22,26 @@ from src.conf.config import TreespecConfig
 cs = ConfigStore.instance()
 cs.store(name="treespec_config", node=TreespecConfig)
 
+model_dict = {
+    "resnet50": resnet50,
+    "resnet152": resnet152,
+    "swin_transformer": swin_v2_b,
+}
+model_weights_dict = {
+    "resnet50_default": ResNet50_Weights.DEFAULT,
+    "resnet152_default": ResNet152_Weights.DEFAULT,
+    "swin_default": Swin_V2_B_Weights.DEFAULT,
+}
+dataset_dict = {
+    "sauen": SauenDataset,
+}
+loss_function_dict = {
+    "cross_entropy": nn.CrossEntropyLoss,
+}
+
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg: TreespecConfig):
-
-    model_dict = {
-        "resnet50": resnet50,
-        "resnet152": resnet152,
-        "swin_transformer": swin_v2_b,
-    }
-    model_weights_dict = {
-        "resnet50_default": ResNet50_Weights.DEFAULT,
-        "resnet152_default": ResNet152_Weights.DEFAULT,
-        "swin_default": Swin_V2_B_Weights.DEFAULT,
-    }
-    dataset_dict = {
-        "sauen": SauenDataset,
-    }
-    loss_function_dict = {
-        "cross_entropy": nn.CrossEntropyLoss,
-    }
 
     default_transforms = model_weights_dict[cfg.TrainParams.model_weights].transforms()
     # TODO: experiment with data augmentations
@@ -61,7 +61,9 @@ def main(cfg: TreespecConfig):
         train_augmentations = default_transforms
 
     dataset = dataset_dict[cfg.TrainParams.dataset](
-        batch_size=cfg.TrainParams.batch_size, num_workers=cfg.TrainParams.num_workers
+        data_dir=cfg.TrainParams.dataset_dir,
+        batch_size=cfg.TrainParams.batch_size, 
+        num_workers=cfg.TrainParams.num_workers
     )
     dataset.prepare_data()
     dataset.setup(transform=default_transforms)
@@ -85,7 +87,7 @@ def main(cfg: TreespecConfig):
     )
 
     trainer.test(model=model, dataloaders=dataset.test_dataloader())
-    torch.save(model.model.state_dict(), "/home/ingmar/Documents/repos/treespec/src/io/models/resnet50_finetuned.pth")
+    torch.save(model.model.state_dict(), (cfg.TrainParams.trained_model_dir + cfg.TrainParams.model + "_finetuned" + ".pth"))
 
 
 if __name__ == "__main__":

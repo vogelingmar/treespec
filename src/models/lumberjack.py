@@ -28,11 +28,9 @@ class Lumberjack:
 
     def __init__(
         self,
-        model: str = "/home/ingmar/Documents/repos/treespec/src/io/models/X-101_RGB_60k.pth",
-        output_trees_dir: str = "/home/ingmar/Documents/repos/treespec/src/io/pictures/",
-        predict_video_dest_dir: Optional[
-            str
-        ] = "/home/ingmar/Documents/repos/treespec/src/io/videos/",
+        model: str,
+        output_trees_dir: str,
+        predict_video_dest_dir: Optional[str],
         visualize: bool = True,
     ):
         self.model = model
@@ -71,7 +69,7 @@ class Lumberjack:
 
     def process_video(
         self,
-        video: str = "/data/training data/Sauen_Mapping_Dataset/cropped_20fps_Sauen.mp4",
+        video: str,
         corrected: bool = True,
     ):
         """
@@ -109,7 +107,7 @@ class Lumberjack:
                 ("pred_and_track_" + os.path.basename(video)),
             )
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-            video = cv2.VideoWriter(self.predict_video_dest_dir, fourcc, 5, (w, h))
+            video = cv2.VideoWriter(dest, fourcc, 5, (w, h))
 
         if vcap.isOpened() is False:
             print("Error opening video stream or file")

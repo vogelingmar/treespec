@@ -21,9 +21,9 @@ class SauenDataset(L.LightningDataModule):
 
     def __init__(
         self,
-        data_dir: str = "/home/ingmar/Documents/repos/treespec/src/datasets/sauen/images/sauen_v2",
-        batch_size: int = 5,
-        num_workers: int = 27,
+        data_dir: str,
+        batch_size: int,
+        num_workers: int,
     ):
         super().__init__()
         self.data_dir = data_dir

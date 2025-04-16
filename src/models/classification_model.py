@@ -304,6 +304,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             score = prediction[class_id].item()
 
         # Define the custom categories
+        #TODO: make the categories dynamic
         custom_categories = ["beech", "chestnut", "pine"]
         category_name = custom_categories[class_id]
 
