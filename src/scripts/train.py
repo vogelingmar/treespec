@@ -1,5 +1,6 @@
 """Training Script of the Treespec Pipeline"""
 
+import torch
 from torch import nn
 from torchvision.transforms import v2
 from torchvision.models import (
@@ -84,7 +85,7 @@ def main(cfg: TreespecConfig):
     )
 
     trainer.test(model=model, dataloaders=dataset.test_dataloader())
-    # torch.save(self.model.state_dict(), "io/models/resnet50_finetuned.pth")
+    torch.save(model.model.state_dict(), "/home/ingmar/Documents/repos/treespec/src/io/models/resnet50_finetuned.pth")
 
 
 if __name__ == "__main__":

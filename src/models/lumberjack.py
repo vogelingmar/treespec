@@ -1,4 +1,4 @@
-""" Lumberjack automatically extracts tree images from a video """
+"""Lumberjack automatically extracts tree images from a video"""
 
 from __future__ import absolute_import
 from typing import Optional
@@ -14,6 +14,7 @@ from detectron2.data import MetadataCatalog
 from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.logger import setup_logger
 
+
 class Lumberjack:
     """
     Lumberjack automatically extracts tree images from a video.
@@ -25,11 +26,15 @@ class Lumberjack:
         visualize: If True, the video will be visualized during runtime with the predictions.
     """
 
-    def __init__(self, 
-                 model: str = "/home/ingmar/Documents/repos/treespec/src/io/models/X-101_RGB_60k.pth", 
-                 output_trees_dir: str = "/home/ingmar/Documents/repos/treespec/src/io/pictures/", 
-                 predict_video_dest_dir: Optional[str] = "/home/ingmar/Documents/repos/treespec/src/io/videos/",
-                 visualize: bool = True):
+    def __init__(
+        self,
+        model: str = "/home/ingmar/Documents/repos/treespec/src/io/models/X-101_RGB_60k.pth",
+        output_trees_dir: str = "/home/ingmar/Documents/repos/treespec/src/io/pictures/",
+        predict_video_dest_dir: Optional[
+            str
+        ] = "/home/ingmar/Documents/repos/treespec/src/io/videos/",
+        visualize: bool = True,
+    ):
         self.model = model
         self.output_trees_dir = output_trees_dir
         self.predict_video_dest_dir = predict_video_dest_dir
@@ -39,13 +44,10 @@ class Lumberjack:
         torch.cuda.is_available()
         self.logger = setup_logger(name=__name__)
 
-
         cfg = get_cfg()
         cfg.INPUT.MASK_FORMAT = "bitmask"
         cfg.merge_from_file(
-            model_zoo.get_config_file(
-                "COCO-Keypoints/keypoint_rcnn_X_101_32x8d_FPN_3x.yaml"
-            )
+            model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_X_101_32x8d_FPN_3x.yaml")
         )
 
         cfg.DATASETS.TRAIN = ()
@@ -67,10 +69,11 @@ class Lumberjack:
             thing_classes=["Tree"], keypoint_names=["kpCP", "kpL", "kpR", "AX1", "AX2"]
         )
 
-    def process_video(self, 
-                      video: str = "/data/training data/Sauen_Mapping_Dataset/cropped_20fps_Sauen.mp4",
-                      corrected: bool = True,
-                      ):
+    def process_video(
+        self,
+        video: str = "/data/training data/Sauen_Mapping_Dataset/cropped_20fps_Sauen.mp4",
+        corrected: bool = True,
+    ):
         """
         The process video function takes a video and chops tree images from it.
 
@@ -84,10 +87,13 @@ class Lumberjack:
             new_filename = "corrected_" + filename
             corrected_video = os.path.join(directory, new_filename)
 
-            ffmpeg.input(video).output(corrected_video, vf='lenscorrection=k1=-0.5:k2=-0.5, ' \
-            'crop=in_w/3:in_h/3:in_w/3:in_h/3, transpose=1').run()
+            ffmpeg.input(video).output(
+                corrected_video,
+                vf="lenscorrection=k1=-0.5:k2=-0.5, "
+                "crop=in_w/3:in_h/3:in_w/3:in_h/3, transpose=1",
+            ).run()
 
-        else: 
+        else:
             corrected_video = video
 
         vcap = cv2.VideoCapture(corrected_video)
@@ -99,7 +105,8 @@ class Lumberjack:
 
         if self.predict_video_dest_dir is not None:
             dest = os.path.join(
-                self.predict_video_dest_dir, ("pred_and_track_" + os.path.basename(video))
+                self.predict_video_dest_dir,
+                ("pred_and_track_" + os.path.basename(video)),
             )
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             video = cv2.VideoWriter(self.predict_video_dest_dir, fourcc, 5, (w, h))
@@ -159,13 +166,10 @@ class Lumberjack:
                 if self.visualize:
                     cv2.imshow("frame", vid_frame)
                 else:
-                    print(
-                        f"Frame {nframes}: {len(pred_tree_boxes)} trees detected"
-                    )
+                    print(f"Frame {nframes}: {len(pred_tree_boxes)} trees detected")
 
             nframes += 1
 
         video.release()
         vcap.release()
         cv2.destroyAllWindows()
-

@@ -14,9 +14,7 @@ from torchmetrics import ConfusionMatrix
 import pytorch_lightning as L
 
 
-class ClassificationModel(
-    L.LightningModule
-):  # pylint: disable=too-many-instance-attributes
+class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instance-attributes
     r"""
     The tree species classification model of the treespec pipeline.
 
@@ -45,29 +43,19 @@ class ClassificationModel(
         elif hasattr(self.model, "head"):
             self.model.head = nn.Linear(self.model.head.in_features, num_classes)
         else:
-            raise AttributeError(
-                "The model does not have a recognized classification head."
-            )
+            raise AttributeError("The model does not have a recognized classification head.")
 
         self.loss_function = loss_function
         self.learning_rate = learning_rate
 
-        self.avg_accuracy = torchmetrics.Accuracy(
-            num_classes=num_classes, task="multiclass"
-        )
+        self.avg_accuracy = torchmetrics.Accuracy(num_classes=num_classes, task="multiclass")
         self.avg_f1 = torchmetrics.F1Score(num_classes=num_classes, task="multiclass")
-        self.avg_precision = torchmetrics.Precision(
-            num_classes=num_classes, task="multiclass"
-        )
-        self.avg_recall = torchmetrics.Recall(
-            num_classes=num_classes, task="multiclass"
-        )
+        self.avg_precision = torchmetrics.Precision(num_classes=num_classes, task="multiclass")
+        self.avg_recall = torchmetrics.Recall(num_classes=num_classes, task="multiclass")
 
-        self.confusion_matrix = ConfusionMatrix(
-            num_classes=num_classes, task="multiclass"
-        )
+        self.confusion_matrix = ConfusionMatrix(num_classes=num_classes, task="multiclass")
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         r"""
         The forward method of the classification model.
 
@@ -84,9 +72,7 @@ class ClassificationModel(
 
         return self.model(x)
 
-    def calculate_per_class_metrics(
-        self, predictions: torch.Tensor, labels: torch.Tensor
-    ):
+    def calculate_per_class_metrics(self, predictions: torch.Tensor, labels: torch.Tensor) -> dict:
         r"""
         Calculate TP, FP, TN, FN, precision, recall, and F1-score for each class.
 
@@ -122,7 +108,7 @@ class ClassificationModel(
             "f1_score": f1_score,
         }
 
-    def _common_steps(self, batch: list, batch_idx: int, stage: str):
+    def _common_steps(self, batch: list, batch_idx: int, stage: str) -> torch.Tensor:
         r"""
         The function describing the common steps of the training step,
         validations step and test step of the classification model.
@@ -192,7 +178,7 @@ class ClassificationModel(
 
         return loss
 
-    def training_step(self, batch: list, batch_idx: int):
+    def training_step(self, batch: list, batch_idx: int) -> torch.Tensor:
         r"""
         The function describing the training step of the classification model.
 
@@ -256,7 +242,7 @@ class ClassificationModel(
 
         self._common_steps(batch, batch_idx, "test")
 
-    def predict_step(self, batch: list, batch_idx: int):
+    def predict_step(self, batch: list, batch_idx: int) -> tuple:
         r"""
         The predict step of the classification model.
 
@@ -286,36 +272,40 @@ class ClassificationModel(
 
         return class_id, score
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> torch.optim.Optimizer:
         r"""
         The function describing the optimizer of the classification model.
+        
         Returns:
             The optimizer to be used for training.
         """
 
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
-    def predict(
-        self,
-        img_path: str,
-    ):
+    def predict(self, img_path: str) -> dict:
         r"""
         The predict function of the classification model.
 
         Args:
             img_path: The path to the image to be predicted.
-        """
 
+        Returns:
+            A dictionary containing the predicted category and confidence score.
+        """
+        # Decode the image and apply the model's transforms
         picture = decode_image(img_path)
         batch = self.model_weights.transforms()(picture).unsqueeze(0)
 
+        # Set the model to evaluation mode and make predictions
         self.model.eval()
         with torch.no_grad():
             prediction = self.forward(batch).squeeze(0).softmax(0)
             class_id = prediction.argmax().item()
             score = prediction[class_id].item()
 
+        # Define the custom categories
         custom_categories = ["beech", "chestnut", "pine"]
         category_name = custom_categories[class_id]
 
-        print(f"{category_name}: {100 * score:.1f}%")
+        # Return the prediction as a dictionary
+        return {"category": category_name, "score": score}
