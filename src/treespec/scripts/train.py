@@ -15,9 +15,9 @@ import pytorch_lightning as L
 import hydra
 from hydra.core.config_store import ConfigStore
 
-from src.models.classification_model import ClassificationModel
-from src.datasets.sauen.sauen_dataset import SauenDataset
-from src.conf.config import TreespecConfig
+from src.treespec.models.classification_model import ClassificationModel
+from src.treespec.datasets.sauen.sauen_dataset import SauenDataset
+from src.treespec.conf.config import TreespecConfig
 
 cs = ConfigStore.instance()
 cs.store(name="treespec_config", node=TreespecConfig)
