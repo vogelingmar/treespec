@@ -296,17 +296,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         picture = decode_image(img_path)
         batch = self.model_weights.transforms()(picture).unsqueeze(0)
 
-        # Set the model to evaluation mode and make predictions
-        self.model.eval()
-        with torch.no_grad():
-            prediction = self.forward(batch).squeeze(0).softmax(0)
-            class_id = prediction.argmax().item()
-            score = prediction[class_id].item()
-
-        # Define the custom categories
-        #TODO: make the categories dynamic
-        custom_categories = ["beech", "chestnut", "pine"]
-        category_name = custom_categories[class_id]
+        class_id, score = self.predict_step(batch, 0)
 
         # Return the prediction as a dictionary
-        return {"category": category_name, "score": score}
+        return {"category": class_id, "score": score}
