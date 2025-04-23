@@ -6,8 +6,8 @@ import torch
 from torch import nn
 from torch.nn.modules.loss import _Loss
 from torchvision.io import decode_image  # type: ignore
-from torchvision.models import resnet50  # ignore: import-untyped
-from torchvision.models._api import WeightsEnum  # ignore: import-untyped
+from torchvision.models import resnet50  # type: ignore
+from torchvision.models._api import WeightsEnum  # type: ignore
 import torchmetrics
 from torchmetrics import ConfusionMatrix
 

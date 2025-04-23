@@ -5,14 +5,14 @@ from typing import Optional
 import os
 import cv2
 import torch
-import ffmpeg
+import ffmpeg # type: ignore
 
-from detectron2 import model_zoo
-from detectron2.engine import DefaultPredictor
-from detectron2.config import get_cfg
-from detectron2.data import MetadataCatalog
-from detectron2.utils.video_visualizer import VideoVisualizer
-from detectron2.utils.logger import setup_logger
+from detectron2 import model_zoo # type: ignore
+from detectron2.engine import DefaultPredictor # type: ignore
+from detectron2.config import get_cfg # type: ignore
+from detectron2.data import MetadataCatalog # type: ignore
+from detectron2.utils.video_visualizer import VideoVisualizer # type: ignore
+from detectron2.utils.logger import setup_logger # type: ignore
 
 
 class Lumberjack:  # pylint: disable=too-few-public-methods

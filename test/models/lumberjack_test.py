@@ -1,7 +1,6 @@
 """Test for the Lumberjack model"""
 
 import os
-import pytest
 import torch
 
 from src.treespec.models.lumberjack import Lumberjack
