@@ -1,4 +1,5 @@
-""" Test for the classification model """
+"""Test for the classification model"""
+
 import os
 import pytest
 import torch

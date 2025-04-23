@@ -1,4 +1,5 @@
-""" Test for SauenDataset datamodule"""
+"""Test for SauenDataset datamodule"""
+
 import os
 import pytest
 
