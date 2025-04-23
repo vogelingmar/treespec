@@ -35,10 +35,10 @@ class SauenDataset(L.LightningDataModule):
         Downloads the dataset to the data_dir if not already present there.
         """
 
-        # add download path for the images of the dataset
-        pass
+        # TODO: add download path for the images of the dataset
+        pass  # pylint: disable=unnecessary-pass
 
-    def setup(self, transform: Optional[Transform] = None):
+    def setup(self, transform: Optional[Transform] = None):  # pylint: disable=arguments-renamed
         r"""
         Creates training (80%), validation (10%) and testing (10%) datasets from the folder structure at data_dir.
 
@@ -47,7 +47,9 @@ class SauenDataset(L.LightningDataModule):
         """
 
         # create image folder dataset from images
-        self.dataset = datasets.ImageFolder(self.data_dir, transform=transform)
+        self.dataset = datasets.ImageFolder(  # pylint: disable=attribute-defined-outside-init
+            root=self.data_dir, transform=transform
+        )
 
         # calculation of different set sizes (80% traning, 10% validation, 10% test)
         total_size = len(self.dataset)
@@ -55,7 +57,7 @@ class SauenDataset(L.LightningDataModule):
         test_size = int(0.1 * total_size)
         train_size = total_size - val_size - test_size
 
-        self.train, self.val, self.test = data.random_split(
+        self.train, self.val, self.test = data.random_split(  # pylint: disable=attribute-defined-outside-init
             self.dataset, [train_size, val_size, test_size]
         )
 

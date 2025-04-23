@@ -86,18 +86,3 @@ jobs:
           python -m pip install git+https://github.com/vogelingmar/treespec.git
           python -m pip install --upgrade .'[dev, docs]'
           coverage run -m pytest
-          coverage-badge -f -o coverage.svg
-      - name: Commit coverage badge
-        if: ${{ inputs.update-coverage-badge == true }}
-        shell: bash
-        run: |
-          cd /github/workspace/
-          git config --global --add safe.directory $(realpath .)
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          if [[ -n "$(git status --porcelain)" ]]; then
-            git add coverage.svg
-            git pull
-            git commit -m "docs: update coverage badge [${{ github.event.pull_request.title }}] [skip-ci]"
-            git push
-          fi

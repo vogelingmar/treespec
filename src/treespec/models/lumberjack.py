@@ -15,14 +15,14 @@ from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.logger import setup_logger
 
 
-class Lumberjack:
+class Lumberjack:  # pylint: disable=too-few-public-methods
     r"""
     Lumberjack automatically extracts tree images from a video.
 
     Args:
         model: Path to the model file.
         output_trees_dir: Directory to save the extracted tree images.
-        predict_video_dest_dir: Directory to save the video with predictions in it (if left empty, no video will be saved).
+        predict_video_dest_dir: Directory to save the video with predictions in (leave empty to not save).
         visualize: If True, the video will be visualized during runtime with the predictions.
     """
 
@@ -44,9 +44,7 @@ class Lumberjack:
 
         cfg = get_cfg()
         cfg.INPUT.MASK_FORMAT = "bitmask"
-        cfg.merge_from_file(
-            model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_X_101_32x8d_FPN_3x.yaml")
-        )
+        cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_X_101_32x8d_FPN_3x.yaml"))
 
         cfg.DATASETS.TRAIN = ()
         cfg.DATASETS.TEST = ()
@@ -67,7 +65,7 @@ class Lumberjack:
             thing_classes=["Tree"], keypoint_names=["kpCP", "kpL", "kpR", "AX1", "AX2"]
         )
 
-    def process_video(
+    def process_video(  # pylint: disable=too-many-statements, too-many-locals
         self,
         video: str,
         corrected: bool = True,
@@ -87,8 +85,7 @@ class Lumberjack:
 
             ffmpeg.input(video).output(
                 corrected_video,
-                vf="lenscorrection=k1=-0.5:k2=-0.5, "
-                "crop=in_w/3:in_h/3:in_w/3:in_h/3, transpose=1",
+                vf="lenscorrection=k1=-0.5:k2=-0.5, " "crop=in_w/3:in_h/3:in_w/3:in_h/3, transpose=1",
             ).run()
 
         else:
@@ -98,8 +95,8 @@ class Lumberjack:
 
         w = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
         h = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = int(vcap.get(cv2.CAP_PROP_FPS))
-        n_frames = int(vcap.get(cv2.CAP_PROP_FRAME_COUNT))
+        # fps = int(vcap.get(cv2.CAP_PROP_FPS))
+        # n_frames = int(vcap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         if self.predict_video_dest_dir is not None:
             dest = os.path.join(
@@ -144,20 +141,14 @@ class Lumberjack:
                     cropped_box = crop_frame[y1:y2, x1:x2]
 
                     if (x2 - x1) * (y2 - y1) >= 200000:
-                        angle = (
-                            480 - ((x1 + x2) / 2)
-                        ) / 32  # approximates angle of tree to the camera ortientation
-                        screenshot_filename = (
-                            f"bark_{nframes:04d}_box_{i:02d}_angle_{angle:.2f}.jpg"
-                        )
+                        angle = (480 - ((x1 + x2) / 2)) / 32  # approximates angle of tree to the camera ortientation
+                        screenshot_filename = f"bark_{nframes:04d}_box_{i:02d}_angle_{angle:.2f}.jpg"
                         # Name screenshot by frame index and box index
                         screenshot_dir = os.path.join(self.output_trees_dir, screenshot_filename)
                         cv2.imwrite(screenshot_dir, cropped_box)  # Save the cropped box
                         i += 1
 
-                out = vid_vis.draw_instance_predictions(
-                    crop_frame, outputs_pred["instances"].to("cpu")
-                )
+                out = vid_vis.draw_instance_predictions(crop_frame, outputs_pred["instances"].to("cpu"))
 
                 vid_frame = out.get_image()
                 video.write(vid_frame)

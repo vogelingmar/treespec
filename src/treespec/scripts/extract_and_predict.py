@@ -1,12 +1,11 @@
-""" Extract and predict tree images from a video and organize them into class folders according to the models predictions. """
+"""Extract and predict tree images from a video and organize them into class folders according to the predictions."""
 
 import os
-import torch
 import shutil
+import torch
 import hydra
 from hydra.core.config_store import ConfigStore
 
-from torchvision.models import ResNet50_Weights
 from src.treespec.models.lumberjack import Lumberjack
 from src.treespec.models.classification_model import ClassificationModel
 from src.treespec.scripts.train import model_dict, model_weights_dict
@@ -16,15 +15,19 @@ from src.treespec.conf.config import TreespecConfig
 cs = ConfigStore.instance()
 cs.store(name="treespec_config", node=TreespecConfig)
 
+
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg: TreespecConfig):
+    r"""
+    Script that extracts tree images from a video and organizes them into class folders according to the predictions.
+    """
 
     # Initialize Lumberjack and ClassificationModel
     lumberjack = Lumberjack(
-        model = cfg.ExtractParams.model,
-        output_trees_dir = cfg.ExtractParams.output_trees_dir,
-        predict_video_dest_dir = cfg.ExtractParams.predict_video_dest_dir,
-        visualize = cfg.ExtractParams.visualize,
+        model=cfg.ExtractParams.model,
+        output_trees_dir=cfg.ExtractParams.output_trees_dir,
+        predict_video_dest_dir=cfg.ExtractParams.predict_video_dest_dir,
+        visualize=cfg.ExtractParams.visualize,
     )
 
     classification_model = ClassificationModel(
@@ -34,7 +37,7 @@ def main(cfg: TreespecConfig):
     )
 
     # Load the trained model weights
-    trained_model_path = (cfg.TrainParams.trained_model_dir + cfg.TrainParams.model + "_finetuned" + ".pth")
+    trained_model_path = cfg.TrainParams.trained_model_dir + cfg.TrainParams.model + "_finetuned" + ".pth"
     classification_model.model.load_state_dict(torch.load(trained_model_path))
     classification_model.eval()  # Set the model to evaluation mode
 
@@ -42,7 +45,7 @@ def main(cfg: TreespecConfig):
     lumberjack.process_video(
         video=cfg.ExtractParams.video,
         corrected=cfg.ExtractParams.corrected,
-        )
+    )
 
     # Directory containing extracted tree images
     output_trees_dir = lumberjack.output_trees_dir
@@ -67,16 +70,12 @@ def main(cfg: TreespecConfig):
         prediction = classification_model.predict(image_path)
         predicted_class_id = prediction["category"]
 
-        class_dict = {
-            0: "beech",
-            1: "chestnut",
-            2: "pine"
-        }
-
+        class_dict = {0: "beech", 1: "chestnut", 2: "pine"}
 
         # Move the image to the corresponding class folder
         target_dir = output_dirs[class_dict[predicted_class_id]]
         shutil.move(image_path, os.path.join(target_dir, image_name))
 
+
 if __name__ == "__main__":
-    main()
+    main()  # pylint: disable=no-value-for-parameter

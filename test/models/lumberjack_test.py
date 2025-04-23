@@ -1,24 +1,25 @@
+""" Test for the Lumberjack model """
 import os
 import pytest
 import torch
 
 from src.treespec.models.lumberjack import Lumberjack
 
+
 @pytest.fixture
 def lumberjack():
-    if torch.cuda.is_available():
-        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        return Lumberjack(
-            model = os.path.join(base_path, "src/treespec/io/models/X-101_RGB_60k.pth"),
-            output_trees_dir = os.path.join(base_path, "test/mock/temp/pictures/"),
-            predict_video_dest_dir = os.path.join(base_path, "test/mock/temp/videos/"),
-            visualize=True,
-        )
+    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return Lumberjack(
+        model=os.path.join(base_path, "src/treespec/io/models/X-101_RGB_60k.pth"),
+        output_trees_dir=os.path.join(base_path, "test/mock/temp/pictures/"),
+        predict_video_dest_dir=os.path.join(base_path, "test/mock/temp/videos/"),
+        visualize=True,
+    )
 
 def test_process_video(lumberjack):
     if not torch.cuda.is_available():
         pass
-    
+
     else:
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         video_path = os.path.join(base_path, "mock/10sec_example.mp4")
@@ -38,7 +39,7 @@ def test_process_video(lumberjack):
             for file in os.listdir(predict_dir):
                 os.remove(os.path.join(predict_dir, file))
 
-        lumberjack.process_video(video=video_path, corrected = False)
+        lumberjack.process_video(video=video_path, corrected=False)
 
         num_tree_pictures = len(os.listdir(output_dir))
         assert num_tree_pictures > 0

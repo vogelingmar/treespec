@@ -42,6 +42,7 @@ loss_function_dict = {
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg: TreespecConfig):
+    """Training Script of the Treespec Pipeline"""
 
     default_transforms = model_weights_dict[cfg.TrainParams.model_weights].transforms()
     # TODO: experiment with data augmentations
@@ -62,8 +63,8 @@ def main(cfg: TreespecConfig):
 
     dataset = dataset_dict[cfg.TrainParams.dataset](
         data_dir=cfg.TrainParams.dataset_dir,
-        batch_size=cfg.TrainParams.batch_size, 
-        num_workers=cfg.TrainParams.num_workers
+        batch_size=cfg.TrainParams.batch_size,
+        num_workers=cfg.TrainParams.num_workers,
     )
     dataset.prepare_data()
     dataset.setup(transform=default_transforms)
@@ -87,8 +88,11 @@ def main(cfg: TreespecConfig):
     )
 
     trainer.test(model=model, dataloaders=dataset.test_dataloader())
-    torch.save(model.model.state_dict(), (cfg.TrainParams.trained_model_dir + cfg.TrainParams.model + "_finetuned" + ".pth"))
+    torch.save(
+        model.model.state_dict(),
+        (cfg.TrainParams.trained_model_dir + cfg.TrainParams.model + "_finetuned" + ".pth"),
+    )
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pylint: disable=no-value-for-parameter
