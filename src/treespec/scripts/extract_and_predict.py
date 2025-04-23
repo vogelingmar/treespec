@@ -7,11 +7,11 @@ import hydra
 from hydra.core.config_store import ConfigStore
 
 from torchvision.models import ResNet50_Weights
-from src.models.lumberjack import Lumberjack
-from src.models.classification_model import ClassificationModel
-from src.scripts.train import model_dict, model_weights_dict
+from src.treespec.models.lumberjack import Lumberjack
+from src.treespec.models.classification_model import ClassificationModel
+from src.treespec.scripts.train import model_dict, model_weights_dict
 
-from src.conf.config import TreespecConfig
+from src.treespec.conf.config import TreespecConfig
 
 cs = ConfigStore.instance()
 cs.store(name="treespec_config", node=TreespecConfig)
@@ -65,10 +65,17 @@ def main(cfg: TreespecConfig):
 
         # Predict the class of the image
         prediction = classification_model.predict(image_path)
-        predicted_class = prediction["category"]
+        predicted_class_id = prediction["category"]
+
+        class_dict = {
+            0: "beech",
+            1: "chestnut",
+            2: "pine"
+        }
+
 
         # Move the image to the corresponding class folder
-        target_dir = output_dirs[predicted_class]
+        target_dir = output_dirs[class_dict[predicted_class_id]]
         shutil.move(image_path, os.path.join(target_dir, image_name))
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import os
 import pytest
 import torch
 from torchvision.models import resnet50, ResNet50_Weights, efficientnet_v2_l, EfficientNet_V2_L_Weights
@@ -30,4 +31,12 @@ def test_training_step(classification_model):
     assert loss.item() > 0
 
 def test_predict(classification_model):
-    pass
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    image = os.path.join(base_dir, "mock/sauen_v1/beech/beech_test.jpg")
+    prediction = classification_model.predict(image)
+    assert 0 <= prediction["category"] <= 2 
+    assert prediction["score"] > 0
+
+def test_configure_optimizers(classification_model):
+    optimizer = classification_model.configure_optimizers()
+    assert isinstance(optimizer, torch.optim.Adam)
