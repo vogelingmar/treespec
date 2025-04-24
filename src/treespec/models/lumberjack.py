@@ -5,14 +5,14 @@ from typing import Optional
 import os
 import cv2
 import torch
-import ffmpeg # type: ignore
+import ffmpeg  # type: ignore
 
-from detectron2 import model_zoo # type: ignore
-from detectron2.engine import DefaultPredictor # type: ignore
-from detectron2.config import get_cfg # type: ignore
-from detectron2.data import MetadataCatalog # type: ignore
-from detectron2.utils.video_visualizer import VideoVisualizer # type: ignore
-from detectron2.utils.logger import setup_logger # type: ignore
+from detectron2 import model_zoo  # type: ignore
+from detectron2.engine import DefaultPredictor  # type: ignore
+from detectron2.config import get_cfg  # type: ignore
+from detectron2.data import MetadataCatalog  # type: ignore
+from detectron2.utils.video_visualizer import VideoVisualizer  # type: ignore
+from detectron2.utils.logger import setup_logger  # type: ignore
 
 
 class Lumberjack:  # pylint: disable=too-few-public-methods
@@ -67,7 +67,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
 
     def process_video(  # pylint: disable=too-many-statements, too-many-locals
         self,
-        video: str,
+        video_path: str,
         corrected: bool = True,
     ):
         r"""
@@ -78,20 +78,20 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
             corrected: If true, the video can be used as is for extraction. If false, the video will be corrected first.
         """
         if corrected is False:
-            directory = os.path.dirname(video)
-            filename = os.path.basename(video)
+            directory = os.path.dirname(video_path)
+            filename = os.path.basename(video_path)
             new_filename = "corrected_" + filename
-            corrected_video = os.path.join(directory, new_filename)
+            corrected_video_path = os.path.join(directory, new_filename)
 
-            ffmpeg.input(video).output(
-                corrected_video,
+            ffmpeg.input(video_path).output(
+                corrected_video_path,
                 vf="lenscorrection=k1=-0.5:k2=-0.5, " "crop=in_w/3:in_h/3:in_w/3:in_h/3, transpose=1",
             ).run()
 
         else:
-            corrected_video = video
+            corrected_video_path = video_path
 
-        vcap = cv2.VideoCapture(corrected_video)
+        vcap = cv2.VideoCapture(corrected_video_path)
 
         w = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
         h = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -101,9 +101,9 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         if self.predict_video_dest_dir is not None:
             dest = os.path.join(
                 self.predict_video_dest_dir,
-                ("pred_and_track_" + os.path.basename(video)),
+                ("pred_and_track_" + os.path.basename(video_path)),
             )
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v") # type: ignore
             video = cv2.VideoWriter(dest, fourcc, 5, (w, h))
 
         if vcap.isOpened() is False:

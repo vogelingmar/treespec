@@ -3,14 +3,14 @@
 import os
 import pytest
 import torch
-from torchvision.models import (
+from torchvision.models import ( # type: ignore
     resnet50,
     ResNet50_Weights,
     efficientnet_v2_l,
     EfficientNet_V2_L_Weights,
 )
 
-from src.treespec.models.classification_model import ClassificationModel
+from treespec.models.classification_model import ClassificationModel
 
 
 @pytest.fixture

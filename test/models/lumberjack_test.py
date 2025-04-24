@@ -3,7 +3,7 @@
 import os
 import torch
 
-from src.treespec.models.lumberjack import Lumberjack
+from treespec.models.lumberjack import Lumberjack
 
 
 def test_process_video():
@@ -37,7 +37,7 @@ def test_process_video():
             for file in os.listdir(predict_dir):
                 os.remove(os.path.join(predict_dir, file))
 
-        lumberjack.process_video(video=video_path, corrected=False)
+        lumberjack.process_video(video_path=video_path, corrected=False)
 
         num_tree_pictures = len(os.listdir(output_dir))
         assert num_tree_pictures > 0

@@ -28,11 +28,11 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
     def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
-        model_weights: Optional[WeightsEnum],
-        model: Callable = resnet50,
-        num_classes: int = 3,
-        loss_function: _Loss = nn.CrossEntropyLoss,
-        learning_rate: float = 0.001,
+        model_weights: WeightsEnum,
+        model: Callable,
+        num_classes: int,
+        loss_function: _Loss,
+        learning_rate: float,
     ):
         super().__init__()
         self.model_weights = model_weights
@@ -109,7 +109,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         }
 
     def _common_steps(  # pylint: disable=too-many-locals
-        self, batch: list, batch_idx: int, stage: str  # pylint: disable=unused-argument
+        self, batch: torch.Tensor, batch_idx: int, stage: str  # pylint: disable=unused-argument
     ) -> torch.Tensor:
         r"""
         The function describing the common steps of the training step,
@@ -180,7 +180,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         return loss
 
-    def training_step(self, batch: list, batch_idx: int) -> torch.Tensor:  # pylint: disable=arguments-differ
+    def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:  # pylint: disable=arguments-differ
         r"""
         The function describing the training step of the classification model.
 
@@ -204,7 +204,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         return self._common_steps(batch, batch_idx, "train")
 
-    def validation_step(self, batch: list, batch_idx: int):  # pylint: disable=arguments-differ
+    def validation_step(self, batch: torch.Tensor, batch_idx: int):  # pylint: disable=arguments-differ
         r"""
         The function describing the validation step of the classification model.
 
@@ -224,7 +224,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         self._common_steps(batch, batch_idx, "val")
 
-    def test_step(self, batch: list, batch_idx: int):  # pylint: disable=arguments-differ
+    def test_step(self, batch: torch.Tensor, batch_idx: int):  # pylint: disable=arguments-differ
         r"""
         The function describing the validation step of the classification model.
 
@@ -245,7 +245,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         self._common_steps(batch, batch_idx, "test")
 
     def predict_step(  # pylint: disable=arguments-differ
-        self, batch: list, batch_idx: int  # pylint: disable=unused-argument
+        self, batch: torch.Tensor, batch_idx: int  # pylint: disable=unused-argument
     ) -> tuple:  # pylint: disable=arguments-differ
         r"""
         The predict step of the classification model.
@@ -271,7 +271,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         """
 
         predictions = self.forward(batch).squeeze(0).softmax(0)
-        class_id = predictions.argmax().item()
+        class_id = int(predictions.argmax().item())
         score = predictions[class_id].item()
 
         return class_id, score

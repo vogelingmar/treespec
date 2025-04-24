@@ -2,8 +2,8 @@
 
 import torch
 from torch import nn
-from torchvision.transforms import v2
-from torchvision.models import (
+from torchvision.transforms import v2 # type: ignore
+from torchvision.models import ( # type: ignore
     resnet50,
     resnet152,
     ResNet50_Weights,
@@ -15,9 +15,9 @@ import pytorch_lightning as L
 import hydra
 from hydra.core.config_store import ConfigStore
 
-from src.treespec.models.classification_model import ClassificationModel
-from src.treespec.datasets.sauen.sauen_dataset import SauenDataset
-from src.treespec.conf.config import TreespecConfig
+from treespec.models.classification_model import ClassificationModel
+from treespec.datasets.sauen.sauen_dataset import SauenDataset
+from treespec.conf.config import TreespecConfig
 
 cs = ConfigStore.instance()
 cs.store(name="treespec_config", node=TreespecConfig)
@@ -47,6 +47,7 @@ augmentations_dict = {
     "RandomResizedCrop": v2.RandomResizedCrop,
 }
 
+
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg: TreespecConfig):
     """Training Script of the Treespec Pipeline"""
@@ -59,13 +60,13 @@ def main(cfg: TreespecConfig):
     if cfg.TrainParams.use_augmentations is True:
 
         for entry in cfg.TrainParams.train_augmentations:
-            augmentation_class = augmentations_dict[entry['name']]
-            params = {k: v for k, v in entry.items() if k != 'name'}
+            augmentation_class = augmentations_dict[entry["name"]]
+            params = {k: v for k, v in entry.items() if k != "name"}
             augmentation = augmentation_class(**params)
             train_augmentations = v2.Compose(
                 [
-                train_augmentations,
-                augmentation,
+                    train_augmentations,
+                    augmentation,
                 ]
             )
 

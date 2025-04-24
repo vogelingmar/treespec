@@ -6,11 +6,11 @@ import torch
 import hydra
 from hydra.core.config_store import ConfigStore
 
-from src.treespec.models.lumberjack import Lumberjack
-from src.treespec.models.classification_model import ClassificationModel
-from src.treespec.scripts.train import model_dict, model_weights_dict
+from treespec.models.lumberjack import Lumberjack
+from treespec.models.classification_model import ClassificationModel
+from treespec.scripts.train import model_dict, model_weights_dict, loss_function_dict
 
-from src.treespec.conf.config import TreespecConfig
+from treespec.conf.config import TreespecConfig
 
 cs = ConfigStore.instance()
 cs.store(name="treespec_config", node=TreespecConfig)
@@ -29,11 +29,14 @@ def main(cfg: TreespecConfig):
         predict_video_dest_dir=cfg.ExtractParams.predict_video_dest_dir,
         visualize=cfg.ExtractParams.visualize,
     )
+    print(type(loss_function_dict[cfg.TrainParams.loss_function]))
 
     classification_model = ClassificationModel(
         model=model_dict[cfg.TrainParams.model],
         model_weights=model_weights_dict[cfg.TrainParams.model_weights],
         num_classes=cfg.TrainParams.num_classes,
+        loss_function=loss_function_dict[cfg.TrainParams.loss_function],
+        learning_rate=cfg.TrainParams.learning_rate,
     )
 
     # Load the trained model weights
@@ -43,7 +46,7 @@ def main(cfg: TreespecConfig):
 
     # Process video to extract tree images
     lumberjack.process_video(
-        video=cfg.ExtractParams.video,
+        video_path=cfg.ExtractParams.video,
         corrected=cfg.ExtractParams.corrected,
     )
 

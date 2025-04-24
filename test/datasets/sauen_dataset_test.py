@@ -3,7 +3,7 @@
 import os
 import pytest
 
-from src.treespec.datasets.sauen.sauen_dataset import SauenDataset
+from treespec.datasets.sauen.sauen_dataset import SauenDataset
 
 
 @pytest.fixture

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+
 @dataclass
 class TrainParams:  # pylint: disable=too-many-instance-attributes
     """Configuration of parameters for the training process"""
