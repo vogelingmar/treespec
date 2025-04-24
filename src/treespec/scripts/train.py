@@ -38,7 +38,14 @@ dataset_dict = {
 loss_function_dict = {
     "cross_entropy": nn.CrossEntropyLoss,
 }
-
+augmentations_dict = {
+    "RandomHorizontalFlip": v2.RandomHorizontalFlip,
+    "RandomVerticalFlip": v2.RandomVerticalFlip,
+    "RandomRotation": v2.RandomRotation,
+    "RandomPerspective": v2.RandomPerspective,
+    "ColorJitter": v2.ColorJitter,
+    "RandomResizedCrop": v2.RandomResizedCrop,
+}
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg: TreespecConfig):
@@ -46,20 +53,21 @@ def main(cfg: TreespecConfig):
 
     default_transforms = model_weights_dict[cfg.TrainParams.model_weights].transforms()
     # TODO: experiment with data augmentations
+
+    train_augmentations = default_transforms
+
     if cfg.TrainParams.use_augmentations is True:
-        train_augmentations = v2.Compose(
-            [
-                v2.RandomResizedCrop(size=(224, 224)),
-                v2.RandomHorizontalFlip(0.2),
-                v2.RandomVerticalFlip(0.4),
-                v2.RandomRotation(15),
-                v2.RandomPerspective(distortion_scale=0.3),
-                v2.ColorJitter(),
-                default_transforms,
-            ]
-        )
-    else:
-        train_augmentations = default_transforms
+
+        for entry in cfg.TrainParams.train_augmentations:
+            augmentation_class = augmentations_dict[entry['name']]
+            params = {k: v for k, v in entry.items() if k != 'name'}
+            augmentation = augmentation_class(**params)
+            train_augmentations = v2.Compose(
+                [
+                train_augmentations,
+                augmentation,
+                ]
+            )
 
     dataset = dataset_dict[cfg.TrainParams.dataset](
         data_dir=cfg.TrainParams.dataset_dir,

@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 
-
 @dataclass
 class TrainParams:  # pylint: disable=too-many-instance-attributes
     """Configuration of parameters for the training process"""
@@ -19,6 +18,7 @@ class TrainParams:  # pylint: disable=too-many-instance-attributes
     loss_function: str
     use_augmentations: bool
     trained_model_dir: str
+    train_augmentations: list
 
 
 @dataclass

@@ -9,8 +9,22 @@ TrainParams:
   num_workers: 27
   learning_rate: 0.001
   loss_function: cross_entropy
-  use_augmentations: false
+  use_augmentations: true
   trained_model_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/
+  train_augmentations: 
+    #- name: RandomHorizontalFlip
+    #  p: 0.1
+    - name: RandomVerticalFlip
+      p: 0.1
+    - name: RandomRotation
+      degrees: 15
+    - name: RandomResizedCrop
+      size: [224, 224]
+    - name: RandomPerspective
+      distortion_scale: 0.3
+      p: 0.3
+    #- name: ColorJitter
+    #  brightness: 1.5
 
 ExtractParams:
   model: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/X-101_RGB_60k.pth
