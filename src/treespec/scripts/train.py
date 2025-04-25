@@ -5,11 +5,19 @@ from torch import nn
 from torchvision.transforms import v2  # type: ignore
 from torchvision.models import (  # type: ignore
     resnet50,
-    resnet152,
     ResNet50_Weights,
+    resnet152,
     ResNet152_Weights,
     swin_v2_b,
     Swin_V2_B_Weights,
+    efficientnet_v2_m,
+    EfficientNet_V2_M_Weights,
+    googlenet,
+    GoogLeNet_Weights,
+    mobilenet_v3_large,
+    MobileNet_V3_Large_Weights,
+    wide_resnet101_2,
+    Wide_ResNet101_2_Weights,
 )
 import pytorch_lightning as L
 import hydra
@@ -26,11 +34,20 @@ model_dict = {
     "resnet50": resnet50,
     "resnet152": resnet152,
     "swin_transformer": swin_v2_b,
+    "efficientnet": efficientnet_v2_m,
+    "googlenet": googlenet,
+    "mobilenet": mobilenet_v3_large,
+    "wide_resnet": wide_resnet101_2,
 }
 model_weights_dict = {
     "resnet50_default": ResNet50_Weights.DEFAULT,
     "resnet152_default": ResNet152_Weights.DEFAULT,
     "swin_default": Swin_V2_B_Weights.DEFAULT,
+    "efficientnet_default": EfficientNet_V2_M_Weights.DEFAULT,
+    "googlenet_default": GoogLeNet_Weights.DEFAULT,
+    "mobilenet_default": MobileNet_V3_Large_Weights.DEFAULT,
+    "wide_resnet_default": Wide_ResNet101_2_Weights.DEFAULT,
+
 }
 dataset_dict = {
     "sauen": SauenDataset,

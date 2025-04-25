@@ -41,6 +41,11 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         elif hasattr(self.model, "head"):
             self.model.head = nn.Linear(self.model.head.in_features, num_classes)
+        elif hasattr(self.model, "classifier"):  # Add support for models with 'classifier'
+            if isinstance(self.model.classifier, nn.Sequential):
+                self.model.classifier[-1] = nn.Linear(self.model.classifier[-1].in_features, num_classes)
+            else:
+                self.model.classifier = nn.Linear(self.model.classifier.in_features, num_classes)
         else:
             raise AttributeError("The model does not have a recognized classification head.")
 

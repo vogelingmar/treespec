@@ -9,7 +9,7 @@ train:
   num_workers: 27
   learning_rate: 0.001
   loss_function: cross_entropy
-  use_augmentations: true
+  use_augmentations: false
   trained_model_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/
   train_augmentations: 
     #- name: RandomHorizontalFlip

@@ -7,8 +7,8 @@ import torch
 from torchvision.models import (  # type: ignore
     resnet50,
     ResNet50_Weights,
-    efficientnet_v2_l,
-    EfficientNet_V2_L_Weights,
+    alexnet,
+    AlexNet_Weights,
 )
 
 from treespec.models.classification_model import ClassificationModel
@@ -28,8 +28,8 @@ def classification_model():
 def test_init_error():
     with pytest.raises(AttributeError):
         ClassificationModel(
-            model_weights=EfficientNet_V2_L_Weights.DEFAULT,
-            model=efficientnet_v2_l,
+            model_weights=AlexNet_Weights.DEFAULT,
+            model=alexnet,
             num_classes=3,
             loss_function=torch.nn.CrossEntropyLoss(),
             learning_rate=0.001,
