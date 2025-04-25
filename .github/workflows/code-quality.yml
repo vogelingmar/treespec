@@ -39,6 +39,10 @@ jobs:
     steps:
       - name: Checkout out repository
         uses: actions/checkout@v4
+      - name: Clean up build artifacts
+        shell: bash
+        run: |
+          rm -rf build/
       - name: Analysing the code with mypy
         shell: bash
         run: |
@@ -46,7 +50,7 @@ jobs:
           cd /github/workspace/
           python -m pip install git+https://github.com/vogelingmar/treespec.git
           python -m pip install --upgrade .'[dev, docs]'
-          mypy . --warn-unused-ignores --show-error-codes --no-incremental
+          mypy . --warn-unused-ignores --show-error-codes --no-incremental --exclude build/
   pylint:
     runs-on: ubuntu-latest
     container:
