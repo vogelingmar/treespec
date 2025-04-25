@@ -16,7 +16,7 @@ cs = ConfigStore.instance()
 cs.store(name="treespec_config", node=TreespecConfig)
 
 
-@hydra.main(config_path="../conf", config_name="config")
+@hydra.main(config_path="../conf", config_name="config", version_base=None)
 def main(cfg: TreespecConfig):
     r"""
     Script that extracts tree images from a video and organizes them into class folders according to the predictions.

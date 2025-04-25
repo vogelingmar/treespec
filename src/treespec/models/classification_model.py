@@ -110,7 +110,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
     def _common_steps(  # pylint: disable=too-many-locals
         self,
         batch: torch.Tensor,
-        batch_idx: int, # pylint: disable=unused-argument
+        batch_idx: int,  # pylint: disable=unused-argument
         stage: str,  # pylint: disable=unused-argument
     ) -> torch.Tensor:
         r"""

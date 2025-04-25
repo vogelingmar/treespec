@@ -1,4 +1,4 @@
-TrainParams:
+train:
   model: resnet152
   model_weights: resnet152_default
   dataset: sauen
@@ -26,7 +26,7 @@ TrainParams:
     #- name: ColorJitter
     #  brightness: 1.5
 
-ExtractParams:
+extract:
   model: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/X-101_RGB_60k.pth
   output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/
   predict_video_dest_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/videos/
