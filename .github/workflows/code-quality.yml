@@ -26,7 +26,6 @@ jobs:
           ls
           source /workspace/venv/bin/activate
           cd /github/workspace/
-          python -m pip install git+https://github.com/vogelingmar/treespec.git
           python -m pip install --upgrade .'[dev, docs]'
           black src --check --verbose --diff --color --line-length 120
           black test --check --verbose --diff --color --line-length 120
@@ -48,7 +47,6 @@ jobs:
         run: |
           source /workspace/venv/bin/activate
           cd /github/workspace/
-          python -m pip install git+https://github.com/vogelingmar/treespec.git
           python -m pip install --upgrade .'[dev, docs]'
           mypy . --warn-unused-ignores --show-error-codes --no-incremental --exclude build/
   pylint:
@@ -65,7 +63,6 @@ jobs:
         run: |
           source /workspace/venv/bin/activate
           cd /github/workspace/
-          python -m pip install git+https://github.com/vogelingmar/treespec.git
           python -m pip install --upgrade .'[dev, docs]'
           pylint src
           pylint test --disable duplicate-code --disable missing-function-docstring --disable too-many-positional-arguments
@@ -88,6 +85,5 @@ jobs:
         run: |
           source /workspace/venv/bin/activate
           cd /github/workspace/
-          python -m pip install git+https://github.com/vogelingmar/treespec.git
           python -m pip install --upgrade .'[dev, docs]'
           coverage run -m pytest
