@@ -24,30 +24,30 @@ def main(cfg: TreespecConfig):
 
     # Initialize Lumberjack and ClassificationModel
     lumberjack = Lumberjack(
-        model=cfg.ExtractParams.model,
-        output_trees_dir=cfg.ExtractParams.output_trees_dir,
-        predict_video_dest_dir=cfg.ExtractParams.predict_video_dest_dir,
-        visualize=cfg.ExtractParams.visualize,
+        model=cfg.extract.model,
+        output_trees_dir=cfg.extract.output_trees_dir,
+        predict_video_dest_dir=cfg.extract.predict_video_dest_dir,
+        visualize=cfg.extract.visualize,
     )
-    print(type(loss_function_dict[cfg.TrainParams.loss_function]))
+    print(type(loss_function_dict[cfg.train.loss_function]))
 
     classification_model = ClassificationModel(
-        model=model_dict[cfg.TrainParams.model],
-        model_weights=model_weights_dict[cfg.TrainParams.model_weights],
-        num_classes=cfg.TrainParams.num_classes,
-        loss_function=loss_function_dict[cfg.TrainParams.loss_function],
-        learning_rate=cfg.TrainParams.learning_rate,
+        model=model_dict[cfg.train.model],
+        model_weights=model_weights_dict[cfg.train.model_weights],
+        num_classes=cfg.train.num_classes,
+        loss_function=loss_function_dict[cfg.train.loss_function](),
+        learning_rate=cfg.train.learning_rate,
     )
 
     # Load the trained model weights
-    trained_model_path = cfg.TrainParams.trained_model_dir + cfg.TrainParams.model + "_finetuned" + ".pth"
+    trained_model_path = cfg.train.trained_model_dir + cfg.train.model + "_finetuned" + ".pth"
     classification_model.model.load_state_dict(torch.load(trained_model_path))
     classification_model.eval()  # Set the model to evaluation mode
 
     # Process video to extract tree images
     lumberjack.process_video(
-        video_path=cfg.ExtractParams.video,
-        corrected=cfg.ExtractParams.corrected,
+        video_path=cfg.extract.video,
+        corrected=cfg.extract.corrected,
     )
 
     # Directory containing extracted tree images

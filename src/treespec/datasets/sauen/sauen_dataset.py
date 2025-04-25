@@ -35,7 +35,6 @@ class SauenDataset(L.LightningDataModule):
         Downloads the dataset to the data_dir if not already present there.
         """
 
-        # TODO: add download path for the images of the dataset
         pass  # pylint: disable=unnecessary-pass
 
     def setup(self, transform: Optional[Transform] = None):  # pylint: disable=arguments-renamed
@@ -69,7 +68,7 @@ class SauenDataset(L.LightningDataModule):
             augmentation: Data augmentations to be applied to the training dataset.
         """
 
-        self.train.dataset.transform = augmentation
+        self.train.dataset.transform = augmentation  # type: ignore
 
         return data.DataLoader(
             self.train,

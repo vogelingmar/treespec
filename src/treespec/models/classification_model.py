@@ -1,12 +1,11 @@
 """Classification Model to classify the barks from the Sauen Dataset."""
 
-from typing import Callable, Optional
+from typing import Callable
 
 import torch
 from torch import nn
 from torch.nn.modules.loss import _Loss
 from torchvision.io import decode_image  # type: ignore
-from torchvision.models import resnet50  # type: ignore
 from torchvision.models._api import WeightsEnum  # type: ignore
 import torchmetrics
 from torchmetrics import ConfusionMatrix
@@ -109,7 +108,10 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         }
 
     def _common_steps(  # pylint: disable=too-many-locals
-        self, batch: torch.Tensor, batch_idx: int, stage: str  # pylint: disable=unused-argument
+        self,
+        batch: torch.Tensor,
+        batch_idx: int, # pylint: disable=unused-argument
+        stage: str,  # pylint: disable=unused-argument
     ) -> torch.Tensor:
         r"""
         The function describing the common steps of the training step,

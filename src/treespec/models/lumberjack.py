@@ -103,7 +103,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
                 self.predict_video_dest_dir,
                 ("pred_and_track_" + os.path.basename(video_path)),
             )
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v") # type: ignore
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
             video = cv2.VideoWriter(dest, fourcc, 5, (w, h))
 
         if vcap.isOpened() is False:
@@ -151,7 +151,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
                 out = vid_vis.draw_instance_predictions(crop_frame, outputs_pred["instances"].to("cpu"))
 
                 vid_frame = out.get_image()
-                video.write(vid_frame)
+                video.write(vid_frame)  # pylint: disable=possibly-used-before-assignment
                 if self.visualize:
                     cv2.imshow("frame", vid_frame)
                 else:

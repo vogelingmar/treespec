@@ -1,9 +1,10 @@
 """Test for the classification model"""
 
+# pylint: disable=redefined-outer-name
 import os
 import pytest
 import torch
-from torchvision.models import ( # type: ignore
+from torchvision.models import (  # type: ignore
     resnet50,
     ResNet50_Weights,
     efficientnet_v2_l,
@@ -26,7 +27,13 @@ def classification_model():
 
 def test_init_error():
     with pytest.raises(AttributeError):
-        ClassificationModel(model_weights=EfficientNet_V2_L_Weights.DEFAULT, model=efficientnet_v2_l)
+        ClassificationModel(
+            model_weights=EfficientNet_V2_L_Weights.DEFAULT,
+            model=efficientnet_v2_l,
+            num_classes=3,
+            loss_function=torch.nn.CrossEntropyLoss(),
+            learning_rate=0.001,
+        )
 
 
 def test_forward(classification_model):

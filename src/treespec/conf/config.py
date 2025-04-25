@@ -34,9 +34,6 @@ class ExtractParams:
     corrected: bool
 
 
-# TODO: create extra dataset config
-
-
 @dataclass
 class TreespecConfig:
     """Configuration of the configs going into the treespec config"""

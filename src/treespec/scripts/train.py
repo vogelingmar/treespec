@@ -2,8 +2,8 @@
 
 import torch
 from torch import nn
-from torchvision.transforms import v2 # type: ignore
-from torchvision.models import ( # type: ignore
+from torchvision.transforms import v2  # type: ignore
+from torchvision.models import (  # type: ignore
     resnet50,
     resnet152,
     ResNet50_Weights,
@@ -52,14 +52,13 @@ augmentations_dict = {
 def main(cfg: TreespecConfig):
     """Training Script of the Treespec Pipeline"""
 
-    default_transforms = model_weights_dict[cfg.TrainParams.model_weights].transforms()
-    # TODO: experiment with data augmentations
+    default_transforms = model_weights_dict[cfg.train.model_weights].transforms()
 
     train_augmentations = default_transforms
 
-    if cfg.TrainParams.use_augmentations is True:
+    if cfg.train.use_augmentations is True:
 
-        for entry in cfg.TrainParams.train_augmentations:
+        for entry in cfg.train.train_augmentations:
             augmentation_class = augmentations_dict[entry["name"]]
             params = {k: v for k, v in entry.items() if k != "name"}
             augmentation = augmentation_class(**params)
@@ -70,25 +69,25 @@ def main(cfg: TreespecConfig):
                 ]
             )
 
-    dataset = dataset_dict[cfg.TrainParams.dataset](
-        data_dir=cfg.TrainParams.dataset_dir,
-        batch_size=cfg.TrainParams.batch_size,
-        num_workers=cfg.TrainParams.num_workers,
+    dataset = dataset_dict[cfg.train.dataset](
+        data_dir=cfg.train.dataset_dir,
+        batch_size=cfg.train.batch_size,
+        num_workers=cfg.train.num_workers,
     )
     dataset.prepare_data()
     dataset.setup(transform=default_transforms)
 
+    loss_function = loss_function_dict[cfg.train.loss_function](label_smoothing=0.1, weight=dataset.loss_weights())
+
     model = ClassificationModel(
-        model=model_dict[cfg.TrainParams.model],
-        model_weights=model_weights_dict[cfg.TrainParams.model_weights],
-        num_classes=cfg.TrainParams.num_classes,
-        loss_function=loss_function_dict[cfg.TrainParams.loss_function](
-            label_smoothing=0.1, weight=dataset.loss_weights()
-        ),
-        learning_rate=cfg.TrainParams.learning_rate,
+        model=model_dict[cfg.train.model],
+        model_weights=model_weights_dict[cfg.train.model_weights],
+        num_classes=cfg.train.num_classes,
+        loss_function=loss_function,
+        learning_rate=cfg.train.learning_rate,
     )
 
-    trainer = L.Trainer(max_epochs=cfg.TrainParams.epoch_count, log_every_n_steps=10)
+    trainer = L.Trainer(max_epochs=cfg.train.epoch_count, log_every_n_steps=10)
 
     trainer.fit(
         model=model,
@@ -99,7 +98,7 @@ def main(cfg: TreespecConfig):
     trainer.test(model=model, dataloaders=dataset.test_dataloader())
     torch.save(
         model.model.state_dict(),
-        (cfg.TrainParams.trained_model_dir + cfg.TrainParams.model + "_finetuned" + ".pth"),
+        (cfg.train.trained_model_dir + cfg.train.model + "_finetuned" + ".pth"),
     )
 
 

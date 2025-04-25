@@ -1,5 +1,6 @@
 """Test for SauenDataset datamodule"""
 
+# pylint: disable=redefined-outer-name
 import os
 import pytest
 
