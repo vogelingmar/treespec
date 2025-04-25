@@ -1,5 +1,13 @@
-treespec.datasets package
+Datasets
 =========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   treespec.datasets.sauen
 
 Module contents
 ---------------

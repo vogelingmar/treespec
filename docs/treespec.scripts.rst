@@ -1,4 +1,4 @@
-treespec.scripts package
+Scripts
 ========================
 
 Submodules

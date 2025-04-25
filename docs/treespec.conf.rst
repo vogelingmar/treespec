@@ -1,4 +1,4 @@
-treespec.conf package
+Config
 =====================
 
 Submodules

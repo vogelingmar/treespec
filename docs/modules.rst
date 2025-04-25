@@ -1,7 +1,10 @@
-src
-===
+treespec
+========
 
 .. toctree::
    :maxdepth: 4
 
-   treespec
+   treespec.conf
+   treespec.datasets
+   treespec.models
+   treespec.scripts

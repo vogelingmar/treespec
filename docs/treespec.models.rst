@@ -1,4 +1,4 @@
-treespec.models package
+Models
 =======================
 
 Submodules

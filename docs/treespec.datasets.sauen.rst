@@ -1,4 +1,4 @@
-treespec.datasets.sauen package
+Sauen
 ===============================
 
 Submodules
