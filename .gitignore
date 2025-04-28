@@ -180,5 +180,6 @@ images/
 .vscode/
 outputs/
 io/
+sauen/
 
 .DS_Store

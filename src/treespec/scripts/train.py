@@ -24,7 +24,7 @@ import hydra
 from hydra.core.config_store import ConfigStore
 
 from treespec.models.classification_model import ClassificationModel
-from treespec.datasets.sauen.sauen_dataset import SauenDataset
+from treespec.datasets.image_dataset import ImageDataset
 from treespec.conf.config import TreespecConfig
 
 cs = ConfigStore.instance()
@@ -49,7 +49,7 @@ model_weights_dict = {
     "wide_resnet_default": Wide_ResNet101_2_Weights.DEFAULT,
 }
 dataset_dict = {
-    "sauen": SauenDataset,
+    "sauen": ImageDataset,
 }
 loss_function_dict = {
     "cross_entropy": nn.CrossEntropyLoss,

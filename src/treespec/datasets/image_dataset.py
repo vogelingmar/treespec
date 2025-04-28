@@ -9,9 +9,9 @@ from torchvision.transforms.v2 import Transform  # type: ignore
 import pytorch_lightning as L
 
 
-class SauenDataset(L.LightningDataModule):
+class ImageDataset(L.LightningDataModule):
     r"""
-    Sauen Dataset Class.
+    Image Dataset Class.
 
     Args:
         data_dir (str): Path to the dataset directory.
