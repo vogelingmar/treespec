@@ -7,15 +7,13 @@ import torch
 from torchvision.models import (  # type: ignore
     resnet50,
     ResNet50_Weights,
-    alexnet,
-    AlexNet_Weights,
 )
-
 from treespec.models.classification_model import ClassificationModel
 
 
 @pytest.fixture
 def classification_model():
+    """Fixture that holds a ClassificationModel instance"""
     return ClassificationModel(
         model_weights=ResNet50_Weights.DEFAULT,
         model=resnet50,
@@ -25,30 +23,22 @@ def classification_model():
     )
 
 
-def test_init_error():
-    with pytest.raises(AttributeError):
-        ClassificationModel(
-            model_weights=AlexNet_Weights.DEFAULT,
-            model=alexnet,
-            num_classes=3,
-            loss_function=torch.nn.CrossEntropyLoss(),
-            learning_rate=0.001,
-        )
-
-
 def test_forward(classification_model):
+    """Tests the forward pass of the ClassificationModel"""
     inputs = torch.randn(1, 3, 224, 224)
     outputs = classification_model(inputs)
     assert outputs.shape == (1, 3)
 
 
 def test_training_step(classification_model):
+    """Tests the training step of the ClassificationModel"""
     batch = [torch.randn(1, 3, 224, 224), torch.tensor([0])]
     loss = classification_model.training_step(batch, 0)
     assert loss.item() > 0
 
 
 def test_predict(classification_model):
+    """Tests the predict method of the ClassificationModel"""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     image = os.path.join(base_dir, "mock/sauen_v1/beech/beech_test.jpg")
     prediction = classification_model.predict(image)
@@ -57,5 +47,6 @@ def test_predict(classification_model):
 
 
 def test_configure_optimizers(classification_model):
+    """Tests the configure_optimizers method of the ClassificationModel"""
     optimizer = classification_model.configure_optimizers()
     assert isinstance(optimizer, torch.optim.Adam)

@@ -47,7 +47,6 @@ model_weights_dict = {
     "googlenet_default": GoogLeNet_Weights.DEFAULT,
     "mobilenet_default": MobileNet_V3_Large_Weights.DEFAULT,
     "wide_resnet_default": Wide_ResNet101_2_Weights.DEFAULT,
-
 }
 dataset_dict = {
     "sauen": SauenDataset,

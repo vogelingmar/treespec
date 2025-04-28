@@ -7,6 +7,7 @@ from treespec.models.lumberjack import Lumberjack
 
 
 def test_process_video():
+    """Tests the process_video method of the Lumberjack model"""
     if not torch.cuda.is_available():
         pass
 
