@@ -10,15 +10,16 @@ from treespec.models.lumberjack import Lumberjack
 
 
 @pytest.fixture
-def lumberjack():
+def lumberjack():  # pylint: disable=inconsistent-return-statements
     """Fixture to create a Lumberjack instance for testing"""
-    base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    return Lumberjack(
-        model=os.path.join(base_path, "src/treespec/io/models/X-101_RGB_60k.pth"),
-        output_trees_dir=os.path.join(base_path, "test/mock/temp/pictures/"),
-        predict_video_dest_dir=os.path.join(base_path, "test/mock/temp/videos/"),
-        visualize=True,
-    )
+    if torch.cuda.is_available():
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        return Lumberjack(
+            model=os.path.join(base_path, "src/treespec/io/models/X-101_RGB_60k.pth"),
+            output_trees_dir=os.path.join(base_path, "test/mock/temp/pictures/"),
+            predict_video_dest_dir=os.path.join(base_path, "test/mock/temp/videos/"),
+            visualize=True,
+        )
 
 
 def test_process_video(lumberjack):
