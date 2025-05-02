@@ -117,6 +117,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         batch: torch.Tensor,
         batch_idx: int,  # pylint: disable=unused-argument
         stage: str,  # pylint: disable=unused-argument
+        logging: bool,
     ) -> torch.Tensor:
         r"""
         The function describing the common steps of the training step,
@@ -147,43 +148,44 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         loss = self.loss_function(predictions, labels)
 
-        self.log_dict(
-            {
-                f"{stage}_loss": loss,
-                f"{stage}_accuracy": self.avg_accuracy(predictions, labels),
-                f"{stage}_f1": self.avg_f1(predictions, labels),
-                f"{stage}_precision": self.avg_precision(predictions, labels),
-                f"{stage}_recall": self.avg_recall(predictions, labels),
-            },
-            prog_bar=True,
-            on_step=False,
-            on_epoch=True,
-        )
-
-        per_class_metrics = self.calculate_per_class_metrics(predictions, labels)
-
-        for i, (precision, recall, f1, tp, fp, tn, fn) in enumerate(
-            zip(
-                per_class_metrics["f1_score"],
-                per_class_metrics["precision"],
-                per_class_metrics["recall"],
-                per_class_metrics["tp"],
-                per_class_metrics["fp"],
-                per_class_metrics["tn"],
-                per_class_metrics["fn"],
-            )
-        ):
+        if logging:
             self.log_dict(
                 {
-                    f"test_precision_class_{i}": precision.float(),
-                    f"test_recall_class_{i}": recall.float(),
-                    f"test_f1_score_class_{i}": f1.float(),
-                    f"test_tp_class_{i}": tp.float(),
-                    f"test_fp_class_{i}": fp.float(),
-                    f"test_tn_class_{i}": tn.float(),
-                    f"test_fn_class_{i}": fn.float(),
-                }
+                    f"{stage}_loss": loss,
+                    f"{stage}_accuracy": self.avg_accuracy(predictions, labels),
+                    f"{stage}_f1": self.avg_f1(predictions, labels),
+                    f"{stage}_precision": self.avg_precision(predictions, labels),
+                    f"{stage}_recall": self.avg_recall(predictions, labels),
+                },
+                prog_bar=True,
+                on_step=False,
+                on_epoch=True,
             )
+
+            per_class_metrics = self.calculate_per_class_metrics(predictions, labels)
+
+            for i, (precision, recall, f1, tp, fp, tn, fn) in enumerate(
+                zip(
+                    per_class_metrics["f1_score"],
+                    per_class_metrics["precision"],
+                    per_class_metrics["recall"],
+                    per_class_metrics["tp"],
+                    per_class_metrics["fp"],
+                    per_class_metrics["tn"],
+                    per_class_metrics["fn"],
+                )
+            ):
+                self.log_dict(
+                    {
+                        f"test_precision_class_{i}": precision.float(),
+                        f"test_recall_class_{i}": recall.float(),
+                        f"test_f1_score_class_{i}": f1.float(),
+                        f"test_tp_class_{i}": tp.float(),
+                        f"test_fp_class_{i}": fp.float(),
+                        f"test_tn_class_{i}": tn.float(),
+                        f"test_fn_class_{i}": fn.float(),
+                    }
+                )
 
         return loss
 
@@ -209,7 +211,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
-        return self._common_steps(batch, batch_idx, "train")
+        return self._common_steps(batch, batch_idx, "train", True)
 
     def validation_step(self, batch: torch.Tensor, batch_idx: int):  # pylint: disable=arguments-differ
         r"""
@@ -229,7 +231,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
-        self._common_steps(batch, batch_idx, "val")
+        self._common_steps(batch, batch_idx, "val", True)
 
     def test_step(self, batch: torch.Tensor, batch_idx: int):  # pylint: disable=arguments-differ
         r"""
@@ -249,7 +251,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
-        self._common_steps(batch, batch_idx, "test")
+        self._common_steps(batch, batch_idx, "test", True)
 
     def predict_step(  # pylint: disable=arguments-differ
         self, batch: torch.Tensor, batch_idx: int  # pylint: disable=unused-argument
