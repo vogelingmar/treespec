@@ -29,7 +29,6 @@ def main(cfg: TreespecConfig):
         predict_video_dest_dir=cfg.extract.predict_video_dest_dir,
         visualize=cfg.extract.visualize,
     )
-    print(type(loss_function_dict[cfg.train.loss_function]))
 
     classification_model = ClassificationModel(
         model=model_dict[cfg.train.model],
@@ -45,10 +44,15 @@ def main(cfg: TreespecConfig):
     classification_model.eval()  # Set the model to evaluation mode
 
     # Process video to extract tree images
-    lumberjack.process_video(
-        video_path=cfg.extract.video,
-        corrected=cfg.extract.corrected,
-    )
+    if cfg.extract.video is not None and cfg.extract.corrected is not None:
+        lumberjack.process_video(
+            video_path=cfg.extract.video,
+            corrected=cfg.extract.corrected,
+        )
+    if cfg.extract.image_dir is not None and cfg.extract.cameras is not None and cfg.extract.image_filetype is not None:
+        lumberjack.process_images(
+            image_dir=cfg.extract.image_dir, cameras=cfg.extract.cameras, filetype=cfg.extract.image_filetype
+        )
 
     # Directory containing extracted tree images
     output_trees_dir = lumberjack.output_trees_dir

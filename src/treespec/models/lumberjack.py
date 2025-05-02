@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 from typing import Optional
+import re
 import os
 import cv2
 import torch
@@ -11,19 +12,19 @@ from detectron2 import model_zoo  # type: ignore
 from detectron2.engine import DefaultPredictor  # type: ignore
 from detectron2.config import get_cfg  # type: ignore
 from detectron2.data import MetadataCatalog  # type: ignore
-from detectron2.utils.video_visualizer import VideoVisualizer  # type: ignore
+from detectron2.utils.video_visualizer import VideoVisualizer, Visualizer  # type: ignore
 from detectron2.utils.logger import setup_logger  # type: ignore
 
 
 class Lumberjack:  # pylint: disable=too-few-public-methods
     r"""
-    Lumberjack automatically extracts tree images from a video.
+    Lumberjack automatically extracts tree images from a video or images.
 
     Args:
         model: Path to the model file.
         output_trees_dir: Directory to save the extracted tree images.
         predict_video_dest_dir: Directory to save the video with predictions in (leave empty to not save).
-        visualize: If True, the video will be visualized during runtime with the predictions.
+        visualize: If True, the predictions will be visualized during runtime.
     """
 
     def __init__(
@@ -56,6 +57,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         cfg.MODEL.ROI_KEYPOINT_HEAD.NUM_KEYPOINTS = 5
         cfg.MODEL.MASK_ON = True
 
+        cfg.OUTPUT_DIR = self.output_trees_dir
         cfg.MODEL.WEIGHTS = self.model
         cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
 
@@ -161,4 +163,67 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
 
         video.release()
         vcap.release()
+        cv2.destroyAllWindows()
+
+    def process_image(self, image_path: str):  # pylint: disable=too-many-locals
+        r"""
+        The processing step for a single image.
+
+        Takes an image path and cuts all of the predicted tree bark frames from it and exports it to the output dir.
+
+        Args:
+            image_path: The path to the image file from which to extract tree images.
+        """
+
+        image = cv2.imread(image_path)
+        image_name = os.path.basename(image_path)
+        outputs_pred = self.predictor_synth(image)
+
+        v_synth = Visualizer(
+            image[:, :, ::-1],
+            metadata=self.tree_metadata,
+            scale=1,
+        )
+
+        pred_tree_boxes = outputs_pred["instances"].pred_boxes.tensor.cpu().numpy()
+
+        i = 0
+        for tree_box in enumerate(pred_tree_boxes):
+            box_coords = tree_box[1]  # takes coordinates of the box
+            x1, y1, x2, y2 = map(int, box_coords)  # Convert to integer coordinates
+            # Crop the frame based on the bounding box coordinates
+            cropped_box = image[y1:y2, x1:x2]
+            if (x2 - x1) * (y2 - y1) >= 250000:
+                angle = (480 - ((x1 + x2) / 2)) / 32  # approximates angle of tree to the camera ortientation
+                screenshot_filename = f"box_{i:02d}_angle_{angle:.2f}_{image_name}"
+                # Name screenshot by frame index and box index
+                screenshot_dir = os.path.join(self.output_trees_dir, screenshot_filename)
+                cv2.imwrite(screenshot_dir, cropped_box)  # Save the cropped box
+                i += 1
+
+        out_synth = v_synth.draw_instance_predictions(outputs_pred["instances"].to("cpu"))
+
+        if self.visualize:
+            cv2.imshow("predictions", out_synth.get_image()[:, :, ::-1])
+        else:
+            print(f"Image {image_name}: {len(pred_tree_boxes)} trees detected")
+
+    def process_images(self, image_dir: str, cameras: list[int], filetype: str = "jpg"):
+        r"""
+        Processes all the images from a given directory.
+
+        Args:
+            image_dir: The directory containing the images or subdirectories with images to be processed.
+            cameras: List of the camera identifiers to be used for filtering images.
+        """
+
+        for image in os.listdir(image_dir):
+            image_path = os.path.join(image_dir, image)
+            if os.path.isfile(image_path):
+                for camera in cameras:
+                    if re.search(f"_{camera}.{filetype}", image):
+                        self.process_image(image_path)
+            elif os.path.isdir(image_path):
+                self.process_images(image_path, cameras)
+
         cv2.destroyAllWindows()

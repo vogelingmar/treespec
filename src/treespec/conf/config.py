@@ -23,7 +23,7 @@ class TrainParams:  # pylint: disable=too-many-instance-attributes
 
 
 @dataclass
-class ExtractParams:
+class ExtractParams:  # pylint: disable=too-many-instance-attributes
     """Configuration of parameters fot the extraction process"""
 
     model: str
@@ -32,6 +32,9 @@ class ExtractParams:
     visualize: bool
     video: str
     corrected: bool
+    image_dir: str
+    cameras: list
+    image_filetype: str
 
 
 @dataclass
