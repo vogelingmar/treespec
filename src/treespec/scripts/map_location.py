@@ -1,16 +1,18 @@
 import numpy as np
 import os
-import cv2
 
 import py360convert
 import imageio.v2 as imageio
 
-from treespec.scripts.matching import Matcher
+from treespec.scripts.matching import create_dictionary
 
 basepath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 depth_path = os.path.join(basepath, "io/helpers/depth_image.png")
 segmentid_path = os.path.join(basepath, "io/helpers/segmentid_image.png")
 color_path = os.path.join(basepath, "io/helpers/color_image.jpg")
+attribute_path = "/data/essen/cadastre/matched_output"
+
+tree_attributes_dict = create_dictionary(attribute_path)
 
 output_dir = os.path.join(basepath, "io/pictures")
 os.makedirs(os.path.dirname(output_dir), exist_ok=True)
@@ -43,7 +45,6 @@ def extract_and_save_bounding_boxes(segmentid_face_path, color_face_path, output
     seg_h, seg_w = segmentid_face.shape[:2]
     col_h, col_w = color_face.shape[:2]
 
-    attributes = Matcher.match()
 
     unique_ids = np.unique(segmentid_face)
     for seg_id in unique_ids:
@@ -71,8 +72,13 @@ def extract_and_save_bounding_boxes(segmentid_face_path, color_face_path, output
         # Crop from color image
         cropped = color_face[col_y0:col_y1, col_x0:col_x1]
 
+        if float(seg_id) in tree_attributes_dict.keys():
+            tree_species = tree_attributes_dict[float(seg_id)]['BAUMART']
+        else:
+            tree_species = "unknown"
+
         # Save the cropped image
-        out_path = os.path.join(output_dir, f"tree_{seg_id}_bbox_({attributes[seg_id]['BAUMART']}).png")
+        out_path = os.path.join(output_dir, f"tree_{seg_id}_bbox_({tree_species}).png")
         imageio.imwrite(out_path, cropped)
     
 get_cube_faces(depth_path, "depth")
