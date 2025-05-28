@@ -8,7 +8,7 @@ from hydra.core.config_store import ConfigStore
 
 from treespec.models.lumberjack import Lumberjack
 from treespec.models.classification_model import ClassificationModel
-from treespec.scripts.train import model_dict, model_weights_dict, loss_function_dict
+from treespec.scripts.train import model_dict, model_weights_dict, loss_function_dict, dataset_dict
 
 from treespec.conf.config import TreespecConfig
 
@@ -21,12 +21,15 @@ def main(cfg: TreespecConfig):
     r"""
     Script that extracts tree images from a video and organizes them into class folders according to the predictions.
     """
+    prediction_video_dir = None
+    if hasattr(cfg.extract, "predict_video_dest_dir"):
+        prediction_video_dir = cfg.extract.predict_video_dest_dir
 
     # Initialize Lumberjack and ClassificationModel
     lumberjack = Lumberjack(
         model=cfg.extract.model,
         output_trees_dir=cfg.extract.output_trees_dir,
-        predict_video_dest_dir=cfg.extract.predict_video_dest_dir,
+        predict_video_dest_dir=prediction_video_dir,
         visualize=cfg.extract.visualize,
     )
 
@@ -43,45 +46,50 @@ def main(cfg: TreespecConfig):
     classification_model.model.load_state_dict(torch.load(trained_model_path))
     classification_model.eval()  # Set the model to evaluation mode
 
+
     # Process video to extract tree images
-    if cfg.extract.video is not None and cfg.extract.corrected is not None:
+    if hasattr(cfg.extract, "video") and hasattr(cfg.extract, "corrected"):
         lumberjack.process_video(
             video_path=cfg.extract.video,
             corrected=cfg.extract.corrected,
         )
-    if cfg.extract.image_dir is not None and cfg.extract.cameras is not None and cfg.extract.image_filetype is not None:
+    if hasattr(cfg.extract, "image_dir") and hasattr(cfg.extract, "cameras") and hasattr(cfg.extract, "image_filetype"):
         lumberjack.process_images(
             image_dir=cfg.extract.image_dir, cameras=cfg.extract.cameras, filetype=cfg.extract.image_filetype
         )
 
-    # Directory containing extracted tree images
-    output_trees_dir = lumberjack.output_trees_dir
-
-    # Define output directories for each class
-    class_names = ["beech", "chestnut", "pine"]  # Replace with your class names
-    output_dirs = {class_name: os.path.join(output_trees_dir, class_name) for class_name in class_names}
-
-    # Create directories for each class
-    for class_dir in output_dirs.values():
-        os.makedirs(class_dir, exist_ok=True)
-
-    # Predict and organize images
-    for image_name in os.listdir(output_trees_dir):
-        image_path = os.path.join(output_trees_dir, image_name)
-
-        # Skip directories
-        if os.path.isdir(image_path):
-            continue
-
-        # Predict the class of the image
-        prediction = classification_model.predict(image_path)
-        predicted_class_id = prediction["category"]
-
-        class_dict = {0: "beech", 1: "chestnut", 2: "pine"}
-
-        # Move the image to the corresponding class folder
-        target_dir = output_dirs[class_dict[predicted_class_id]]
-        shutil.move(image_path, os.path.join(target_dir, image_name))
+    if cfg.extract.predict == True:
+        # Directory containing extracted tree images
+        output_trees_dir = lumberjack.output_trees_dir
+    
+        dataset = dataset_dict[cfg.train.dataset](
+            data_dir=cfg.train.dataset_dir,
+            batch_size=cfg.train.batch_size,
+            num_workers=cfg.train.num_workers,
+        )
+        # Define output directories for each class
+        class_names = dataset.classes
+        output_dirs = {class_name: os.path.join(output_trees_dir, class_name) for class_name in class_names}
+    
+        # Create directories for each class
+        for class_dir in output_dirs.values():
+            os.makedirs(class_dir, exist_ok=True)
+    
+        # Predict and organize images
+        for image_name in os.listdir(output_trees_dir):
+            image_path = os.path.join(output_trees_dir, image_name)
+    
+            # Skip directories
+            if os.path.isdir(image_path):
+                continue
+            
+            # Predict the class of the image
+            prediction = classification_model.predict(image_path)
+            predicted_class_id = prediction["category"]
+    
+            # Move the image to the corresponding class folder
+            target_dir = output_dirs[class_names[predicted_class_id]]
+            shutil.move(image_path, os.path.join(target_dir, image_name))
 
 
 if __name__ == "__main__":

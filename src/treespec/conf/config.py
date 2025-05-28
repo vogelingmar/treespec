@@ -35,6 +35,7 @@ class ExtractParams:  # pylint: disable=too-many-instance-attributes
     image_dir: str
     cameras: list
     image_filetype: str
+    predict: bool
 
 
 @dataclass

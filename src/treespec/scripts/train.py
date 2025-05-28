@@ -49,7 +49,7 @@ model_weights_dict = {
     "wide_resnet_default": Wide_ResNet101_2_Weights.DEFAULT,
 }
 dataset_dict = {
-    "sauen": ImageDataset,
+    "folder": ImageDataset,
 }
 loss_function_dict = {
     "cross_entropy": nn.CrossEntropyLoss,

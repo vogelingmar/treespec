@@ -1,9 +1,9 @@
 train:
   model: resnet152
   model_weights: resnet152_default
-  dataset: sauen
-  dataset_dir: /home/ingmar/Documents/repos/treespec/src/treespec/datasets/sauen/images/sauen_v2
-  num_classes: 3
+  dataset: folder
+  dataset_dir: /home/ingmar/Documents/repos/treespec/src/treespec/datasets/sauen/sauen_big_clean
+  num_classes: 9
   epoch_count: 20
   batch_size: 5
   num_workers: 27
@@ -12,8 +12,6 @@ train:
   use_augmentations: false
   trained_model_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/
   train_augmentations: 
-    #- name: RandomHorizontalFlip
-    #  p: 0.1
     - name: RandomVerticalFlip
       p: 0.1
     - name: RandomRotation
@@ -23,18 +21,12 @@ train:
     - name: RandomPerspective
       distortion_scale: 0.3
       p: 0.3
-    #- name: ColorJitter
-    #  brightness: 1.5
 
 extract:
   model: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/X-101_RGB_60k.pth
-  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/
+  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/datasets/sauen/sauen_v6
+  video: /data/sauen_videos/3507b2/VID_20231111_231220_00_010.mp4
+  corrected: false
   predict_video_dest_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/videos/
   visualize: false
-  video: /data/training data/Sauen_Mapping_Dataset/cropped_20fps_Sauen.mp4
-  image_dir: /data/nrw_mg1_360tmx_2022_topodot
-  image_filetype: jpg
-  cameras:
-    - 1
-    - 3
-  corrected: true
+  predict: false

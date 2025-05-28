@@ -177,13 +177,13 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             ):
                 self.log_dict(
                     {
-                        f"test_precision_class_{i}": precision.float(),
-                        f"test_recall_class_{i}": recall.float(),
-                        f"test_f1_score_class_{i}": f1.float(),
-                        f"test_tp_class_{i}": tp.float(),
-                        f"test_fp_class_{i}": fp.float(),
-                        f"test_tn_class_{i}": tn.float(),
-                        f"test_fn_class_{i}": fn.float(),
+                        f"{stage}_precision_class_{i}": precision.float(),
+                        f"{stage}_recall_class_{i}": recall.float(),
+                        f"{stage}_f1_score_class_{i}": f1.float(),
+                        f"{stage}_tp_class_{i}": tp.float(),
+                        f"{stage}_fp_class_{i}": fp.float(),
+                        f"{stage}_tn_class_{i}": tn.float(),
+                        f"{stage}_fn_class_{i}": fn.float(),
                     }
                 )
 
