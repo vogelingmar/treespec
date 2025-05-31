@@ -31,8 +31,8 @@ def create_dictionary(path: str):
 
 def match_and_export():
     attributes_path = "/data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041"
-    cadastre_path = "/data/essen/cadastre/Essen-Baumkataster-Ausschnitt/Essen-Baumkataster-Ausschnitt"
-    output_path = "/data/essen/cadastre/matched_output"
+    cadastre_path = "/data/essen/cadastre/cadastre_essen/cadastre_essen"
+    output_path = "/data/essen/cadastre/matched_output/matched_output"
 
     cadastre = shapefile.Reader(cadastre_path)
     attributes = shapefile.Reader(attributes_path)
@@ -50,7 +50,7 @@ def match_and_export():
     # Prepare merged data: (cadastre_point, merged_record)
     merged = []
     for i, (attr_pt, cad_idx, cad_dist) in enumerate(zip(attribute_points, cad_indices, cad_distances)):
-        if cad_dist <= 3000.0 and att_indices[cad_idx] == i:
+        if cad_dist <= 5.0 and att_indices[cad_idx] == i:
             combined = {**cadastre_records[cad_idx], **attribute_records[i]}
             merged.append((cadastre_points[cad_idx], combined))
     # Prepare fields for output shapefile
@@ -71,6 +71,6 @@ def match_and_export():
     print(f"Exported matched points to {output_path}.shp")
 
 match_and_export()
-print(create_dictionary("/data/essen/cadastre/matched_output"))
+print(len(create_dictionary("/data/essen/cadastre/matched_output")))
 
 
