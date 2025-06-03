@@ -31,7 +31,7 @@ def create_dictionary(path: str):
 
 def match_and_export():
     attributes_path = "/data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041"
-    cadastre_path = "/data/essen/cadastre/cadastre_essen/cadastre_essen"
+    cadastre_path = "/data/essen/cadastre/cadastre_essen40-42/cadastre_essen"
     output_path = "/data/essen/cadastre/matched_output/matched_output"
 
     cadastre = shapefile.Reader(cadastre_path)
@@ -71,6 +71,6 @@ def match_and_export():
     print(f"Exported matched points to {output_path}.shp")
 
 match_and_export()
-print(len(create_dictionary("/data/essen/cadastre/matched_output")))
+#print(len(create_dictionary("/data/essen/cadastre/matched_output/matched_output")))
 
 

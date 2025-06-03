@@ -1,3 +1,5 @@
+# legacy code, to be removed in the future
+
 import numpy as np
 import os
 import py360convert
@@ -17,7 +19,7 @@ os.makedirs(os.path.dirname(output_dir), exist_ok=True)
 output_bounding_box_dir = os.path.join(output_dir, "bounding_boxes_face1")
 os.makedirs(output_bounding_box_dir, exist_ok=True)
 
-def get_cube_faces(image_path: str, type: str, index: int):
+def get_cube_faces(image_path: str, type: str, index: int, output_dir: str):
 
     img = imageio.imread(image_path)
     img = np.flip(img, axis=1)
@@ -34,6 +36,7 @@ def get_cube_faces(image_path: str, type: str, index: int):
             imageio.imwrite(os.path.join(output_dir, f"{type}_cube_face_{index}.{i}.png"), cropped_face)
 
 def extract_and_save_bounding_boxes(segmentid_face_path: str, color_face_path: str, output_dir: str):
+    
     segmentid_face = imageio.imread(segmentid_face_path)
     color_face = imageio.imread(color_face_path)
 
@@ -77,4 +80,23 @@ def extract_and_save_bounding_boxes(segmentid_face_path: str, color_face_path: s
         imageio.imwrite(out_path, cropped)
 
 def streamliner(depth_seg_path, color_path, attribute_path, output_dir):
-    pass
+    # Process all images in depth_seg_path with get_cube_faces
+    for idx, filename in enumerate(sorted(os.listdir(depth_seg_path))):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tif', '.tiff')):
+            image_path = os.path.join(depth_seg_path, filename)
+            # Extract type: text after last '_' and before first '.'
+            type_part = filename.rsplit('_', 1)[-1].split('.', 1)[0]
+            get_cube_faces(image_path, type_part, idx)
+    
+    # Process only images ending with '1' or '3' before the extension in color_path
+    for filename in sorted(os.listdir(color_path)):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tif', '.tiff')):
+            name_wo_ext = os.path.splitext(filename)[0]
+            if name_wo_ext.endswith('1') or name_wo_ext.endswith('3'):
+                color_face_path = os.path.join(color_path, filename)
+                # Assuming corresponding segmentid_face_path has the same filename
+                segmentid_face_path = os.path.join(depth_seg_path, filename)
+                if os.path.exists(segmentid_face_path):
+                    extract_and_save_bounding_boxes(segmentid_face_path, color_face_path, output_dir)
+                else:
+                    print(f"Warning: No matching segmentation file for {filename}")
