@@ -1,4 +1,5 @@
 import shapefile
+import os
 from typing import Optional
 from scipy.spatial import cKDTree
 
@@ -31,11 +32,9 @@ def create_dictionary(path: str):
     return attributes
 
 
-def match_and_export():
-    #TODO: make paths configurable
-    attributes_path = "/data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041"
-    cadastre_path = "/data/essen/cadastre/cadastre_essen40-42/cadastre_essen"
-    output_path = "/data/essen/cadastre/matched_output/matched_output"
+def match_and_export(attributes_path: str, cadastre_path: str, output_path: str):
+
+    os.makedirs(output_path, exist_ok=True)
 
     cadastre = shapefile.Reader(cadastre_path)
     attributes = shapefile.Reader(attributes_path)
@@ -55,6 +54,7 @@ def match_and_export():
     for i, (attr_pt, cad_idx, cad_dist) in enumerate(zip(attribute_points, cad_indices, cad_distances)):
         if cad_dist <= 5.0 and att_indices[cad_idx] == i:
             combined = {**cadastre_records[cad_idx], **attribute_records[i]}
+            #TODO: only match if dbh is in certain threshold: currently not every tree has threshold
             merged.append((cadastre_points[cad_idx], combined))
     # Prepare fields for output shapefile
     w = shapefile.Writer(output_path, shapeType=shapefile.POINT)
@@ -75,5 +75,9 @@ def match_and_export():
     print(f"Exported matched points to {output_path}.shp")
 
 
-match_and_export()
+
+attributes_path = "/data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041"
+cadastre_path = "/data/essen/cadastre/cadastre_essen40-42/cadastre_essen"
+output_path = "/data/essen/cadastre/matched_output/matched_output"
+match_and_export(attributes_path, cadastre_path, output_path)
 # print(len(create_dictionary("/data/essen/cadastre/matched_output/matched_output")))

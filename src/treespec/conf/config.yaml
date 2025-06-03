@@ -31,3 +31,17 @@ extract:
   visualize: false
   predict: false
   mask: true
+
+# not yet usable
+essen_dataset:
+  train_images_path: /data/essen/dataset/color/Run 40 Camera 4 360
+  segmentation_images_path: /data/essen/dataset/depth and seg/run_40
+  output_color_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_40
+  output_segmentid_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_40
+  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_40
+  attribute_path: /data/essen/cadastre/matched_output/matched_output
+  color_image_type: jpg
+  segmentation_image_type: tif
+  segmentation_output_type: png
+  run: "40"
+  mask: false

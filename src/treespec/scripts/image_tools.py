@@ -78,6 +78,7 @@ def extract_tree_images(
     output_dir: str,
     tree_attributes_dict: dict,
     cover: bool,
+    image: str
 ):
     segmentid_face = imageio.imread(segmentid_face_path)
     color_face = imageio.imread(color_face_path)
@@ -116,10 +117,10 @@ def extract_tree_images(
         else:
             tree_species = "unknown"
 
-        out_path = os.path.join(output_dir, f"{seg_id}_tree_{tree_species}.png")
+        # TODO:maybe change the id of the image to the BAUMID from the essen cadastre -> what happens to new trees?
+        out_path = os.path.join(output_dir, f"{seg_id}_{image}_{tree_species}.png")
 
         if cover:
-
             # Resize mask to match cropped shape
             mask_cropped = mask[y0:y1, x0:x1]
             mask_resized = np.array(mask_cropped, dtype=np.uint8)
@@ -156,7 +157,9 @@ def extract_trees(
         parts = name_wo_ext.split("_")
         if len(parts) < 2:
             continue  # Skip files that don't match the expected pattern
-        color_path = os.path.join(color_dir, f"{parts[0]}_rgb_{parts[2]}.jpg")
+        image_number = parts[0]
+        orientation = parts[2]
+        color_path = os.path.join(color_dir, f"{image_number}_rgb_{orientation}.jpg")
         segmentid_path = os.path.join(segmentid_dir, segmentid_image)
         extract_tree_images(
             segmentid_face_path=segmentid_path,
@@ -164,6 +167,7 @@ def extract_trees(
             output_dir=output_dir,
             tree_attributes_dict=tree_attributes_dict,
             cover=cover,
+            image=f"{image_number}{orientation}",
         )
         
     print(f"Extracted tree images to {output_dir}")

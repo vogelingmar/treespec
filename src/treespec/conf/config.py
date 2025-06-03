@@ -38,6 +38,22 @@ class ExtractParams:  # pylint: disable=too-many-instance-attributes
     predict: bool
     mask: bool
 
+@dataclass
+class EssenDatasetParams: # pylint: disable=too-many-instance-attributes
+    """Configuration of parameters for the create_essen_dataset script"""
+
+    original_color_images_path: str
+    color_images_path: str
+    color_type: str
+    original_seg_images_path: str
+    segmentid_images_path: str
+    seg_type: str
+    seg_output_type: str
+    run: str
+    output_trees_dir: str
+    attribute_path: str
+    mask: bool
+
 
 @dataclass
 class TreespecConfig:
@@ -45,3 +61,4 @@ class TreespecConfig:
 
     train: TrainParams
     extract: ExtractParams
+    essen_dataset: EssenDatasetParams
