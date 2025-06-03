@@ -2,7 +2,8 @@ import os
 import shutil
 import imageio.v2 as imageio
 import numpy as np
-import py360convert
+import py360convert #TODO: add to install requirements
+from skimage.transform import resize #TODO: add to install requirement
 
 from treespec.scripts.matching import create_dictionary
 
@@ -58,14 +59,12 @@ def extract_segmentid_faces(input_dir: str, output_dir: str, input_type: str, ou
 
     print(f"Extracted segment ID faces from the panoramic images to {output_dir}")
 
-def extract_tree_images(segmentid_face_path: str, color_face_path: str, output_dir: str, tree_attributes_dict: dict):
-    
+def extract_tree_images(segmentid_face_path: str, color_face_path: str, output_dir: str, tree_attributes_dict: dict, cover: bool):
     segmentid_face = imageio.imread(segmentid_face_path)
     color_face = imageio.imread(color_face_path)
 
     seg_h, seg_w = segmentid_face.shape[:2]
     col_h, col_w = color_face.shape[:2]
-
 
     unique_ids = np.unique(segmentid_face)
     for seg_id in unique_ids:
@@ -98,11 +97,28 @@ def extract_tree_images(segmentid_face_path: str, color_face_path: str, output_d
         else:
             tree_species = "unknown"
 
-        # Save the cropped image
         out_path = os.path.join(output_dir, f"{seg_id}_tree_{tree_species}.png")
-        imageio.imwrite(out_path, cropped)
 
-def extract_trees(segmentid_dir, color_dir, output_dir, tree_attributes_dict):
+        if cover:
+
+            # Resize mask to match cropped shape
+            mask_cropped = mask[y0:y1, x0:x1]
+            mask_resized = np.array(mask_cropped, dtype=np.uint8)
+            if cropped.shape[:2] != mask_resized.shape:
+                # If shapes don't match due to rounding, resize mask
+                mask_resized = resize(mask_cropped, cropped.shape[:2], order=0, preserve_range=True, anti_aliasing=False).astype(np.uint8)
+
+            # Apply mask: set everything outside mask to black
+            if cropped.ndim == 3:
+                masked_cropped = cropped * mask_resized[..., None]
+            else:
+                masked_cropped = cropped * mask_resized
+
+            imageio.imwrite(out_path, masked_cropped)
+        else:
+            imageio.imwrite(out_path, cropped)        
+
+def extract_trees(segmentid_dir: str, color_dir: str, output_dir: str, tree_attributes_dict: dict, cover: bool):
     os.makedirs(output_dir, exist_ok=True)
     for segmentid_image in os.listdir(segmentid_dir):
         name_wo_ext = os.path.splitext(segmentid_image)[0]
@@ -114,28 +130,6 @@ def extract_trees(segmentid_dir, color_dir, output_dir, tree_attributes_dict):
         extract_tree_images(segmentid_face_path=segmentid_path,
                             color_face_path=color_path,
                             output_dir=output_dir,
-                            tree_attributes_dict=tree_attributes_dict)
+                            tree_attributes_dict=tree_attributes_dict,
+                            cover=cover)
     print(f"Extracted tree images to {output_dir}")
-
-
-
-
-basepath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-attribute_path = "/data/essen/cadastre/matched_output/matched_output"
-
-tree_attributes_dict = create_dictionary(attribute_path)
-
-select_rgb_images("/data/essen/dataset/color/Run 42 Camera 4 360", 
-              os.path.join(basepath, "io/pictures/color_42"), 
-              "jpg")
-
-extract_segmentid_faces("/data/essen/dataset/depth and seg/run_42", 
-                      os.path.join(basepath, "io/pictures/segmentid_42"), 
-                      "tif",
-                      "png",
-                      "42")
-
-extract_trees(os.path.join(basepath, "io/pictures/segmentid_42"),
-              os.path.join(basepath, "io/pictures/color_42"),
-              os.path.join(basepath, "io/pictures/trees_42"),
-              tree_attributes_dict)

@@ -24,9 +24,10 @@ train:
 
 extract:
   model: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/X-101_RGB_60k.pth
-  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/datasets/sauen/sauen_v6
-  video: /data/sauen_videos/3507b2/VID_20231111_231220_00_010.mp4
-  corrected: false
+  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/
+  video: /data/sauen_videos/3512a1/part1/corrected_VID_20231109_182711_00_001.mp4
+  corrected: True
   predict_video_dest_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/videos/
   visualize: false
   predict: false
+  mask: false

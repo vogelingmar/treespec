@@ -36,6 +36,7 @@ class ExtractParams:  # pylint: disable=too-many-instance-attributes
     cameras: list
     image_filetype: str
     predict: bool
+    mask: bool
 
 
 @dataclass

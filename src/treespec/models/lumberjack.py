@@ -71,6 +71,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         self,
         video_path: str,
         corrected: bool = True,
+        mask: bool = False,
     ):
         r"""
         The process video function takes a video and chops tree images from it.
@@ -132,23 +133,39 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
             # 5 fps
             if nframes % 12 == 0:
                 outputs_pred = self.predictor_synth(crop_frame)
-
                 pred_tree_boxes = outputs_pred["instances"].pred_boxes.tensor.cpu().numpy()
 
                 i = 0
-                for tree_box in enumerate(pred_tree_boxes):
-                    box_coords = tree_box[1]  # takes coordinates of the box
-                    x1, y1, x2, y2 = map(int, box_coords)  # Convert to integer coordinates
-                    # Crop the frame based on the bounding box coordinates
-                    cropped_box = crop_frame[y1:y2, x1:x2]
-
-                    if (x2 - x1) * (y2 - y1) >= 200000:
-                        angle = (480 - ((x1 + x2) / 2)) / 32  # approximates angle of tree to the camera ortientation
-                        screenshot_filename = f"bark_{nframes:04d}_box_{i:02d}_angle_{angle:.2f}.jpg"
-                        # Name screenshot by frame index and box index
-                        screenshot_dir = os.path.join(self.output_trees_dir, screenshot_filename)
-                        cv2.imwrite(screenshot_dir, cropped_box)  # Save the cropped box
-                        i += 1
+                if mask:
+                    # Use bounding boxes to crop, but apply mask to the crop
+                    pred_tree_masks = outputs_pred["instances"].pred_masks.cpu().numpy()
+                    for j, (box_coords, mask_arr) in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
+                        x1, y1, x2, y2 = map(int, box_coords)
+                        cropped_box = crop_frame[y1:y2, x1:x2]
+                        mask_crop = mask_arr[y1:y2, x1:x2]
+                        # Ensure mask_crop shape matches cropped_box
+                        if mask_crop.shape[:2] != cropped_box.shape[:2]:
+                            continue  # skip if shapes don't match
+                        # Apply mask: keep only masked area, set rest to black
+                        masked_img = cropped_box.copy()
+                        masked_img[~mask_crop] = 0
+                        if (x2 - x1) * (y2 - y1) >= 200000:
+                            angle = (480 - ((x1 + x2) / 2)) / 32
+                            screenshot_filename = f"bark_{nframes:04d}_box_{i:02d}_angle_{angle:.2f}.jpg"
+                            screenshot_dir = os.path.join(self.output_trees_dir, screenshot_filename)
+                            cv2.imwrite(screenshot_dir, masked_img)
+                            i += 1
+                else:
+                    for tree_box in enumerate(pred_tree_boxes):
+                        box_coords = tree_box[1]
+                        x1, y1, x2, y2 = map(int, box_coords)
+                        cropped_box = crop_frame[y1:y2, x1:x2]
+                        if (x2 - x1) * (y2 - y1) >= 200000:
+                            angle = (480 - ((x1 + x2) / 2)) / 32
+                            screenshot_filename = f"bark_{nframes:04d}_box_{i:02d}_angle_{angle:.2f}.jpg"
+                            screenshot_dir = os.path.join(self.output_trees_dir, screenshot_filename)
+                            cv2.imwrite(screenshot_dir, cropped_box)
+                            i += 1
 
                 out = vid_vis.draw_instance_predictions(crop_frame, outputs_pred["instances"].to("cpu"))
 
@@ -165,7 +182,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         vcap.release()
         cv2.destroyAllWindows()
 
-    def process_image(self, image_path: str):  # pylint: disable=too-many-locals
+    def process_image(self, image_path: str, mask: bool = False):  # Added mask argument
         r"""
         The processing step for a single image.
 
@@ -173,6 +190,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
 
         Args:
             image_path: The path to the image file from which to extract tree images.
+            mask: If True, apply the predicted mask to the cropped image.
         """
 
         image = cv2.imread(image_path)
@@ -186,20 +204,35 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         )
 
         pred_tree_boxes = outputs_pred["instances"].pred_boxes.tensor.cpu().numpy()
-
         i = 0
-        for tree_box in enumerate(pred_tree_boxes):
-            box_coords = tree_box[1]  # takes coordinates of the box
-            x1, y1, x2, y2 = map(int, box_coords)  # Convert to integer coordinates
-            # Crop the frame based on the bounding box coordinates
-            cropped_box = image[y1:y2, x1:x2]
-            if (x2 - x1) * (y2 - y1) >= 250000:
-                angle = (480 - ((x1 + x2) / 2)) / 32  # approximates angle of tree to the camera ortientation
-                screenshot_filename = f"box_{i:02d}_angle_{angle:.2f}_{image_name}"
-                # Name screenshot by frame index and box index
-                screenshot_dir = os.path.join(self.output_trees_dir, screenshot_filename)
-                cv2.imwrite(screenshot_dir, cropped_box)  # Save the cropped box
-                i += 1
+
+        if mask:
+            pred_tree_masks = outputs_pred["instances"].pred_masks.cpu().numpy()
+            for j, (box_coords, mask_arr) in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
+                x1, y1, x2, y2 = map(int, box_coords)
+                cropped_box = image[y1:y2, x1:x2]
+                mask_crop = mask_arr[y1:y2, x1:x2]
+                if mask_crop.shape[:2] != cropped_box.shape[:2]:
+                    continue
+                masked_img = cropped_box.copy()
+                masked_img[~mask_crop] = 0
+                if (x2 - x1) * (y2 - y1) >= 250000:
+                    angle = (480 - ((x1 + x2) / 2)) / 32
+                    screenshot_filename = f"box_{i:02d}_angle_{angle:.2f}_masked_{image_name}"
+                    screenshot_dir = os.path.join(self.output_trees_dir, screenshot_filename)
+                    cv2.imwrite(screenshot_dir, masked_img)
+                    i += 1
+        else:
+            for tree_box in enumerate(pred_tree_boxes):
+                box_coords = tree_box[1]
+                x1, y1, x2, y2 = map(int, box_coords)
+                cropped_box = image[y1:y2, x1:x2]
+                if (x2 - x1) * (y2 - y1) >= 250000:
+                    angle = (480 - ((x1 + x2) / 2)) / 32
+                    screenshot_filename = f"box_{i:02d}_angle_{angle:.2f}_{image_name}"
+                    screenshot_dir = os.path.join(self.output_trees_dir, screenshot_filename)
+                    cv2.imwrite(screenshot_dir, cropped_box)
+                    i += 1
 
         out_synth = v_synth.draw_instance_predictions(outputs_pred["instances"].to("cpu"))
 
@@ -208,7 +241,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         else:
             print(f"Image {image_name}: {len(pred_tree_boxes)} trees detected")
 
-    def process_images(self, image_dir: str, cameras: list[int], filetype: str = "jpg"):
+    def process_images(self, image_dir: str, cameras: list[int], filetype: str = "jpg", mask: bool = False):
         r"""
         Processes all the images from a given directory.
 
@@ -222,8 +255,8 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
             if os.path.isfile(image_path):
                 for camera in cameras:
                     if re.search(f"_{camera}.{filetype}", image):
-                        self.process_image(image_path)
+                        self.process_image(image_path, mask=mask)
             elif os.path.isdir(image_path):
-                self.process_images(image_path, cameras)
+                self.process_images(image_path, cameras, mask=mask)
 
         cv2.destroyAllWindows()

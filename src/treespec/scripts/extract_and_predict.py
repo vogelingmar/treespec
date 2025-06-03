@@ -52,10 +52,11 @@ def main(cfg: TreespecConfig):
         lumberjack.process_video(
             video_path=cfg.extract.video,
             corrected=cfg.extract.corrected,
+            mask=cfg.extract.mask,
         )
     if hasattr(cfg.extract, "image_dir") and hasattr(cfg.extract, "cameras") and hasattr(cfg.extract, "image_filetype"):
         lumberjack.process_images(
-            image_dir=cfg.extract.image_dir, cameras=cfg.extract.cameras, filetype=cfg.extract.image_filetype
+            image_dir=cfg.extract.image_dir, cameras=cfg.extract.cameras, filetype=cfg.extract.image_filetype, mask=cfg.extract.mask
         )
 
     if cfg.extract.predict == True:
