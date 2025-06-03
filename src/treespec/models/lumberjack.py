@@ -241,7 +241,13 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         else:
             print(f"Image {image_name}: {len(pred_tree_boxes)} trees detected")
 
-    def process_images(self, image_dir: str, cameras: list[int], filetype: str = "jpg", mask: bool = False):
+    def process_images(
+        self,
+        image_dir: str,
+        cameras: list[int],
+        filetype: str = "jpg",
+        mask: bool = False,
+    ):
         r"""
         Processes all the images from a given directory.
 

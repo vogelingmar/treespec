@@ -16,8 +16,9 @@ def create_lists_from_shapefile(path: str, prefix: Optional[str]):
             else:
                 record = shaperec.record.as_dict()
             records.append(record)
-    
+
     return points, records
+
 
 def create_dictionary(path: str):
     points, records = create_lists_from_shapefile(path, None)
@@ -29,7 +30,9 @@ def create_dictionary(path: str):
 
     return attributes
 
+
 def match_and_export():
+    #TODO: make paths configurable
     attributes_path = "/data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041"
     cadastre_path = "/data/essen/cadastre/cadastre_essen40-42/cadastre_essen"
     output_path = "/data/essen/cadastre/matched_output/matched_output"
@@ -64,13 +67,13 @@ def match_and_export():
     # Write merged points and records
     for pt, combined in merged:
         w.point(*pt)
-        record = [combined.get(f[0], None) for f in cadastre.fields[1:]] + \
-                 [combined.get(f"pred_{f[0]}", None) for f in attributes.fields[1:]]
+        record = [combined.get(f[0], None) for f in cadastre.fields[1:]] + [
+            combined.get(f"pred_{f[0]}", None) for f in attributes.fields[1:]
+        ]
         w.record(*record)
     w.close()
     print(f"Exported matched points to {output_path}.shp")
 
+
 match_and_export()
-#print(len(create_dictionary("/data/essen/cadastre/matched_output/matched_output")))
-
-
+# print(len(create_dictionary("/data/essen/cadastre/matched_output/matched_output")))

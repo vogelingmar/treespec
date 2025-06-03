@@ -30,4 +30,4 @@ extract:
   predict_video_dest_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/videos/
   visualize: false
   predict: false
-  mask: false
+  mask: true

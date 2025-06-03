@@ -1,4 +1,5 @@
 """Sauen Dataset"""
+
 import os
 
 from typing import Optional
@@ -31,9 +32,7 @@ class ImageDataset(L.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
 
-        self.classes = sorted(
-            folder.name for folder in os.scandir(data_dir) if folder.is_dir()
-        )
+        self.classes = sorted(folder.name for folder in os.scandir(data_dir) if folder.is_dir())
 
     def prepare_data(self):
         r"""
