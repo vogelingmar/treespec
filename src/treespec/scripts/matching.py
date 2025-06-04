@@ -55,7 +55,9 @@ def match_and_export(attributes_path: str, cadastre_path: str, output_path: str)
         if cad_dist <= 5.0 and att_indices[cad_idx] == i:
             combined = {**cadastre_records[cad_idx], **attribute_records[i]}
             #TODO: only match if dbh is in certain threshold: currently not every tree has threshold
-            merged.append((cadastre_points[cad_idx], combined))
+            if combined['pred_dbh'] is not None and (combined['DURCHM'] - combined['pred_dbh'] * 100) < 10:
+                # Add the matched point to the merged list
+                merged.append((cadastre_points[cad_idx], combined))
     # Prepare fields for output shapefile
     w = shapefile.Writer(output_path, shapeType=shapefile.POINT)
     # Add cadastre fields
