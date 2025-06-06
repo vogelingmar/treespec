@@ -32,7 +32,7 @@ def create_dictionary(path: str):
     return attributes
 
 
-def match_and_export(attributes_path: str, cadastre_path: str, output_path: str):
+def match_and_export(attributes_path: str, cadastre_path: str, output_path: str, use_dbh_filter: bool = True):
 
     os.makedirs(output_path, exist_ok=True)
 
@@ -54,8 +54,9 @@ def match_and_export(attributes_path: str, cadastre_path: str, output_path: str)
     for i, (attr_pt, cad_idx, cad_dist) in enumerate(zip(attribute_points, cad_indices, cad_distances)):
         if cad_dist <= 5.0 and att_indices[cad_idx] == i:
             combined = {**cadastre_records[cad_idx], **attribute_records[i]}
-            #TODO: only match if dbh is in certain threshold: currently not every tree has threshold
-            if combined['pred_dbh'] is not None and (combined['DURCHM'] - combined['pred_dbh'] * 100) < 10:
+            if not use_dbh_filter:
+                merged.append((cadastre_points[cad_idx], combined))
+            elif combined['pred_dbh'] is not None and (combined['DURCHM'] - combined['pred_dbh'] * 100) < 10:
                 # Add the matched point to the merged list
                 merged.append((cadastre_points[cad_idx], combined))
     # Prepare fields for output shapefile
@@ -81,5 +82,5 @@ def match_and_export(attributes_path: str, cadastre_path: str, output_path: str)
 attributes_path = "/data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041"
 cadastre_path = "/data/essen/cadastre/cadastre_essen40-42/cadastre_essen"
 output_path = "/data/essen/cadastre/matched_output/matched_output"
-match_and_export(attributes_path, cadastre_path, output_path)
+match_and_export(attributes_path, cadastre_path, output_path, True)
 # print(len(create_dictionary("/data/essen/cadastre/matched_output/matched_output")))

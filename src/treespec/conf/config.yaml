@@ -44,4 +44,4 @@ essen_dataset:
   segmentation_image_type: tif
   segmentation_output_type: png
   run: "40"
-  mask: false
+  mask: true

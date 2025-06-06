@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 import shutil
 import imageio.v2 as imageio
 import numpy as np
@@ -30,11 +31,11 @@ def select_rgb_images(input_dir: str, output_dir: str, image_type: str):
     print(f"Copied images to {output_dir}")
 
 
-def extract_segmentid_faces(input_dir: str, output_dir: str, input_type: str, output_type: str, run: str):
+def extract_pano_faces(input_dir: str, output_dir: str, input_type: str, output_type: str, run: str, filter: Optional[str] = ""):
     os.makedirs(output_dir, exist_ok=True)
 
     for file in sorted(os.listdir(input_dir)):
-        if file.endswith(f"segmentid.{input_type}"):
+        if file.endswith(f"{filter}.{input_type}"):
             name_wo_ext = os.path.splitext(file)[0]
             parts = name_wo_ext.split("_")
             if len(parts) < 2:
@@ -43,7 +44,7 @@ def extract_segmentid_faces(input_dir: str, output_dir: str, input_type: str, ou
                 img = imageio.imread(os.path.join(input_dir, file))
                 img = np.flip(img, axis=1)
                 cube_faces = py360convert.e2c(
-                    img, face_w=500, cube_format="list", mode="nearest"
+                    img, face_w=4096, cube_format="list", mode="nearest"
                 )  # returns list of 6 faces
 
                 number = int(parts[2])
@@ -57,19 +58,19 @@ def extract_segmentid_faces(input_dir: str, output_dir: str, input_type: str, ou
 
                         if i == 1:
                             imageio.imwrite(
-                                os.path.join(output_dir, f"{number}_segmentid_left.{output_type}"),
+                                os.path.join(output_dir, f"{number}_{filter}_left.{output_type}"),
                                 cropped_face,
                             )
                         if i == 3:
                             imageio.imwrite(
                                 os.path.join(
                                     output_dir,
-                                    f"{number}_segmentid_right.{output_type}",
+                                    f"{number}_{filter}_right.{output_type}",
                                 ),
                                 cropped_face,
                             )
 
-    print(f"Extracted segment ID faces from the panoramic images to {output_dir}")
+    print(f"Extracted {filter} faces from the panoramic images to {output_dir}")
 
 
 def extract_tree_images(
