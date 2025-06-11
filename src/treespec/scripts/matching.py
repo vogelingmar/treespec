@@ -3,6 +3,22 @@ import os
 from typing import Optional
 from scipy.spatial import cKDTree
 
+import torch
+import hydra
+import hydra.core.config_store as ConfigStore
+
+from treespec.models.classification_model import ClassificationModel
+from treespec.scripts.train import (
+    model_dict,
+    model_weights_dict,
+    loss_function_dict,
+    dataset_dict, 
+)
+
+from treespec.conf.config import TreespecConfig
+
+cs = ConfigStore.instance()
+cs.store(name="treespec_config", node=TreespecConfig)
 
 def create_lists_from_shapefile(path: str, prefix: Optional[str]):
     points = shapefile.Reader(path)
@@ -30,6 +46,39 @@ def create_dictionary(path: str):
             attributes[pred_tree_id] = records[i]
 
     return attributes
+
+
+def create_shp_from_dict(dictionary: dict, output_path: str):
+    #not tested yet
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    # Get the first record to infer fields and coordinate keys
+    first_record = next(iter(dictionary.values()))
+    # Try common coordinate keys
+    if "X" in first_record and "Y" in first_record:
+        x_key, y_key = "X", "Y"
+    elif "x" in first_record and "y" in first_record:
+        x_key, y_key = "x", "y"
+    elif "POINT_X" in first_record and "POINT_Y" in first_record:
+        x_key, y_key = "POINT_X", "POINT_Y"
+    else:
+        raise ValueError("Could not find coordinate keys in the dictionary records.")
+
+    # Prepare fields (skip coordinate keys)
+    fields = [(k, "C", 50, 0) for k in first_record.keys() if k not in [x_key, y_key]]
+
+    w = shapefile.Writer(output_path, shapeType=shapefile.POINT)
+    for name, ftype, size, dec in fields:
+        w.field(name, ftype, size, dec)
+
+    for rec in dictionary.values():
+        x, y = rec[x_key], rec[y_key]
+        w.point(x, y)
+        # Write attributes in the same order as fields
+        w.record(*[rec.get(k) for k, *_ in fields])
+
+    w.close()
+    print(f"Created shapefile at {output_path}.shp")
 
 
 def match_and_export(attributes_path: str, cadastre_path: str, output_path: str, use_dbh_filter: bool = True):
@@ -77,6 +126,52 @@ def match_and_export(attributes_path: str, cadastre_path: str, output_path: str,
     w.close()
     print(f"Exported matched points to {output_path}.shp")
 
+
+@hydra.main(config_path="../conf", config_name="config", version_base=None)
+def match_predicted_tree_species(tree_images_dir, matched_cadastre_path, cfg: TreespecConfig):
+    #not tested yet - need data
+    
+    classification_model = ClassificationModel(
+        model=model_dict[cfg.train.model],
+        model_weights=model_weights_dict[cfg.train.model_weights],
+        num_classes=cfg.train.num_classes,
+        loss_function=loss_function_dict[cfg.train.loss_function](),
+        learning_rate=cfg.train.learning_rate,
+    )
+
+    dataset = dataset_dict[cfg.train.dataset](
+            data_dir=cfg.train.dataset_dir,
+            batch_size=cfg.train.batch_size,
+            num_workers=cfg.train.num_workers,
+        )
+
+    trained_model_path = cfg.train.trained_model_dir + cfg.train.model + "_finetuned" + ".pth"
+    classification_model.model.load_state_dict(torch.load(trained_model_path))
+    classification_model.eval()  # Set the model to evaluation mode
+
+    trees = create_dictionary(matched_cadastre_path)
+    class_names = dataset.classes
+
+    for tree_name in os.listdir(tree_images_dir):
+        image_path = os.path.join(tree_images_dir, tree_name)
+
+        if os.path.isdir(image_path):
+            continue
+
+        prediction = classification_model.predict(image_path)
+        predicted_class_id = prediction["category"]
+        predicted_class = class_names[predicted_class_id]
+
+        parts = os.path.splitext(tree_name)[0].split('_')
+
+        tree_id = parts[0]
+
+        if tree_id in trees:
+            trees[tree_id][f"pred_species"] = predicted_class
+        else:
+            raise ValueError(f"Tree ID {tree_id} not found in the matched cadastre data.")
+    
+    create_shp_from_dict(trees, matched_cadastre_path + "_w_pred_species")
 
 
 attributes_path = "/data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041"
