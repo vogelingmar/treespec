@@ -53,6 +53,7 @@ class EssenDatasetParams: # pylint: disable=too-many-instance-attributes
     output_trees_dir: str
     attribute_path: str
     mask: bool
+    filter: str
 
 
 @dataclass

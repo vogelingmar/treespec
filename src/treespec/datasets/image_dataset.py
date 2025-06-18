@@ -43,26 +43,50 @@ class ImageDataset(L.LightningDataModule):
 
     def setup(self, transform: Optional[Transform] = None):  # pylint: disable=arguments-renamed
         r"""
-        Creates training (80%), validation (10%) and testing (10%) datasets from the folder structure at data_dir.
+        Creates training (80%), validation (10%) and testing (10%) datasets from the folder structure at data_dir,
+        ensuring that all images of the same tree (by tree ID prefix) are in the same split.
 
         Args:
             transform: Default transformations to be applied to the images.
         """
 
-        # create image folder dataset from images
-        self.dataset = datasets.ImageFolder(  # pylint: disable=attribute-defined-outside-init
-            root=self.data_dir, transform=transform
-        )
+        # Create the dataset without splitting yet
+        full_dataset = datasets.ImageFolder(root=self.data_dir, transform=transform)
 
-        # calculation of different set sizes (80% traning, 10% validation, 10% test)
-        total_size = len(self.dataset)
-        val_size = int(0.1 * total_size)
-        test_size = int(0.1 * total_size)
-        train_size = total_size - val_size - test_size
+        # Group image indices by tree ID (assumes filename starts with tree ID, e.g., '1234_img1.jpg')
+        from collections import defaultdict
+        import os
 
-        self.train, self.val, self.test = data.random_split(  # pylint: disable=attribute-defined-outside-init
-            self.dataset, [train_size, val_size, test_size]
-        )
+        tree_to_indices = defaultdict(list)
+        for idx, (path, _) in enumerate(full_dataset.samples):
+            filename = os.path.basename(path)
+            tree_id = filename.split('_')[0]  # Adjust if your separator is different
+            tree_to_indices[tree_id].append(idx)
+
+        # Shuffle tree IDs and split into train/val/test
+        import random
+        tree_ids = list(tree_to_indices.keys())
+        random.shuffle(tree_ids)
+
+        total_trees = len(tree_ids)
+        val_trees = int(0.1 * total_trees)
+        test_trees = int(0.1 * total_trees)
+        train_trees = total_trees - val_trees - test_trees
+
+        train_ids = tree_ids[:train_trees]
+        val_ids = tree_ids[train_trees:train_trees + val_trees]
+        test_ids = tree_ids[train_trees + val_trees:]
+
+        # Collect indices for each split
+        train_indices = [idx for tid in train_ids for idx in tree_to_indices[tid]]
+        val_indices = [idx for tid in val_ids for idx in tree_to_indices[tid]]
+        test_indices = [idx for tid in test_ids for idx in tree_to_indices[tid]]
+
+        # Create Subsets
+        self.dataset = full_dataset  # Save for loss_weights
+        self.train = data.Subset(full_dataset, train_indices)
+        self.val = data.Subset(full_dataset, val_indices)
+        self.test = data.Subset(full_dataset, test_indices)
 
     def train_dataloader(self, augmentation: Optional[Transform] = None):
         r"""

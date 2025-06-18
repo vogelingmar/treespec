@@ -4,21 +4,13 @@ from typing import Optional
 from scipy.spatial import cKDTree
 
 import torch
-import hydra
-import hydra.core.config_store as ConfigStore
+
 
 from treespec.models.classification_model import ClassificationModel
-from treespec.scripts.train import (
-    model_dict,
-    model_weights_dict,
-    loss_function_dict,
-    dataset_dict, 
-)
+
 
 from treespec.conf.config import TreespecConfig
-
-cs = ConfigStore.instance()
-cs.store(name="treespec_config", node=TreespecConfig)
+from treespec.conf.config_parser import train_config_values
 
 def create_lists_from_shapefile(path: str, prefix: Optional[str]):
     points = shapefile.Reader(path)
@@ -127,25 +119,24 @@ def match_and_export(attributes_path: str, cadastre_path: str, output_path: str,
     print(f"Exported matched points to {output_path}.shp")
 
 
-@hydra.main(config_path="../conf", config_name="config", version_base=None)
-def match_predicted_tree_species(tree_images_dir, matched_cadastre_path, cfg: TreespecConfig):
+def match_predicted_tree_species(tree_images_dir, matched_cadastre_path):
     #not tested yet - need data
     
     classification_model = ClassificationModel(
-        model=model_dict[cfg.train.model],
-        model_weights=model_weights_dict[cfg.train.model_weights],
-        num_classes=cfg.train.num_classes,
-        loss_function=loss_function_dict[cfg.train.loss_function](),
-        learning_rate=cfg.train.learning_rate,
+        model=train_config_values("model"),
+        model_weights=train_config_values("model_weights"),
+        num_classes=train_config_values("num_classes"),
+        loss_function=train_config_values("loss_function")(),
+        learning_rate=train_config_values("learning_rate"),
     )
 
-    dataset = dataset_dict[cfg.train.dataset](
-            data_dir=cfg.train.dataset_dir,
-            batch_size=cfg.train.batch_size,
-            num_workers=cfg.train.num_workers,
+    dataset = train_config_values("dataset")(
+            data_dir=train_config_values("dataset_dir"),
+            batch_size=train_config_values("batch_size"),
+            num_workers=train_config_values("num_workers"),
         )
 
-    trained_model_path = cfg.train.trained_model_dir + cfg.train.model + "_finetuned" + ".pth"
+    trained_model_path = train_config_values("trained_model_dir") + train_config_values("model") + "_finetuned" + ".pth"
     classification_model.model.load_state_dict(torch.load(trained_model_path))
     classification_model.eval()  # Set the model to evaluation mode
 
@@ -167,10 +158,30 @@ def match_predicted_tree_species(tree_images_dir, matched_cadastre_path, cfg: Tr
         tree_id = parts[0]
 
         if tree_id in trees:
-            trees[tree_id][f"pred_species"] = predicted_class
+            if "pred_species" in trees[tree_id].keys():
+                trees[tree_id][f"pred_species_{parts[1]}"] = predicted_class
+            else:
+                trees[tree_id]["pred_species"] = predicted_class
         else:
             raise ValueError(f"Tree ID {tree_id} not found in the matched cadastre data.")
-    
+        
+    for tree in trees:
+        number_of_votes = 0
+        votes = {}
+        attributes = list(trees[tree].keys())
+        for attribute in attributes:
+            if attribute.startswith("pred_species"):
+                number_of_votes += 1
+                species = trees[tree][attribute]
+                if species not in votes.keys():
+                    votes[species] = 1
+                elif species in votes.keys():
+                    votes[species] += 1
+        for species in votes.keys():
+            if votes[species] > number_of_votes/2:
+                trees[tree]["pred_species"] = species
+            else: 
+                trees[tree]["pred_species"] = "unknown"
     create_shp_from_dict(trees, matched_cadastre_path + "_w_pred_species")
 
 
