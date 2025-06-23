@@ -67,7 +67,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
             thing_classes=["Tree"], keypoint_names=["kpCP", "kpL", "kpR", "AX1", "AX2"]
         )
 
-    def process_video(  # pylint: disable=too-many-statements, too-many-locals
+    def process_video(  # pylint: disable=too-many-statements, too-many-locals, too-many-branches
         self,
         video_path: str,
         corrected: bool = True,
@@ -139,7 +139,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
                 if mask:
                     # Use bounding boxes to crop, but apply mask to the crop
                     pred_tree_masks = outputs_pred["instances"].pred_masks.cpu().numpy()
-                    for j, (box_coords, mask_arr) in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
+                    for (box_coords, mask_arr) in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
                         x1, y1, x2, y2 = map(int, box_coords)
                         cropped_box = crop_frame[y1:y2, x1:x2]
                         mask_crop = mask_arr[y1:y2, x1:x2]
@@ -182,7 +182,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         vcap.release()
         cv2.destroyAllWindows()
 
-    def process_image(self, image_path: str, mask: bool = False):  # Added mask argument
+    def process_image(self, image_path: str, mask: bool = False): #pylint: disable=too-many-locals
         r"""
         The processing step for a single image.
 
@@ -208,7 +208,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
 
         if mask:
             pred_tree_masks = outputs_pred["instances"].pred_masks.cpu().numpy()
-            for j, (box_coords, mask_arr) in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
+            for box_coords, mask_arr in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
                 x1, y1, x2, y2 = map(int, box_coords)
                 cropped_box = image[y1:y2, x1:x2]
                 mask_crop = mask_arr[y1:y2, x1:x2]

@@ -12,6 +12,7 @@ class TrainParams:  # pylint: disable=too-many-instance-attributes
     dataset: str
     dataset_dir: str
     num_classes: int
+    use_ids: bool
     epoch_count: int
     batch_size: int
     num_workers: int
@@ -38,8 +39,9 @@ class ExtractParams:  # pylint: disable=too-many-instance-attributes
     predict: bool
     mask: bool
 
+
 @dataclass
-class EssenDatasetParams: # pylint: disable=too-many-instance-attributes
+class EssenDatasetParams:  # pylint: disable=too-many-instance-attributes
     """Configuration of parameters for the create_essen_dataset script"""
 
     original_color_images_path: str
@@ -54,6 +56,16 @@ class EssenDatasetParams: # pylint: disable=too-many-instance-attributes
     attribute_path: str
     mask: bool
     filter: str
+    crop: bool
+
+
+@dataclass
+class Matching:
+    """Configuration of parameters for the matching script"""
+
+    predicted_cadastre_path: str
+    cadastre_path: str
+    output_path: str
 
 
 @dataclass
@@ -63,3 +75,4 @@ class TreespecConfig:
     train: TrainParams
     extract: ExtractParams
     essen_dataset: EssenDatasetParams
+    matching: Matching

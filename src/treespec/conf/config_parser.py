@@ -1,36 +1,56 @@
-import hydra
-from hydra.core.config_store import ConfigStore
+"""The config parser for Treespec. It takes the value and the config and returns the translated object or value."""
+
+# pylint: disable=import-outside-toplevel, too-many-return-statements
 from treespec.conf.config import TreespecConfig
 
-cs = ConfigStore.instance()
-cs.store(name="treespec_config", node=TreespecConfig)
 
-@hydra.main(config_path="./", config_name="config")
-def train_config_values(cfg: TreespecConfig, param: str):
+def train_config_values(  # pylint: disable=too-many-locals
+    param: str,
+    cfg: TreespecConfig,
+):
+    r"""Takes a parameter and the config and returns the corresponding value or object.
+
+    Args:
+        param: The parameter to extract.
+        cfg: The TreespecConfig object containing the configuration.
+
+    Returns:
+        The value or object corresponding to the parameter.
+
+    Raises:
+        ValueError: If the parameter is unknown or not supported.
+    """
 
     match param:
         case "model":
             match cfg.train.model:
                 case "resnet50":
-                    from torchvision.models import resnet50
+                    from torchvision.models import resnet50  # type: ignore
+
                     return resnet50
                 case "resnet152":
                     from torchvision.models import resnet152
+
                     return resnet152
                 case "swin_transformer":
                     from torchvision.models import swin_v2_b
+
                     return swin_v2_b
                 case "efficientnet":
                     from torchvision.models import efficientnet_v2_m
+
                     return efficientnet_v2_m
                 case "googlenet":
                     from torchvision.models import googlenet
+
                     return googlenet
                 case "mobilenet":
                     from torchvision.models import mobilenet_v3_large
+
                     return mobilenet_v3_large
                 case "wide_resnet":
                     from torchvision.models import wide_resnet101_2
+
                     return wide_resnet101_2
                 case _:
                     raise ValueError(f"Unknown model: {cfg.train.model}")
@@ -38,24 +58,31 @@ def train_config_values(cfg: TreespecConfig, param: str):
             match cfg.train.model_weights:
                 case "resnet50_default":
                     from torchvision.models import ResNet50_Weights
+
                     return ResNet50_Weights.DEFAULT
                 case "resnet152_default":
                     from torchvision.models import ResNet152_Weights
+
                     return ResNet152_Weights.DEFAULT
                 case "swin_default":
                     from torchvision.models import Swin_V2_B_Weights
+
                     return Swin_V2_B_Weights.DEFAULT
                 case "efficientnet_default":
                     from torchvision.models import EfficientNet_V2_M_Weights
+
                     return EfficientNet_V2_M_Weights.DEFAULT
                 case "googlenet_default":
                     from torchvision.models import GoogLeNet_Weights
+
                     return GoogLeNet_Weights.DEFAULT
                 case "mobilenet_default":
                     from torchvision.models import MobileNet_V3_Large_Weights
+
                     return MobileNet_V3_Large_Weights.DEFAULT
                 case "wide_resnet_default":
                     from torchvision.models import Wide_ResNet101_2_Weights
+
                     return Wide_ResNet101_2_Weights.DEFAULT
                 case _:
                     raise ValueError(f"Unknown model weights: {cfg.train.model_weights}")
@@ -63,18 +90,20 @@ def train_config_values(cfg: TreespecConfig, param: str):
             match cfg.train.dataset:
                 case "folder":
                     from treespec.datasets.image_dataset import ImageDataset
+
                     return ImageDataset
                 case _:
                     raise ValueError(f"Unknown dataset: {cfg.train.dataset}")
         case "loss_function":
             match cfg.train.loss_function:
                 case "cross_entropy":
-                    import torch.nn as nn
+                    from torch import nn
+
                     return nn.CrossEntropyLoss
                 case _:
                     raise ValueError(f"Unknown loss function: {cfg.train.loss_function}")
         case "train_augmentations":
-            default_transforms = train_config_values("model_weights").transforms()
+            default_transforms = train_config_values("model_weights", cfg).transforms()
 
             train_augmentations = default_transforms
 
@@ -82,26 +111,32 @@ def train_config_values(cfg: TreespecConfig, param: str):
                 augmentation_class = None
                 match entry["name"]:
                     case "RandomHorizontalFlip":
-                        from torchvision.transforms import v2
+                        from torchvision.transforms import v2  # type: ignore
+
                         augmentation_class = v2.RandomHorizontalFlip
                     case "RandomVerticalFlip":
                         from torchvision.transforms import v2
+
                         augmentation_class = v2.RandomVerticalFlip
                     case "RandomRotation":
                         from torchvision.transforms import v2
+
                         augmentation_class = v2.RandomRotation
                     case "RandomPerspective":
                         from torchvision.transforms import v2
+
                         augmentation_class = v2.RandomPerspective
                     case "ColorJitter":
                         from torchvision.transforms import v2
+
                         augmentation_class = v2.ColorJitter
                     case "RandomResizedCrop":
                         from torchvision.transforms import v2
+
                         augmentation_class = v2.RandomResizedCrop
                     case _:
-                        raise ValueError(f"Unknown augmentation: {cfg.train.augmentations}")
-                    
+                        raise ValueError(f"Unknown augmentation: {entry["name"]}")
+
                 params = {k: v for k, v in entry.items() if k != "name"}
                 augmentation = augmentation_class(**params)
                 train_augmentations = v2.Compose(
@@ -115,6 +150,8 @@ def train_config_values(cfg: TreespecConfig, param: str):
             return cfg.train.dataset_dir
         case "num_classes":
             return cfg.train.num_classes
+        case "use_ids":
+            return cfg.train.use_ids
         case "epoch_count":
             return cfg.train.epoch_count
         case "batch_size":
@@ -129,9 +166,21 @@ def train_config_values(cfg: TreespecConfig, param: str):
             return cfg.train.trained_model_dir
         case _:
             raise ValueError(f"Unknown parameter: {param}")
-        
-@hydra.main(config_path="./", config_name="config") 
-def image_based_extract_config_values(cfg: TreespecConfig, param: str):
+
+
+def image_based_extract_config_values(param: str, cfg: TreespecConfig):
+    r"""Takes a parameter and the config and returns the corresponding value or object.
+
+    Args:
+        param: The parameter to extract.
+        cfg: The TreespecConfig object containing the configuration.
+
+    Returns:
+        The value or object corresponding to the parameter.
+
+    Raises:
+        ValueError: If the parameter is unknown or not supported.
+    """
     match param:
         case "model":
             return cfg.extract.model
@@ -142,7 +191,10 @@ def image_based_extract_config_values(cfg: TreespecConfig, param: str):
         case "visualize":
             return cfg.extract.visualize
         case "video":
-            return cfg.extract.video
+            if hasattr(cfg.extract, "video"):
+                return cfg.extract.video
+            else: 
+                return None
         case "corrected":
             return cfg.extract.corrected
         case "image_dir":
@@ -158,23 +210,35 @@ def image_based_extract_config_values(cfg: TreespecConfig, param: str):
         case _:
             raise ValueError(f"Unknown parameter: {param}")
 
-@hydra.main(config_path="./", config_name="config")        
-def create_essen_dataset_config_values(cfg: TreespecConfig, param: str):
+
+def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
+    r"""Takes a parameter and the config and returns the corresponding value or object.
+
+    Args:
+        param: The parameter to extract.
+        cfg: The TreespecConfig object containing the configuration.
+
+    Returns:
+        The value or object corresponding to the parameter.
+
+    Raises:
+        ValueError: If the parameter is unknown or not supported.
+    """
     match param:
         case "original_color_images_path":
             return cfg.essen_dataset.original_color_images_path
         case "color_images_path":
             return cfg.essen_dataset.color_images_path
         case "color_type":
-            return cfg.essen_dataset.color_image_type
+            return cfg.essen_dataset.color_type
         case "original_seg_images_path":
-            return cfg.essen_dataset.original_segmentation_images_path
+            return cfg.essen_dataset.original_seg_images_path
         case "segmentid_images_path":
-            return cfg.essen_dataset.segmentation_images_path
+            return cfg.essen_dataset.segmentid_images_path
         case "seg_type":
-            return cfg.essen_dataset.segmentation_image_type
+            return cfg.essen_dataset.seg_type
         case "seg_output_type":
-            return cfg.essen_dataset.segmentation_output_type
+            return cfg.essen_dataset.seg_output_type
         case "run":
             return cfg.essen_dataset.run
         case "output_trees_dir":
@@ -185,5 +249,34 @@ def create_essen_dataset_config_values(cfg: TreespecConfig, param: str):
             return cfg.essen_dataset.mask
         case "filter":
             return cfg.essen_dataset.filter
+        case "crop":
+            return cfg.essen_dataset.crop
+        case _:
+            raise ValueError(f"Unknown parameter: {param}")
+
+
+def matching_config_values(
+    param: str,
+    cfg: TreespecConfig,
+):
+    r"""Takes a parameter and the config and returns the corresponding value or object.
+
+    Args:
+        param: The parameter to extract.
+        cfg: The TreespecConfig object containing the configuration.
+
+    Returns:
+        The value or object corresponding to the parameter.
+
+    Raises:
+        ValueError: If the parameter is unknown or not supported.
+    """
+    match param:
+        case "predicted_cadastre_path":
+            return cfg.matching.predicted_cadastre_path
+        case "cadastre_path":
+            return cfg.matching.cadastre_path
+        case "output_path":
+            return cfg.matching.output_path
         case _:
             raise ValueError(f"Unknown parameter: {param}")

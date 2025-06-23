@@ -2,8 +2,9 @@ train:
   model: resnet152
   model_weights: resnet152_default
   dataset: folder
-  dataset_dir: /home/ingmar/Documents/repos/treespec/src/treespec/datasets/sauen/sauen_big_clean
+  dataset_dir: /home/ingmar/Documents/repos/treespec/src/treespec/datasets/sauen/sauen_big_clean_nv6
   num_classes: 9
+  use_ids: true
   epoch_count: 20
   batch_size: 5
   num_workers: 27
@@ -34,14 +35,20 @@ extract:
 
 essen_dataset:
   attribute_path: /data/essen/cadastre/matched_output/matched_output
-  original_color_images_path: /data/essen/dataset/color/Run 40 Camera 4 360
-  color_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_40
+  original_color_images_path: /data/essen/MG4/2022-09-12_pano
+  color_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_4
   color_type: jpg
-  original_seg_images_path: /data/essen/dataset/depth and seg/run_40
-  segmentid_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_40
+  original_seg_images_path: /data/essen/MG4/2022-09-12_2_seg
+  segmentid_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_4
   seg_type: tif
   seg_output_type: png
-  run: 40
-  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_40
+  run: 4
+  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_4
   mask: true
   filter: segmentid
+  crop: false
+
+matching:
+  predicted_cadastre_path: /data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041
+  cadastre_path: /data/essen/cadastre/cadastre_essen40-42/cadastre_essen
+  output_path: /data/essen/cadastre/matched_output/matched_output

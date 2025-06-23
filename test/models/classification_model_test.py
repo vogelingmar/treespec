@@ -59,7 +59,7 @@ def test_overfitting(classification_model):
     trainer = L.Trainer(max_epochs=15, log_every_n_steps=30)
 
     data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/sauen_v1")
-    sauen_dataset = ImageDataset(data_dir=data_dir, batch_size=5, num_workers=27)
+    sauen_dataset = ImageDataset(data_dir=data_dir, batch_size=5, num_workers=27, use_ids=False)
     sauen_dataset.setup()
 
     default_transforms = ResNet50_Weights.DEFAULT.transforms()

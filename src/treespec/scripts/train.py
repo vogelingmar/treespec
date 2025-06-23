@@ -1,61 +1,67 @@
 """Training Script of the Treespec Pipeline"""
 
 import torch
-from torch import nn
 import pytorch_lightning as L
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+import hydra
+from hydra.core.config_store import ConfigStore
 
 from treespec.models.classification_model import ClassificationModel
-from treespec.datasets.image_dataset import ImageDataset
 from treespec.conf.config import TreespecConfig
-from treespec.conf.config_parser import train_config_values as train_config_values
+from treespec.conf.config_parser import train_config_values
 
-if __name__ == "__main__":
+cs = ConfigStore.instance()
+cs.store(name="treespec_config", node=TreespecConfig)
+
+
+@hydra.main(config_path="../conf", config_name="config")
+def main(cfg: TreespecConfig):
     """Training Script of the Treespec Pipeline"""
 
-    default_transforms = train_config_values("model_weights").transforms()
+    default_transforms = train_config_values("model_weights", cfg).transforms()
 
-    dataset = train_config_values("dataset")(
-        data_dir=train_config_values("dataset_dir"),
-        batch_size=train_config_values("batch_size"),
-        num_workers=train_config_values("num_workers"),
+    dataset = train_config_values("dataset", cfg)(
+        data_dir=train_config_values("dataset_dir", cfg),
+        batch_size=train_config_values("batch_size", cfg),
+        num_workers=train_config_values("num_workers", cfg),
+        use_ids=train_config_values("use_ids", cfg),
     )
     dataset.prepare_data()
     dataset.setup(transform=default_transforms)
 
-    loss_function = train_config_values("loss_function")(label_smoothing=0.1, weight=dataset.loss_weights())
+    loss_function = train_config_values("loss_function", cfg)(label_smoothing=0.1, weight=dataset.loss_weights())
 
     model = ClassificationModel(
-        model=train_config_values("model"),
-        model_weights=train_config_values("model_weights"),
-        num_classes=train_config_values("num_classes"),
+        model=train_config_values("model", cfg),
+        model_weights=train_config_values("model_weights", cfg),
+        num_classes=train_config_values("num_classes", cfg),
         loss_function=loss_function,
-        learning_rate=train_config_values("learning_rate"),
+        learning_rate=train_config_values("learning_rate", cfg),
     )
 
     early_stop_callback = EarlyStopping(
-        monitor="val_loss",           # or another metric, e.g. "val_acc"
-        patience=5,                   # number of epochs with no improvement after which training will be stopped
+        monitor="val_loss",  # or another metric, e.g. "val_acc"
+        patience=5,  # number of epochs with no improvement after which training will be stopped
         verbose=True,
-        mode="min"                    # "min" for loss, "max" for accuracy
+        mode="min",  # "min" for loss, "max" for accuracy
     )
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
-        dirpath=train_config_values("trained_model_dir"),
-        filename=train_config_values("model") + "_best",
+        dirpath=train_config_values("trained_model_dir", cfg),
+        filename=str(train_config_values("model", cfg)) + "_best",
         save_top_k=1,
-        mode="min"
+        mode="min",
     )
 
     trainer = L.Trainer(
-        max_epochs=train_config_values("epoch_count"),
+        max_epochs=train_config_values("epoch_count", cfg),
         log_every_n_steps=10,
         callbacks=[early_stop_callback, checkpoint_callback],
     )
 
     trainer.fit(
         model=model,
-        train_dataloaders=dataset.train_dataloader(augmentation=train_config_values["train_augmentations"]),
+        train_dataloaders=dataset.train_dataloader(augmentation=train_config_values("train_augmentations", cfg)),
         val_dataloaders=dataset.val_dataloader(),
     )
 
@@ -74,5 +80,9 @@ if __name__ == "__main__":
     else:
         torch.save(
             model.model.state_dict(),
-            (train_config_values("trained_model_dir") + train_config_values("model") + "_finetuned" + ".pth"),
+            (train_config_values("trained_model_dir", cfg) + train_config_values("model", cfg) + "_finetuned" + ".pth"),
         )
+
+
+if __name__ == "__main__":
+    main()  # pylint: disable=no-value-for-parameter

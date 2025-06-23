@@ -11,7 +11,7 @@ from treespec.datasets.image_dataset import ImageDataset
 def sauen_dataset():
     """Fixture that holds a SauenDataset instance"""
     data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/sauen_v1")
-    return ImageDataset(data_dir=data_dir, batch_size=5, num_workers=27)
+    return ImageDataset(data_dir=data_dir, batch_size=5, num_workers=27, use_ids=False)
 
 
 def test_setup(sauen_dataset):

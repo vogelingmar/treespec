@@ -1,4 +1,4 @@
-"""Classification Model to classify the barks from the Sauen Dataset."""
+"""Classification Model to classify the barks from the Sauen Dataset."""  # pylint: disable=duplicate-code
 
 from typing import Callable
 
