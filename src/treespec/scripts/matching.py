@@ -259,4 +259,5 @@ def main(cfg: TreespecConfig):
 
 
 if __name__ == "__main__":
+    #TODO: move the methods into utils
     main()

@@ -44,7 +44,7 @@ def main(cfg: TreespecConfig):
         crop=False,
     )
 
-    image_tools.extract_trees(
+    image_tools.find_all_trees(
         segmentid_dir=config_values("segmentid_images_path", cfg),
         color_dir=config_values("color_images_path", cfg),
         output_dir=config_values("output_trees_dir", cfg),

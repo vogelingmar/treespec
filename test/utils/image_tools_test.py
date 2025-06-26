@@ -1,13 +1,13 @@
 import pytest
 import os
-from treespec.utils.image_tools import select_rgb_images, extract_pano_faces, extract_trees
+from treespec.utils.image_tools import select_rgb_images, extract_pano_faces, find_all_trees
 
 # TODO: finish test and according mock data
 testpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def test_select_rgb_images():
-    input_dir = os.path.join(testpath, "mock/essen")
+    input_dir = os.path.join(testpath, "mock/essen/rgb")
     output_dir = os.path.join(testpath, "mock/temp/pictures")
     image_type = "jpg"
 
@@ -35,6 +35,7 @@ def test_extract_pano_faces():
     input_type = "tif"
     output_type = "png"
     run = "40"
+    crop = False
     filter = "segmentid"
 
     if not os.path.exists(output_dir):
@@ -43,7 +44,7 @@ def test_extract_pano_faces():
         for file in os.listdir(output_dir):
             os.remove(os.path.join(output_dir, file))
 
-    extract_pano_faces(input_dir, output_dir, input_type, output_type, run, filter)
+    extract_pano_faces(input_dir, output_dir, input_type, output_type, run, crop, filter)
 
     output = os.listdir(output_dir)
     assert len(output) > 0
@@ -55,10 +56,11 @@ def test_extract_pano_faces():
         os.remove(os.path.join(output_dir, file))
 
 
-def test_extract_trees():
+def test_find_all_trees():
+    #TODO: finish test by creating required mock data
     segmentid_dir = os.path.join(testpath, "mock/temp/pictures")
-    color_dir = "mock/temp/pictures"
-    output_dir = "mock/temp/pictures"
+    color_dir = os.path.join(testpath, "mock/temp/pictures")
+    output_dir = os.path.join(testpath, "mock/temp/pictures")
     tree_attributes_dict = "kp"
     cover = True
 
@@ -68,7 +70,7 @@ def test_extract_trees():
         for file in os.listdir(output_dir):
             os.remove(os.path.join(output_dir, file))
 
-    extract_trees(segmentid_dir, color_dir, output_dir, tree_attributes_dict, cover)
+    find_all_trees(segmentid_dir, color_dir, output_dir, tree_attributes_dict, cover)
 
     output = os.listdir(output_dir)
     assert len(output) > 0

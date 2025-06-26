@@ -191,7 +191,7 @@ def extract_tree_images(
             imageio.imwrite(out_path, cropped)
 
 
-def extract_trees(
+def find_all_trees(
     segmentid_dir: str,
     color_dir: str,
     output_dir: str,

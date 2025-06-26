@@ -1,4 +1,4 @@
-"""Lumberjack automatically extracts tree images from a video"""
+"""Lumberjack: Automatically extracts tree images from a video or images."""
 
 from __future__ import absolute_import
 from typing import Optional
@@ -16,15 +16,15 @@ from detectron2.utils.video_visualizer import VideoVisualizer, Visualizer  # typ
 from detectron2.utils.logger import setup_logger  # type: ignore
 
 
-class Lumberjack:  # pylint: disable=too-few-public-methods
-    r"""
-    Lumberjack automatically extracts tree images from a video or images.
+class Lumberjack:
+    """
+    Extracts tree images from video or images using Detectron2.
 
     Args:
-        model: Path to the model file.
-        output_trees_dir: Directory to save the extracted tree images.
-        predict_video_dest_dir: Directory to save the video with predictions in (leave empty to not save).
-        visualize: If True, the predictions will be visualized during runtime.
+        model: Path to model weights.
+        output_trees_dir: Directory to save extracted tree images.
+        predict_video_dest_dir: Directory to save prediction video (optional).
+        visualize: If True, show predictions during runtime.
     """
 
     def __init__(
@@ -80,7 +80,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
             video: The path to the video file from which to extract tree images.
             corrected: If true, the video can be used as is for extraction. If false, the video will be corrected first.
         """
-        if corrected is False:
+        if not corrected:
             directory = os.path.dirname(video_path)
             filename = os.path.basename(video_path)
             new_filename = "corrected_" + filename
@@ -88,7 +88,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
 
             ffmpeg.input(video_path).output(
                 corrected_video_path,
-                vf="lenscorrection=k1=-0.5:k2=-0.5, " "crop=in_w/3:in_h/3:in_w/3:in_h/3, transpose=1",
+                vf="lenscorrection=k1=-0.5:k2=-0.5,crop=in_w/3:in_h/3:in_w/3:in_h/3,transpose=1",
             ).run()
 
         else:
@@ -108,8 +108,7 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
             )
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
             video = cv2.VideoWriter(dest, fourcc, 5, (w, h))
-
-        if vcap.isOpened() is False:
+        if not vcap.isOpened():
             print("Error opening video stream or file")
 
         vid_vis = VideoVisualizer(metadata=self.tree_metadata)
@@ -121,16 +120,12 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
-            y = 000
-            # h = 800
-            x = 000
-            # w = 800
+            y, x = 0, 0
             crop_frame = frame[y : y + h, x : x + w]
             # cv2.imshow('frame'<, crop_frame)
             if cv2.waitKey(1) == ord("q"):
                 break
-
-            # 5 fps
+            # Process every 12th frame (approx. 5 fps)
             if nframes % 12 == 0:
                 outputs_pred = self.predictor_synth(crop_frame)
                 pred_tree_boxes = outputs_pred["instances"].pred_boxes.tensor.cpu().numpy()
@@ -139,14 +134,13 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
                 if mask:
                     # Use bounding boxes to crop, but apply mask to the crop
                     pred_tree_masks = outputs_pred["instances"].pred_masks.cpu().numpy()
-                    for (box_coords, mask_arr) in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
+                    for j, (box_coords, mask_arr) in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
                         x1, y1, x2, y2 = map(int, box_coords)
                         cropped_box = crop_frame[y1:y2, x1:x2]
                         mask_crop = mask_arr[y1:y2, x1:x2]
                         # Ensure mask_crop shape matches cropped_box
                         if mask_crop.shape[:2] != cropped_box.shape[:2]:
-                            continue  # skip if shapes don't match
-                        # Apply mask: keep only masked area, set rest to black
+                            continue
                         masked_img = cropped_box.copy()
                         masked_img[~mask_crop] = 0
                         if (x2 - x1) * (y2 - y1) >= 200000:
@@ -182,15 +176,12 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         vcap.release()
         cv2.destroyAllWindows()
 
-    def process_image(self, image_path: str, mask: bool = False): #pylint: disable=too-many-locals
-        r"""
-        The processing step for a single image.
-
-        Takes an image path and cuts all of the predicted tree bark frames from it and exports it to the output dir.
-
+    def process_image(self, image_path: str, mask: bool = False):
+        """
+        Extracts tree images from a single image.
         Args:
-            image_path: The path to the image file from which to extract tree images.
-            mask: If True, apply the predicted mask to the cropped image.
+            image_path: Path to image file.
+            mask: If True, apply predicted mask to crops.
         """
 
         image = cv2.imread(image_path)
@@ -248,12 +239,13 @@ class Lumberjack:  # pylint: disable=too-few-public-methods
         filetype: str = "jpg",
         mask: bool = False,
     ):
-        r"""
-        Processes all the images from a given directory.
-
+        """
+        Processes all images in a directory (recursively).
         Args:
-            image_dir: The directory containing the images or subdirectories with images to be processed.
-            cameras: List of the camera identifiers to be used for filtering images.
+            image_dir: Directory containing images or subdirectories.
+            cameras: List of camera identifiers to filter images.
+            filetype: File extension to filter (default: 'jpg').
+            mask: If True, apply predicted mask to crops.
         """
 
         for image in os.listdir(image_dir):

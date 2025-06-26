@@ -18,8 +18,8 @@ cs.store(name="treespec_config", node=TreespecConfig)
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg: TreespecConfig):
-    r"""
-    Script that extracts tree images from a video and organizes them into class folders according to the predictions.
+    """
+    Extracts tree images from video/images and organizes them into class folders based on predictions.
     """
     prediction_video_dir = None
     if config_values("predict_video_dest_dir", cfg) is not None:
