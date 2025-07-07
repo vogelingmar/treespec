@@ -22,6 +22,20 @@ def test_setup(sauen_dataset):
     assert len(sauen_dataset.val) > 0
     assert len(sauen_dataset.test) > 0
 
+    #TODO: test this code
+    use_ids = False
+    if use_ids is True:
+        for sample in sauen_dataset.train:
+            filename = os.path.basename(sample)
+            tree_id = filename.split("_")[0]
+            for entry in sauen_dataset.test:
+                filename = os.path.basename(entry)
+                assert filename.split("_")[0] == tree_id
+            for entry in sauen_dataset.val:
+                filename = os.path.basename(entry)
+                assert filename.split("_")[0] == tree_id
+            
+
 
 def test_dataloaders(sauen_dataset):
     """Tests the dataloaders of SauenDataset"""

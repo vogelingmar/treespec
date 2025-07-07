@@ -24,6 +24,11 @@ dependencies = [
     "ffmpeg-python",
     "detectron2 @ git+https://github.com/facebookresearch/detectron2.git",
     "dataclasses",
+    "py360convert",
+    "scikit-image",
+    "imageio",
+    "scipy",
+    "pyshp",
 ]
 [project.optional-dependencies]
 dev = [

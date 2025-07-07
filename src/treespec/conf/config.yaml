@@ -49,6 +49,6 @@ essen_dataset:
   crop: false
 
 matching:
-  predicted_cadastre_path: /data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041
+  predicted_cadastre_path: /data/tree_attributes_filtered/Run 20s2224532_20220912_113956_0020/Run 20s2224532_20220912_113956_0020
   cadastre_path: /data/essen/cadastre/cadastre_essen40-42/cadastre_essen
   output_path: /data/essen/cadastre/matched_output/matched_output

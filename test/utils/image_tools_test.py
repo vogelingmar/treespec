@@ -58,10 +58,10 @@ def test_extract_pano_faces():
 
 def test_find_all_trees():
     #TODO: finish test by creating required mock data
-    segmentid_dir = os.path.join(testpath, "mock/temp/pictures")
-    color_dir = os.path.join(testpath, "mock/temp/pictures")
+    segmentid_dir = os.path.join(testpath, "mock/essen/trees/segmentid")
+    color_dir = os.path.join(testpath, "mock/essen/trees/color")
     output_dir = os.path.join(testpath, "mock/temp/pictures")
-    tree_attributes_dict = "kp"
+    tree_attributes_dict = "mock/essen/trees/cadastre"
     cover = True
 
     if not os.path.exists(output_dir):

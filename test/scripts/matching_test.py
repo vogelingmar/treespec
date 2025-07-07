@@ -8,14 +8,17 @@ def test_create_lists_from_shapefile():
     pass
 
 def test_create_dictionary():
-    #TODO: write test
+    #TODO: basically the same as above
     pass
 
 def test_create_shp_from_dict():
+    #TODO: create a dict in the same shape and look for created shape file
     pass
 
-def test_and_export():
+def test_match_and_export():
+    #TODO: check if the size has gotten smaller 
     pass
 
 def test_match_predicted_tree_species():
+    #TODO: i need all the data ready for this
     pass

@@ -5,8 +5,8 @@ from typing import Optional
 import shutil
 import imageio.v2 as imageio
 import numpy as np
-import py360convert  # TODO: add to install requirements
-from skimage.transform import resize  # TODO: add to install requirement
+import py360convert
+from skimage.transform import resize
 
 
 def select_rgb_images(input_dir: str, output_dir: str, image_type: str):
@@ -163,7 +163,6 @@ def extract_tree_images(
         else:
             tree_species = "unknown"
 
-        # TODO:maybe change the id of the image to the BAUMID from the essen cadastre -> what happens to new trees?
         out_path = os.path.join(output_dir, f"{seg_id}_{image}_{tree_species}.png")
 
         if cover:
