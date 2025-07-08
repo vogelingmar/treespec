@@ -49,6 +49,7 @@ essen_dataset:
   crop: false
 
 matching:
-  predicted_cadastre_path: /data/tree_attributes_filtered/Run 20s2224532_20220912_113956_0020/Run 20s2224532_20220912_113956_0020
-  cadastre_path: /data/essen/cadastre/cadastre_essen40-42/cadastre_essen
-  output_path: /data/essen/cadastre/matched_output/matched_output
+  predicted_cadastre_path: /data/essen/cadastre/pred_cadastre_6-82/run82/run82
+  cadastre_path: /data/essen/cadastre/Whole-Essen/cadastre_essen
+  output_path: /data/essen/cadastre/matched_output_82/matched_output
+  use_dbh_filter: False

@@ -278,5 +278,7 @@ def matching_config_values(
             return cfg.matching.cadastre_path
         case "output_path":
             return cfg.matching.output_path
+        case "use_dbh_filter":
+            return cfg.matching.use_dbh_filter
         case _:
             raise ValueError(f"Unknown parameter: {param}")

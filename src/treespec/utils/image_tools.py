@@ -114,16 +114,17 @@ def extract_tree_images(
     color_face_path: str,
     output_dir: str,
     tree_attributes_dict: dict,
-    cover: bool,
-    image: str,
+    tree_cover: bool,
+    image_number: str,
 ):
+    #TODO: implement bark cover differently (with string: {tree, bark, none})
     """Extracts tree images from segmentid and color images based on segment IDs.
     Args:
         segmentid_face_path: Path to the segment ID face image.
         color_face_path: Path to the color face image.
         output_dir: Directory where the extracted tree images will be saved.
         tree_attributes_dict: Dictionary containing tree attributes.
-        cover: Whether to apply a mask to the cropped images.
+        tree_cover: Whether to apply a mask to the cropped images.
         image: Identifier for the image being processed (e.g., "image_number_orientation").
     """
     segmentid_face = imageio.imread(segmentid_face_path)
@@ -163,9 +164,9 @@ def extract_tree_images(
         else:
             tree_species = "unknown"
 
-        out_path = os.path.join(output_dir, f"{seg_id}_{image}_{tree_species}.png")
+        out_path = os.path.join(output_dir, f"{seg_id}_{image_number}_{tree_species}.png")
 
-        if cover:
+        if tree_cover:
             # Resize mask to match cropped shape
             mask_cropped = mask[y0:y1, x0:x1]
             mask_resized = np.array(mask_cropped, dtype=np.uint8)
@@ -195,7 +196,7 @@ def find_all_trees(
     color_dir: str,
     output_dir: str,
     tree_attributes_dict: dict,
-    cover: bool,
+    tree_cover: bool,
 ):
     """Extracts tree images from segmentid and color directories based on segment IDs.
     Args:
@@ -203,7 +204,7 @@ def find_all_trees(
         color_dir: Directory containing color images.
         output_dir: Directory where the extracted tree images will be saved.
         tree_attributes_dict: Dictionary containing tree attributes.
-        cover: Whether to apply a mask to the cropped images.
+        tree_cover: Whether to apply a mask to the cropped images.
     """
     os.makedirs(output_dir, exist_ok=True)
     for segmentid_image in os.listdir(segmentid_dir):
@@ -220,8 +221,8 @@ def find_all_trees(
             color_face_path=color_path,
             output_dir=output_dir,
             tree_attributes_dict=tree_attributes_dict,
-            cover=cover,
-            image=f"{image_number}{orientation}",
+            tree_cover=tree_cover,
+            image_number=f"{image_number}{orientation}",
         )
 
     print(f"Extracted tree images to {output_dir}")

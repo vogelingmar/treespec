@@ -17,7 +17,8 @@ def main(cfg: TreespecConfig):
     attributes_path = matching_config_values("predicted_cadastre_path", cfg)
     cadastre_path = matching_config_values("cadastre_path", cfg)
     output_path = matching_config_values("output_path", cfg)
-    match_and_export(attributes_path, cadastre_path, output_path, True)
+    use_dbh_filter = matching_config_values("use_dbh_filter", cfg)
+    match_and_export(attributes_path, cadastre_path, output_path, use_dbh_filter)
 
 if __name__ == "__main__":
     main()

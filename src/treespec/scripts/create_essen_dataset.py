@@ -49,7 +49,7 @@ def main(cfg: TreespecConfig):
         color_dir=config_values("color_images_path", cfg),
         output_dir=config_values("output_trees_dir", cfg),
         tree_attributes_dict=tree_attributes_dict,
-        cover=config_values("mask", cfg),
+        tree_cover=config_values("mask", cfg),
     )
 
     output_trees_dir = config_values("output_trees_dir", cfg)

@@ -66,6 +66,7 @@ class Matching:
     predicted_cadastre_path: str
     cadastre_path: str
     output_path: str
+    use_dbh_filter: bool
 
 
 @dataclass
