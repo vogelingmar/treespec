@@ -6,7 +6,7 @@ import hydra
 from hydra.core.config_store import ConfigStore
 
 from treespec.utils import image_tools
-from treespec.scripts.matching import create_dictionary
+from treespec.utils.matching_tools import create_dictionary
 
 from treespec.conf.config_parser import create_essen_dataset_config_values as config_values
 from treespec.conf.config import TreespecConfig
@@ -25,33 +25,46 @@ def main(cfg: TreespecConfig):
     #    output_dir=config_values["color_images_path"],
     #    image_type=config_values["color_type"],
     # )
-    image_tools.extract_pano_faces(
-        input_dir=config_values("original_color_images_path", cfg),
-        output_dir=config_values("color_images_path", cfg),
-        input_type=config_values("color_type", cfg),
-        output_type=config_values("color_type", cfg),
-        run=config_values("run", cfg),
-        crop=False,
-    )
 
-    image_tools.extract_pano_faces(
-        input_dir=config_values("original_seg_images_path", cfg),
-        output_dir=config_values("segmentid_images_path", cfg),
-        input_type=config_values("seg_type", cfg),
-        output_type=config_values("seg_output_type", cfg),
-        run=config_values("run", cfg),
-        filter=config_values("filter", cfg),
-        crop=False,
-    )
+    if not config_values("pictures_extracted", cfg):
+
+        image_tools.extract_pano_faces(
+            input_dir=config_values("original_color_images_path", cfg),
+            output_dir=config_values("color_images_path", cfg),
+            input_type=config_values("color_type", cfg),
+            output_type=config_values("color_type", cfg),
+            run=config_values("run", cfg),
+            crop=False,
+        )
+
+        image_tools.extract_pano_faces(
+            input_dir=config_values("original_id_images_path", cfg),
+            output_dir=config_values("segmentid_images_path", cfg),
+            input_type=config_values("seg_type", cfg),
+            output_type=config_values("seg_output_type", cfg),
+            run=config_values("run", cfg),
+            filter=config_values("filter_id", cfg),
+            crop=False,
+        )
+
+        image_tools.extract_pano_faces(
+            input_dir=config_values("original_sem_images_path", cfg),
+            output_dir=config_values("semantic_images_path", cfg),
+            input_type=config_values("sem_type", cfg),
+            output_type=config_values("sem_output_type", cfg),
+            run=config_values("run", cfg),
+            filter=config_values("filter_semantic", cfg),
+            crop=False,
+        )
 
     image_tools.find_all_trees(
         segmentid_dir=config_values("segmentid_images_path", cfg),
         color_dir=config_values("color_images_path", cfg),
         output_dir=config_values("output_trees_dir", cfg),
         tree_attributes_dict=tree_attributes_dict,
-        tree_cover=config_values("mask", cfg),
+        semantic_dir=config_values("semantic_images_path", cfg),
+        cover=config_values("mask", cfg),
     )
-
     output_trees_dir = config_values("output_trees_dir", cfg)
 
     classes = []

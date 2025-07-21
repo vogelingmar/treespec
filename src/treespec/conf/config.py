@@ -47,16 +47,22 @@ class EssenDatasetParams:  # pylint: disable=too-many-instance-attributes
     original_color_images_path: str
     color_images_path: str
     color_type: str
-    original_seg_images_path: str
+    original_id_images_path: str
     segmentid_images_path: str
     seg_type: str
     seg_output_type: str
+    original_sem_images_path: str
+    semantic_images_path: str
+    sem_type: str
+    sem_output_type: str
     run: str
     output_trees_dir: str
     attribute_path: str
-    mask: bool
-    filter: str
+    mask: str
+    filter_id: str
+    filter_semantic: str
     crop: bool
+    pictures_extracted: bool
 
 
 @dataclass

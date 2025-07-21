@@ -34,22 +34,28 @@ extract:
   mask: true
 
 essen_dataset:
-  attribute_path: /data/essen/cadastre/matched_output/matched_output
-  original_color_images_path: /data/essen/MG4/2022-09-12_pano
-  color_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_4
+  attribute_path: /data/essen/cadastre/matched_output_70/matched_output
+  original_color_images_path: /data/essen/MG4/13.09.2022/panos
+  color_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_70
   color_type: jpg
-  original_seg_images_path: /data/essen/MG4/2022-09-12_2_seg
-  segmentid_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_4
+  original_id_images_path: /home/ingmar/Downloads/tree_filtering/output
+  segmentid_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_70
   seg_type: tif
   seg_output_type: png
-  run: 4
-  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_4
-  mask: true
-  filter: segmentid
+  original_sem_images_path: /home/ingmar/Downloads/tree_filtering/output
+  semantic_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/semantic_70
+  sem_type: tif
+  sem_output_type: png
+  run: 70
+  mask: bark
+  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_70
+  filter_id: segmentid
+  filter_semantic: semanticclass
   crop: false
+  pictures_extracted: true
 
 matching:
-  predicted_cadastre_path: /data/essen/cadastre/pred_cadastre_6-82/run82/run82
+  predicted_cadastre_path: /data/essen/cadastre/
   cadastre_path: /data/essen/cadastre/Whole-Essen/cadastre_essen
   output_path: /data/essen/cadastre/matched_output_82/matched_output
   use_dbh_filter: False

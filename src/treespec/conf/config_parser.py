@@ -231,14 +231,22 @@ def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
             return cfg.essen_dataset.color_images_path
         case "color_type":
             return cfg.essen_dataset.color_type
-        case "original_seg_images_path":
-            return cfg.essen_dataset.original_seg_images_path
+        case "original_id_images_path":
+            return cfg.essen_dataset.original_id_images_path
         case "segmentid_images_path":
             return cfg.essen_dataset.segmentid_images_path
         case "seg_type":
             return cfg.essen_dataset.seg_type
         case "seg_output_type":
             return cfg.essen_dataset.seg_output_type
+        case "original_sem_images_path":
+            return cfg.essen_dataset.original_sem_images_path
+        case "semantic_images_path":
+            return cfg.essen_dataset.semantic_images_path
+        case "sem_type":
+            return cfg.essen_dataset.sem_type
+        case "sem_output_type":
+            return cfg.essen_dataset.sem_output_type
         case "run":
             return cfg.essen_dataset.run
         case "output_trees_dir":
@@ -247,10 +255,14 @@ def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
             return cfg.essen_dataset.attribute_path
         case "mask":
             return cfg.essen_dataset.mask
-        case "filter":
-            return cfg.essen_dataset.filter
+        case "filter_id":
+            return cfg.essen_dataset.filter_id
+        case "filter_semantic":
+            return cfg.essen_dataset.filter_semantic
         case "crop":
             return cfg.essen_dataset.crop
+        case "pictures_extracted":
+            return cfg.essen_dataset.pictures_extracted
         case _:
             raise ValueError(f"Unknown parameter: {param}")
 
