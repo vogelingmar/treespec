@@ -47,7 +47,7 @@ essen_dataset:
   sem_type: tif
   sem_output_type: png
   run: 70
-  mask: bark
+  mask:
   output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_70
   filter_id: segmentid
   filter_semantic: semanticclass
@@ -55,7 +55,7 @@ essen_dataset:
   pictures_extracted: true
 
 matching:
-  predicted_cadastre_path: /data/essen/cadastre/
+  predicted_cadastre_path: /data/essen/cadastre/pred_essen40-42/20220905_092821_0041/20220905_092821_0041
   cadastre_path: /data/essen/cadastre/Whole-Essen/cadastre_essen
-  output_path: /data/essen/cadastre/matched_output_82/matched_output
+  output_path: /data/essen/cadastre/matched_output_41/matched_output
   use_dbh_filter: False

@@ -208,12 +208,26 @@ def extract_tree_images(
                         preserve_range=True,
                         anti_aliasing=False,
                     ).astype(semantic_face.dtype)
-                # Create bark mask: 1 where semantic == 1, else 0
+                # Create bark mask: 1 where semantic == 0, else 0
                 bark_mask = (sem_crop == 0).astype(np.uint8)
                 if masked_cropped.ndim == 3:
                     masked_cropped = masked_cropped * bark_mask[..., None]
                 else:
                     masked_cropped = masked_cropped * bark_mask
+
+                # --- Additional crop to bark bounding box ---
+                bark_coords = np.argwhere(bark_mask)
+                if bark_coords.size > 0:
+                    bark_y0, bark_x0 = bark_coords.min(axis=0)
+                    bark_y1, bark_x1 = bark_coords.max(axis=0) + 1
+                    # Crop both mask and image
+                    if masked_cropped.ndim == 3:
+                        masked_cropped = masked_cropped[bark_y0:bark_y1, bark_x0:bark_x1, :]
+                    else:
+                        masked_cropped = masked_cropped[bark_y0:bark_y1, bark_x0:bark_x1]
+                else:
+                    # If no bark found, skip saving this image
+                    continue
 
             imageio.imwrite(out_path, masked_cropped)
         elif cover is None:
