@@ -1,9 +1,9 @@
 train:
-  model: resnet152
-  model_weights: resnet152_default
+  model: resnet50
+  model_weights: resnet50_default
   dataset: folder
-  dataset_dir: /home/ingmar/Documents/repos/treespec/src/treespec/datasets/sauen/sauen_big_clean_nv6
-  num_classes: 9
+  dataset_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_70
+  num_classes: 7
   use_ids: true
   epoch_count: 20
   batch_size: 5
@@ -34,10 +34,11 @@ extract:
   mask: true
 
 essen_dataset:
-  attribute_path: /data/essen/cadastre/matched_output_70/matched_output
-  original_color_images_path: /data/essen/MG4/13.09.2022/panos
+  attribute_path: /data/essen/inventory/matched_output_70/matched_output
+  original_color_images_path: /data/essen/data/MG4/13.09.2022/panos
   color_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_70
   color_type: jpg
+  color_output_type: png
   original_id_images_path: /home/ingmar/Downloads/tree_filtering/output
   segmentid_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_70
   seg_type: tif
@@ -47,15 +48,15 @@ essen_dataset:
   sem_type: tif
   sem_output_type: png
   run: 70
-  mask:
-  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_70
+  mask: bark
+  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/barks_70
   filter_id: segmentid
   filter_semantic: semanticclass
   crop: false
-  pictures_extracted: true
+  pictures_extracted: false
 
 matching:
-  predicted_cadastre_path: /data/essen/cadastre/pred_essen40-42/20220905_092821_0041/20220905_092821_0041
-  cadastre_path: /data/essen/cadastre/Whole-Essen/cadastre_essen
-  output_path: /data/essen/cadastre/matched_output_41/matched_output
+  predicted_cadastre_path: /data/essen/inventory/pred_cadastre_6-82/run70/run70
+  cadastre_path: /data/essen/inventory/Whole-Essen/cadastre_essen
+  output_path: /data/essen/inventory/matched_output_70/matched_output
   use_dbh_filter: False

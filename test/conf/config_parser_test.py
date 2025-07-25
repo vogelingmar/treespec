@@ -4,14 +4,14 @@ from treespec.conf import config_parser
 
 @pytest.fixture
 def mock_cfg():
-    # Mock config using values from config.yaml
+    # Mock config using values from config.yaml and config.py
     return SimpleNamespace(
         train=SimpleNamespace(
-            model="resnet152",
-            model_weights="resnet152_default",
+            model="resnet50",
+            model_weights="resnet50_default",
             dataset="folder",
-            dataset_dir="/home/ingmar/Documents/repos/treespec/src/treespec/datasets/sauen/sauen_big_clean_nv6",
-            num_classes=9,
+            dataset_dir="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_70",
+            num_classes=7,
             use_ids=True,
             epoch_count=20,
             batch_size=5,
@@ -41,24 +41,32 @@ def mock_cfg():
             image_filetype="jpg",
         ),
         essen_dataset=SimpleNamespace(
-            attribute_path="/data/essen/cadastre/matched_output/matched_output",
-            original_color_images_path="/data/essen/MG4/2022-09-12_pano",
-            color_images_path="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_4",
+            attribute_path="/data/essen/inventory/matched_output_70/matched_output",
+            original_color_images_path="/data/essen/data/MG4/13.09.2022/panos",
+            color_images_path="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_70",
             color_type="jpg",
-            original_seg_images_path="/data/essen/MG4/2022-09-12_2_seg",
-            segmentid_images_path="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_4",
+            color_output_type="png",
+            original_id_images_path="/home/ingmar/Downloads/tree_filtering/output",
+            segmentid_images_path="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_70",
             seg_type="tif",
             seg_output_type="png",
-            run=4,
-            output_trees_dir="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_4",
-            mask=True,
-            filter="segmentid",
+            original_sem_images_path="/home/ingmar/Downloads/tree_filtering/output",
+            semantic_images_path="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/semantic_70",
+            sem_type="tif",
+            sem_output_type="png",
+            run=70,
+            output_trees_dir="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/barks_70",
+            mask="bark",
+            filter_id="segmentid",
+            filter_semantic="semanticclass",
             crop=False,
+            pictures_extracted=False,
         ),
         matching=SimpleNamespace(
-            predicted_cadastre_path="/data/essen/cadastre/tree_attributes_filtered/20220905_092821_0041/20220905_092821_0041",
-            cadastre_path="/data/essen/cadastre/cadastre_essen40-42/cadastre_essen",
-            output_path="/data/essen/cadastre/matched_output/matched_output",
+            predicted_cadastre_path="/data/essen/inventory/pred_cadastre_6-82/run70/run70",
+            cadastre_path="/data/essen/inventory/Whole-Essen/cadastre_essen",
+            output_path="/data/essen/inventory/matched_output_70/matched_output",
+            use_dbh_filter=False,
         ),
     )
 
@@ -95,22 +103,30 @@ def test_image_based_extract_config_values(mock_cfg):
 
 def test_create_essen_dataset_config_values(mock_cfg):
     # All possible params for create_essen_dataset_config_values
+    assert isinstance(config_parser.create_essen_dataset_config_values("attribute_path", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("original_color_images_path", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("color_images_path", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("color_type", mock_cfg), str)
-    assert isinstance(config_parser.create_essen_dataset_config_values("original_seg_images_path", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("color_output_type", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("original_id_images_path", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("segmentid_images_path", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("seg_type", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("seg_output_type", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("original_sem_images_path", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("semantic_images_path", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("sem_type", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("sem_output_type", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("run", mock_cfg), int)
     assert isinstance(config_parser.create_essen_dataset_config_values("output_trees_dir", mock_cfg), str)
-    assert isinstance(config_parser.create_essen_dataset_config_values("attribute_path", mock_cfg), str)
-    assert isinstance(config_parser.create_essen_dataset_config_values("mask", mock_cfg), bool)
-    assert isinstance(config_parser.create_essen_dataset_config_values("filter", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("mask", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("filter_id", mock_cfg), str)
+    assert isinstance(config_parser.create_essen_dataset_config_values("filter_semantic", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("crop", mock_cfg), bool)
+    assert isinstance(config_parser.create_essen_dataset_config_values("pictures_extracted", mock_cfg), bool)
 
 def test_matching_config_values(mock_cfg):
     # All possible params for matching_config_values
     assert isinstance(config_parser.matching_config_values("predicted_cadastre_path", mock_cfg), str)
     assert isinstance(config_parser.matching_config_values("cadastre_path", mock_cfg), str)
     assert isinstance(config_parser.matching_config_values("output_path", mock_cfg), str)
+    assert isinstance(config_parser.matching_config_values("use_dbh_filter", mock_cfg), bool)

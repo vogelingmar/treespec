@@ -66,22 +66,22 @@ def main(cfg: TreespecConfig):
     )
 
     # Optionally, test using the best checkpoint
-    best_model_path = checkpoint_callback.best_model_path
-    if best_model_path:
-        model.model.load_state_dict(torch.load(best_model_path))
-    trainer.test(model=model, dataloaders=dataset.test_dataloader())
+    #best_model_path = checkpoint_callback.best_model_path
+    #if best_model_path:
+    #    model = ClassificationModel.load_from_checkpoint(best_model_path)
+    #trainer.test(model=model, dataloaders=dataset.test_dataloader())
 
     # Save the best model weights
-    if best_model_path:
-        torch.save(
-            model.model.state_dict(),
-            best_model_path,
-        )
-    else:
-        torch.save(
-            model.model.state_dict(),
-            (train_config_values("trained_model_dir", cfg) + train_config_values("model", cfg) + "_finetuned" + ".pth"),
-        )
+    #if best_model_path:
+    #    torch.save(
+    #        model.model.state_dict(),
+    #        best_model_path,
+    #    )
+    #else:
+    #    torch.save(
+    #        model.model.state_dict(),
+    #        (train_config_values("trained_model_dir", cfg) + train_config_values("model", cfg) + "_finetuned" + ".pth"),
+    #    )
 
 
 if __name__ == "__main__":

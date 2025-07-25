@@ -231,6 +231,8 @@ def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
             return cfg.essen_dataset.color_images_path
         case "color_type":
             return cfg.essen_dataset.color_type
+        case "color_output_type":
+            return cfg.essen_dataset.color_output_type
         case "original_id_images_path":
             return cfg.essen_dataset.original_id_images_path
         case "segmentid_images_path":

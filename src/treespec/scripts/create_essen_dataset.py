@@ -31,30 +31,30 @@ def main(cfg: TreespecConfig):
         image_tools.extract_pano_faces(
             input_dir=config_values("original_color_images_path", cfg),
             output_dir=config_values("color_images_path", cfg),
-            input_type=config_values("color_type", cfg),
-            output_type=config_values("color_type", cfg),
-            run=config_values("run", cfg),
-            crop=False,
+            input_file_type=config_values("color_type", cfg),
+            output_file_type=config_values("color_output_type", cfg),
+            run_number=config_values("run", cfg),
+            apply_center_crop=False,
         )
 
         image_tools.extract_pano_faces(
             input_dir=config_values("original_id_images_path", cfg),
             output_dir=config_values("segmentid_images_path", cfg),
-            input_type=config_values("seg_type", cfg),
-            output_type=config_values("seg_output_type", cfg),
-            run=config_values("run", cfg),
+            input_file_type=config_values("seg_type", cfg),
+            output_file_type=config_values("seg_output_type", cfg),
+            run_number=config_values("run", cfg),
             filter=config_values("filter_id", cfg),
-            crop=False,
+            apply_center_crop=False,
         )
 
         image_tools.extract_pano_faces(
             input_dir=config_values("original_sem_images_path", cfg),
             output_dir=config_values("semantic_images_path", cfg),
-            input_type=config_values("sem_type", cfg),
-            output_type=config_values("sem_output_type", cfg),
-            run=config_values("run", cfg),
+            input_file_type=config_values("sem_type", cfg),
+            output_file_type=config_values("sem_output_type", cfg),
+            run_number=config_values("run", cfg),
             filter=config_values("filter_semantic", cfg),
-            crop=False,
+            apply_center_crop=False,
         )
 
     image_tools.find_all_trees(
@@ -64,22 +64,25 @@ def main(cfg: TreespecConfig):
         tree_attributes_dict=tree_attributes_dict,
         semantic_dir=config_values("semantic_images_path", cfg),
         cover=config_values("mask", cfg),
+        input_file_type="png"
     )
     output_trees_dir = config_values("output_trees_dir", cfg)
 
-    classes = []
-    for tree in os.listdir(output_trees_dir):
-        name_wo_ext = os.path.splitext(tree)[0]
-        parts = name_wo_ext.split("_")
-        if len(parts) < 2:
-            continue  # Skip files that don't match the expected pattern
-        if parts[2] not in classes:
-            classes.append(parts[2])
-            os.makedirs(os.path.join(output_trees_dir, parts[2]), exist_ok=True)
-        shutil.move(
-            os.path.join(output_trees_dir, tree),
-            os.path.join(os.path.join(output_trees_dir, parts[2]), tree),
-        )
+    image_tools.create_dataset(output_trees_dir, output_trees_dir, only_copy=False)
+
+    #classes = []
+    #for tree in os.listdir(output_trees_dir):
+    #    filename = os.path.splitext(tree)[0]
+    #    parts = filename.split("_")
+    #    if len(parts) < 2:
+    #        continue  # Skip files that don't match the expected pattern
+    #    if parts[2] not in classes:
+    #        classes.append(parts[2])
+    #        os.makedirs(os.path.join(output_trees_dir, parts[2]), exist_ok=True)
+    #    shutil.move(
+    #        os.path.join(output_trees_dir, tree),
+    #        os.path.join(os.path.join(output_trees_dir, parts[2]), tree),
+    #    )
 
 
 if __name__ == "__main__":

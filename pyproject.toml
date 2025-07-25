@@ -18,7 +18,6 @@ keywords = ["images", "deep learning"]
 
 dependencies = [
     "torch",
-    "torch_scatter",
     "torchvision",
     "pytorch-lightning",
     "opencv-python",
@@ -30,7 +29,6 @@ dependencies = [
     "imageio",
     "scipy",
     "pyshp",
-    "pointtorch",
 
 ]
 [project.optional-dependencies]
