@@ -50,8 +50,9 @@ def create_dictionary(path: str):
     attributes = {}
     for i, point in enumerate(points):  # pylint: disable=unused-variable
         pred_tree_id = records[i].get("pred_id")
+        coordinate_dict = {"X": point[0], "Y": point[1]}
         if pred_tree_id is not None:
-            attributes[pred_tree_id] = records[i]
+            attributes[pred_tree_id] = records[i] | coordinate_dict
 
     return attributes
 
@@ -66,102 +67,69 @@ def create_shp_from_dict(dictionary: dict, output_path: str):
     Raises:
         ValueError: If coordinate keys are not found in the records.
     """
-    # not tested yet
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    if not dictionary:
+        raise ValueError("Input dictionary is empty.")
 
-    # Get the first record to infer fields and coordinate keys
+    # Infer fields from the first record
     first_record = next(iter(dictionary.values()))
-    # Try common coordinate keys
-    if "X" in first_record and "Y" in first_record:
-        x_key, y_key = "X", "Y"
-    elif "x" in first_record and "y" in first_record:
-        x_key, y_key = "x", "y"
-    elif "POINT_X" in first_record and "POINT_Y" in first_record:
-        x_key, y_key = "POINT_X", "POINT_Y"
-    else:
-        raise ValueError("Could not find coordinate keys in the dictionary records.")
+    if "X" not in first_record or "Y" not in first_record:
+        raise ValueError("Coordinate keys 'X' and 'Y' not found in the records.")
 
-    # Prepare fields (skip coordinate keys)
-    fields = [(k, "C", 50, 0) for k in first_record.keys() if k not in [x_key, y_key]]
+    # Prepare fields (exclude coordinates)
+    fields = [(k, "C", 50, 0) for k in first_record.keys() if k not in ("X", "Y")]
 
     w = shapefile.Writer(output_path, shapeType=shapefile.POINT)
-    for name, ftype, size, dec in fields:
-        w.field(name, ftype, size, dec)
+    for field in fields:
+        w.field(*field)
 
-    for rec in dictionary.values():
-        x, y = rec[x_key], rec[y_key]
+    for record in dictionary.values():
+        x, y = record["X"], record["Y"]
         w.point(x, y)
-        # Write attributes in the same order as fields
-        w.record(*[rec.get(k) for k, *_ in fields])
+        rec = [record.get(k, None) for k in first_record.keys() if k not in ("X", "Y")]
+        w.record(*rec)
 
     w.close()
-    print(f"Created shapefile at {output_path}.shp")
+    print(f"Exported {len(dictionary)} points to {output_path}.shp")
 
 
 def match_and_export(
-    attributes_path: str,  # pylint: disable=too-many-locals
+    attributes_path: str,
     cadastre_path: str,
     output_path: str,
     use_dbh_filter: bool = True,
 ):
-    """Match predicted cadastre with cadastre points and export to a new shapefile at output_path.
-    Args:
-        attributes_path: Path to the predicted attributes shapefile.
-        cadastre_path: Path to the cadastre shapefile.
-        output_path: Path to save the output shapefile (without extension).
-        use_dbh_filter: Whether to apply the DBH filter when matching points.
-
-    Raises:
-        ValueError: If the coordinate keys are not found in the records of the shapefiles.
-    """
-
-    os.makedirs(output_path, exist_ok=True)
-
+    """Match predicted cadastre with cadastre points and export to a new shapefile at output_path."""
     cadastre = shapefile.Reader(cadastre_path)
     attributes = shapefile.Reader(attributes_path)
 
     attribute_points, attribute_records = create_lists_from_shapefile(attributes_path, "pred")
     cadastre_points, cadastre_records = create_lists_from_shapefile(cadastre_path, None)
 
-    # Build KDTree for cadastre points
     cadastre_tree = cKDTree(cadastre_points)
     attribute_tree = cKDTree(attribute_points)
-    # Find nearest neighbor in cadastre for each attribute point
     cad_distances, cad_indices = cadastre_tree.query(attribute_points)
-    # Find nearest neighbor in attributes for each cadastre point
-    att_distances, att_indices = attribute_tree.query(cadastre_points)  # pylint: disable=unused-variable
-    # Prepare merged data: (cadastre_point, merged_record)
-    merged = []
+    att_distances, att_indices = attribute_tree.query(cadastre_points)
+
+    merged_dict = {}
     for i, (attr_pt, cad_idx, cad_dist) in enumerate(
         zip(attribute_points, cad_indices, cad_distances)
-    ):  # pylint: disable=unused-variable
+    ):
         if cad_dist <= 5.0 and att_indices[cad_idx] == i:
             combined = {**cadastre_records[cad_idx], **attribute_records[i]}
+            x, y = cadastre_points[cad_idx]
+            combined["X"] = x
+            combined["Y"] = y
             if not use_dbh_filter:
-                merged.append((cadastre_points[cad_idx], combined))
-            elif combined["pred_dbh"] is not None and (combined["DURCHM"] - combined["pred_dbh"] * 100) < 10:
-                # Add the matched point to the merged list
-                merged.append((cadastre_points[cad_idx], combined))
-    # Prepare fields for output shapefile
-    w = shapefile.Writer(output_path, shapeType=shapefile.POINT)
-    # Add cadastre fields
-    for field in cadastre.fields[1:]:  # skip DeletionFlag
-        w.field(*field)
-    # Add attribute fields with pred_ prefix
-    for field in attributes.fields[1:]:
-        w.field(f"pred_{field[0]}", field[1], field[2], field[3])
-    # Write merged points and records
-    for pt, combined in merged:
-        w.point(*pt)
-        record = [combined.get(f[0], None) for f in cadastre.fields[1:]] + [
-            combined.get(f"pred_{f[0]}", None) for f in attributes.fields[1:]
-        ]
-        w.record(*record)
-    w.close()
+                merged_dict[i] = combined
+            elif combined.get("pred_dbh") is not None and (float(combined["DURCHM"]) - float(combined["pred_dbh"]) * 100) < 10:
+                merged_dict[i] = combined
+
+    create_shp_from_dict(merged_dict, output_path)
     print(f"Exported matched points to {output_path}.shp")
 
 
-def match_predicted_tree_species(tree_images_dir, matched_cadastre_path, cfg):  # pylint: disable=too-many-locals
+def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_inventory_path, cfg):  # pylint: disable=too-many-locals
     """Match predicted tree species from images to the matched cadastre shapefile and writes it to the input path.
 
     Args:
@@ -194,7 +162,7 @@ def match_predicted_tree_species(tree_images_dir, matched_cadastre_path, cfg):  
     classification_model.model.load_state_dict(torch.load(trained_model_path))
     classification_model.eval()  # Set the model to evaluation mode
 
-    trees = create_dictionary(matched_cadastre_path)
+    trees = create_dictionary(input_inventory_path)
     class_names = dataset.classes
 
     for tree_name in os.listdir(tree_images_dir):
@@ -236,5 +204,5 @@ def match_predicted_tree_species(tree_images_dir, matched_cadastre_path, cfg):  
                 trees[tree]["pred_species"] = species
             else:
                 trees[tree]["pred_species"] = "unknown"
-    create_shp_from_dict(trees, matched_cadastre_path + "_w_pred_species")
+    create_shp_from_dict(trees, input_inventory_path + "_w_pred_species")
 

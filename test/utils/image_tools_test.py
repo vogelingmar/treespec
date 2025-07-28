@@ -1,5 +1,6 @@
 import pytest
 import os
+import shutil
 from treespec.utils.image_tools import select_rgb_images, extract_pano_faces, find_all_trees, create_dataset
 from treespec.utils.matching_tools import create_dictionary
 
@@ -11,12 +12,7 @@ def test_select_rgb_images():
     output_dir = os.path.join(testpath, "mock/temp/pictures/selected_rgb")
     image_type = "jpg"
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    else:
-        for file in os.listdir(output_dir):
-            os.remove(os.path.join(output_dir, file))
-        os.removedirs(output_dir)
+    shutil.rmtree(output_dir, ignore_errors=True)
 
     select_rgb_images(input_dir, output_dir, image_type)
 
@@ -27,8 +23,8 @@ def test_select_rgb_images():
         parts = file.split("_")
         assert len(parts) == 3
         assert parts[0].isdigit()
-        os.remove(os.path.join(output_dir, file))    
-    os.removedirs(output_dir)
+    
+    shutil.rmtree(output_dir, ignore_errors=True)
 
 
 def test_extract_pano_faces():
@@ -45,12 +41,7 @@ def test_extract_pano_faces():
     sem_filter = "semanticclass"
 
     # test for segmentid images
-    if not os.path.exists(id_output_dir):
-        os.makedirs(id_output_dir)
-    else:
-        for file in os.listdir(id_output_dir):
-            os.remove(os.path.join(id_output_dir, file))
-        os.removedirs(id_output_dir)
+    shutil.rmtree(id_output_dir, ignore_errors=True)
 
     extract_pano_faces(input_dir, id_output_dir, sem_id_input_file_type, output_file_type, run_number, apply_center_crop, id_filter)
 
@@ -61,16 +52,11 @@ def test_extract_pano_faces():
         parts = file.split("_")
         assert len(parts) == 3
         assert parts[0].isdigit()
-        os.remove(os.path.join(id_output_dir, file))
-    os.removedirs(id_output_dir)
+
+    shutil.rmtree(id_output_dir, ignore_errors=True)
 
     #test for semanticclass images
-    if not os.path.exists(sem_output_dir):
-        os.makedirs(sem_output_dir)
-    else:
-        for file in os.listdir(sem_output_dir):
-            os.remove(os.path.join(sem_output_dir, file))
-        os.removedirs(sem_output_dir)
+    shutil.rmtree(sem_output_dir, ignore_errors=True)
 
     extract_pano_faces(input_dir, sem_output_dir, sem_id_input_file_type, output_file_type, run_number, apply_center_crop, sem_filter)
 
@@ -81,16 +67,11 @@ def test_extract_pano_faces():
         parts = file.split("_")
         assert len(parts) == 3
         assert parts[0].isdigit()
-        os.remove(os.path.join(sem_output_dir, file))
-    os.removedirs(sem_output_dir)
+    
+    shutil.rmtree(sem_output_dir, ignore_errors=True)
 
     # test for rgb images
-    if not os.path.exists(color_output_dir):
-        os.makedirs(color_output_dir)
-    else:
-        for file in os.listdir(color_output_dir):
-            os.remove(os.path.join(color_output_dir, file))
-        os.removedirs(color_output_dir)
+    shutil.rmtree(color_output_dir, ignore_errors=True)
 
     extract_pano_faces(input_dir, color_output_dir, rgb_input_file_type, output_file_type, run_number, apply_center_crop)
 
@@ -101,8 +82,8 @@ def test_extract_pano_faces():
         parts = file.split("_")
         assert len(parts) == 3
         assert parts[0].isdigit()
-        os.remove(os.path.join(color_output_dir, file))
-    os.removedirs(color_output_dir)
+    
+    shutil.rmtree(color_output_dir, ignore_errors=True)
 
 
 def test_find_all_trees():
@@ -115,12 +96,8 @@ def test_find_all_trees():
     input_file_type = "png"
 
     # test for trees
-    if not os.path.exists(trees_output_dir):
-        os.makedirs(trees_output_dir)
-    else:
-        for file in os.listdir(trees_output_dir):
-            os.remove(os.path.join(trees_output_dir, file))
-        os.removedirs(trees_output_dir)
+    shutil.rmtree(trees_output_dir, ignore_errors=True)
+    os.makedirs(trees_output_dir, exist_ok=True)
 
     find_all_trees(segmentid_dir=segmentid_dir,color_dir= color_dir,output_dir= trees_output_dir, tree_attributes_dict= tree_attributes_dict, cover= "tree", semantic_dir =semantic_dir, input_file_type=input_file_type)
 
@@ -131,17 +108,13 @@ def test_find_all_trees():
         parts = file.split("_")
         assert len(parts) == 3
         assert parts[0].isdigit()
-        os.remove(os.path.join(trees_output_dir, file))
-    os.removedirs(trees_output_dir)
+    
+    shutil.rmtree(trees_output_dir, ignore_errors=True)
 
 
     # test for barks
-    if not os.path.exists(barks_output_dir):
-        os.makedirs(barks_output_dir)
-    else:
-        for file in os.listdir(barks_output_dir):
-            os.remove(os.path.join(barks_output_dir, file))
-        os.removedirs(barks_output_dir)
+    shutil.rmtree(barks_output_dir, ignore_errors=True)
+    os.makedirs(trees_output_dir, exist_ok=True)
 
     find_all_trees(segmentid_dir=segmentid_dir,color_dir= color_dir,output_dir= barks_output_dir, tree_attributes_dict= tree_attributes_dict, cover= "bark", semantic_dir =semantic_dir, input_file_type=input_file_type)
 
@@ -152,22 +125,15 @@ def test_find_all_trees():
         parts = file.split("_")
         assert len(parts) == 3
         assert parts[0].isdigit()
-        os.remove(os.path.join(barks_output_dir, file))
-    os.removedirs(barks_output_dir)
+    
+    shutil.rmtree(barks_output_dir, ignore_errors=True)
 
 def test_create_dataset(): 
     output_dataset_dir = os.path.join(testpath, "mock/temp/pictures/trees_70")
     input_trees_dir = os.path.join(testpath, "mock/essen/run_70/trees_70")
     
-    if not os.path.exists(output_dataset_dir):
-        os.makedirs(output_dataset_dir)
-    else:
-        for dir in os.listdir(output_dataset_dir):
-            dir_path = os.path.join(output_dataset_dir, dir)
-            for file in os.listdir(dir_path):
-                os.remove(os.path.join(dir_path, file))
-            os.removedirs(dir_path)
-        os.removedirs(output_dataset_dir)
+    shutil.rmtree(output_dataset_dir, ignore_errors=True)
+    os.makedirs(output_dataset_dir, exist_ok=True)
 
     create_dataset(input_trees_dir=input_trees_dir, output_dataset_dir=output_dataset_dir, only_copy=True)
     
@@ -181,5 +147,5 @@ def test_create_dataset():
             parts = file.split("_")
             assert len(parts) == 3
             assert parts[0].isdigit()
-            os.remove(os.path.join(dir_path, file))
-        os.removedirs(dir_path)
+    
+    shutil.rmtree(output_dataset_dir, ignore_errors=True)
