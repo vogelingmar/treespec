@@ -8,7 +8,7 @@ testpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def test_select_rgb_images():
-    input_dir = os.path.join(testpath, "mock/essen/rgb")
+    input_dir = os.path.join(testpath, "mock/essen_mock/rgb")
     output_dir = os.path.join(testpath, "mock/temp/pictures/selected_rgb")
     image_type = "jpg"
 
@@ -28,7 +28,7 @@ def test_select_rgb_images():
 
 
 def test_extract_pano_faces():
-    input_dir = os.path.join(testpath, "mock/essen/run_70/panos_70")
+    input_dir = os.path.join(testpath, "mock/essen_mock/run_70/panos_70")
     id_output_dir = os.path.join(testpath, "mock/temp/pictures/id_70")
     sem_output_dir = os.path.join(testpath, "mock/temp/pictures/sem_70")
     color_output_dir = os.path.join(testpath, "mock/temp/pictures/rgb_70")
@@ -87,12 +87,12 @@ def test_extract_pano_faces():
 
 
 def test_find_all_trees():
-    color_dir = os.path.join(testpath, "mock/essen/run_70/rgb_70")
-    segmentid_dir = os.path.join(testpath, "mock/essen/run_70/id_70")
-    semantic_dir = os.path.join(testpath, "mock/essen/run_70/sem_70")
+    color_dir = os.path.join(testpath, "mock/essen_mock/run_70/rgb_70")
+    segmentid_dir = os.path.join(testpath, "mock/essen_mock/run_70/id_70")
+    semantic_dir = os.path.join(testpath, "mock/essen_mock/run_70/sem_70")
     trees_output_dir = os.path.join(testpath, "mock/temp/pictures/trees_70")
     barks_output_dir = os.path.join(testpath, "mock/temp/pictures/barks_70")
-    tree_attributes_dict = create_dictionary(os.path.join(testpath, "mock/essen/run_70/inventory_70/matched_output"))
+    tree_attributes_dict = create_dictionary(os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output"))
     input_file_type = "png"
 
     # test for trees
@@ -130,7 +130,7 @@ def test_find_all_trees():
 
 def test_create_dataset(): 
     output_dataset_dir = os.path.join(testpath, "mock/temp/pictures/trees_70")
-    input_trees_dir = os.path.join(testpath, "mock/essen/run_70/trees_70")
+    input_trees_dir = os.path.join(testpath, "mock/essen_mock/run_70/trees_70")
     
     shutil.rmtree(output_dataset_dir, ignore_errors=True)
     os.makedirs(output_dataset_dir, exist_ok=True)

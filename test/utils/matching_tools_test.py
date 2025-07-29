@@ -1,13 +1,18 @@
 import os
 import shutil
 
+from torchvision.models import resnet50, ResNet50_Weights
+from torch import nn
+
 from treespec.utils.matching_tools import create_lists_from_shapefile, create_dictionary, create_shp_from_dict, match_and_export, match_predicted_tree_species
+from treespec.datasets.image_dataset import ImageDataset
+from treespec.models.classification_model import ClassificationModel
 
 testpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def test_match_and_export():
-    pred_attributes_path = os.path.join(testpath, "mock/essen/run_70/matching_70/run70/run70")
-    inventory_path = os.path.join(testpath, "mock/essen/run_70/matching_70/Whole-Essen/cadastre_essen")
+    pred_attributes_path = os.path.join(testpath, "mock/essen_mock/run_70/matching_70/run70/run70")
+    inventory_path = os.path.join(testpath, "mock/essen_mock/run_70/matching_70/Whole-Essen/cadastre_essen")
     output_file = os.path.join(testpath, "mock/temp/matching_70/matching_70")
     output_dir = os.path.dirname(output_file)
 
@@ -21,7 +26,7 @@ def test_match_and_export():
     shutil.rmtree(output_dir, ignore_errors=True)
 
 def test_create_lists_from_shapefile():
-    path = os.path.join(testpath, "mock/essen/run_70/inventory_70/matched_output")
+    path = os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output")
     prefix = "test"
     
     points, records = create_lists_from_shapefile(path, prefix)
@@ -33,7 +38,7 @@ def test_create_lists_from_shapefile():
             assert key.startswith(prefix + "_")
 
 def test_create_dictionary():
-    path = os.path.join(testpath, "mock/essen/run_70/inventory_70/matched_output")
+    path = os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output")
     
     attributes = create_dictionary(path)
     assert len(attributes) > 0
@@ -166,14 +171,25 @@ def test_create_shp_from_dict():
     shutil.rmtree(os.path.dirname(output_path), ignore_errors=True)
 
 def test_match_predicted_tree_species():
-    #TODO: implement the original function correctly
-    tree_images_dir = os.path.join(testpath, "mock/essen/run_70/trees_70")
-    input_inventory_path = os.path.join(testpath, "mock/essen/run_70/inventory_70/matched_output")
+    tree_images_dir = os.path.join(testpath, "mock/essen_mock/run_70/trees_70")
+    input_inventory_path = os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output")
     output_inventory_path = os.path.join(testpath, "mock/temp/predicted_tree_species_inventory/pred")
+    trained_model_path = os.path.join(testpath, "mock/essen_mock/trained_models/resnet50trees_70_finetuned.pth")
+
+    dataset = ImageDataset(data_dir=os.path.join(testpath, "mock/essen_mock/run_70/dataset_70"),
+                           batch_size=5, num_workers=2, use_ids=True)
+    classification_model = ClassificationModel(
+        model=resnet50,
+        model_weights=ResNet50_Weights.DEFAULT,
+        num_classes=3,
+        loss_function=nn.CrossEntropyLoss(),
+        learning_rate=0.001,
+    )
+
 
     shutil.rmtree(os.path.dirname(output_inventory_path), ignore_errors=True)
 
-    match_predicted_tree_species(tree_images_dir, input_inventory_path, output_inventory_path)
+    match_predicted_tree_species(tree_images_dir=tree_images_dir, input_inventory_path=input_inventory_path, output_inventory_path=output_inventory_path, trained_model_path=trained_model_path, classification_model=classification_model, dataset=dataset)
     
     assert os.path.exists(output_inventory_path + ".shp")
     assert os.path.exists(output_inventory_path + ".dbf")
@@ -184,7 +200,7 @@ def test_match_predicted_tree_species():
     assert len(inventory) > 0
 
     for tree in inventory.values():
-        assert "pred_species" in tree.keys()
-        assert tree["pred_species"] is not None or tree["pred_species"] != ""
+        assert "pred_speci" in tree.keys()
+        assert tree["pred_speci"] is not None or tree["pred_speci"] != ""
 
     shutil.rmtree(os.path.dirname(output_inventory_path), ignore_errors=True)

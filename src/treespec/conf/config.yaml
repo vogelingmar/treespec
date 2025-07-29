@@ -2,8 +2,8 @@ train:
   model: resnet50
   model_weights: resnet50_default
   dataset: folder
-  dataset_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/trees_70
-  num_classes: 7
+  dataset_dir: /home/ingmar/Documents/repos/treespec/test/mock/temp/pictures/trees_70
+  num_classes: 3
   use_ids: true
   epoch_count: 20
   batch_size: 5
@@ -11,7 +11,7 @@ train:
   learning_rate: 0.001
   loss_function: cross_entropy
   use_augmentations: false
-  trained_model_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/
+  trained_model_dir: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/trained_models
   train_augmentations: 
     - name: RandomVerticalFlip
       p: 0.1
@@ -54,6 +54,12 @@ essen_dataset:
   filter_semantic: semanticclass
   crop: false
   pictures_extracted: false
+
+predict_essen:
+  tree_images_dir: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/run_70/trees_70
+  input_inventory_path: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/run_70/inventory_70/matched_output
+  output_inventory_path: /home/ingmar/Documents/repos/treespec/test/mock/temp/predicted_tree_species_inventory/pred
+  trained_model_path: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/trained_models/trained_modelsresnet50trees_70_finetuned.pth
 
 matching:
   predicted_cadastre_path: /data/essen/inventory/pred_cadastre_6-82/run70/run70

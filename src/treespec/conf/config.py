@@ -65,6 +65,14 @@ class EssenDatasetParams:  # pylint: disable=too-many-instance-attributes
     crop: bool
     pictures_extracted: bool
 
+@dataclass
+class PredictEssen:
+    """Configuration of parameters for the predict_essen script"""
+
+    tree_images_dir: str
+    input_inventory_path: str
+    output_inventory_path: str
+    trained_model_path: str
 
 @dataclass
 class Matching:
@@ -83,4 +91,5 @@ class TreespecConfig:
     train: TrainParams
     extract: ExtractParams
     essen_dataset: EssenDatasetParams
+    predict_essen: PredictEssen
     matching: Matching

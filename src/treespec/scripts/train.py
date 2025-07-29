@@ -3,6 +3,7 @@
 import torch
 import pytorch_lightning as L
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+import pathlib
 import hydra
 from hydra.core.config_store import ConfigStore
 
@@ -40,15 +41,17 @@ def main(cfg: TreespecConfig):
     )
 
     early_stop_callback = EarlyStopping(
-        monitor="val_loss",  # or another metric, e.g. "val_acc"
-        patience=5,  # number of epochs with no improvement after which training will be stopped
+        monitor="train_loss",  # or another metric, e.g. "val_acc"
+        patience=10,  # number of epochs with no improvement after which training will be stopped
         verbose=True,
         mode="min",  # "min" for loss, "max" for accuracy
     )
+
+    filename = f"{cfg.train.model}_{pathlib.Path(train_config_values("dataset_dir", cfg)).name}_best"
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
         dirpath=train_config_values("trained_model_dir", cfg),
-        filename=str(train_config_values("model", cfg)) + "_best",
+        filename=filename,
         save_top_k=1,
         mode="min",
     )
@@ -66,22 +69,29 @@ def main(cfg: TreespecConfig):
     )
 
     # Optionally, test using the best checkpoint
-    #best_model_path = checkpoint_callback.best_model_path
-    #if best_model_path:
-    #    model = ClassificationModel.load_from_checkpoint(best_model_path)
-    #trainer.test(model=model, dataloaders=dataset.test_dataloader())
+    best_model_path = checkpoint_callback.best_model_path
+    if best_model_path:
+        model = ClassificationModel.load_from_checkpoint(
+            best_model_path,
+            model=train_config_values("model", cfg),
+            model_weights=train_config_values("model_weights", cfg),
+            num_classes=train_config_values("num_classes", cfg),
+            loss_function=loss_function,
+            learning_rate=train_config_values("learning_rate", cfg),
+        )
+    trainer.test(model=model, dataloaders=dataset.test_dataloader())
 
     # Save the best model weights
-    #if best_model_path:
-    #    torch.save(
-    #        model.model.state_dict(),
-    #        best_model_path,
-    #    )
-    #else:
-    #    torch.save(
-    #        model.model.state_dict(),
-    #        (train_config_values("trained_model_dir", cfg) + train_config_values("model", cfg) + "_finetuned" + ".pth"),
-    #    )
+    if best_model_path:
+        torch.save(
+            model.model.state_dict(),
+            best_model_path,
+        )
+    else:
+        torch.save(
+            model.model.state_dict(),
+            (train_config_values("trained_model_dir", cfg) + cfg.train.model + pathlib.Path(train_config_values("dataset_dir", cfg)).name + "_finetuned" + ".pth"),
+        )
 
 
 if __name__ == "__main__":

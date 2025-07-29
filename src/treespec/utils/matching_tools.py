@@ -129,7 +129,7 @@ def match_and_export(
     print(f"Exported matched points to {output_path}.shp")
 
 
-def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_inventory_path, cfg):  # pylint: disable=too-many-locals
+def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_inventory_path, trained_model_path, classification_model, dataset):  # pylint: disable=too-many-locals
     """Match predicted tree species from images to the matched cadastre shapefile and writes it to the input path.
 
     Args:
@@ -140,25 +140,6 @@ def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_i
     Raises:
         ValueError: If a tree ID from the images is not found in the matched cadastre data.
     """
-    # not tested yet - need data
-
-    classification_model = ClassificationModel(
-        model=train_config_values("model", cfg),
-        model_weights=train_config_values("model_weights", cfg),
-        num_classes=train_config_values("num_classes", cfg),
-        loss_function=train_config_values("loss_function", cfg)(),
-        learning_rate=train_config_values("learning_rate", cfg),
-    )
-
-    dataset = train_config_values("dataset", cfg)(
-        data_dir=train_config_values("dataset_dir", cfg),
-        batch_size=train_config_values("batch_size", cfg),
-        num_workers=train_config_values("num_workers", cfg),
-    )
-
-    trained_model_path = (
-        train_config_values("trained_model_dir", cfg) + train_config_values("model", cfg) + "_finetuned" + ".pth"
-    )
     classification_model.model.load_state_dict(torch.load(trained_model_path))
     classification_model.eval()  # Set the model to evaluation mode
 
@@ -177,32 +158,37 @@ def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_i
 
         parts = os.path.splitext(tree_name)[0].split("_")
 
-        tree_id = parts[0]
+        tree_id = int(parts[0])
 
-        if tree_id in trees:
+        if tree_id in trees.keys():
             if "pred_species" in trees[tree_id].keys():
                 trees[tree_id][f"pred_species_{parts[1]}"] = predicted_class
             else:
                 trees[tree_id]["pred_species"] = predicted_class
         else:
-            raise ValueError(f"Tree ID {tree_id} not found in the matched cadastre data.")
+            print(f"Tree ID {tree_id} not found in the matched cadastre data. Skipping.")
+            #raise ValueError(f"Tree ID {tree_id} not found in the matched cadastre data.")
 
-    for tree in trees.items():
+    for tree in trees.values():
         number_of_votes = 0
         votes = {}
-        attributes = list(trees[tree].keys())
+        attributes = tree.keys()
         for attribute in attributes:
             if attribute.startswith("pred_species"):
                 number_of_votes += 1
-                species = trees[tree][attribute]
-                if species not in votes.keys():
-                    votes[species] = 1
-                elif species in votes.keys():
-                    votes[species] += 1
-        for species in votes.keys():
-            if votes[species] > number_of_votes / 2:
-                trees[tree]["pred_species"] = species
-            else:
-                trees[tree]["pred_species"] = "unknown"
-    create_shp_from_dict(trees, input_inventory_path + "_w_pred_species")
+                species = tree[attribute]
+                votes[species] = votes.get(species, 0) + 1
+
+        # Find if any species has majority
+        majority_species = None
+        for species, count in votes.items():
+            if count > number_of_votes / 2:
+                majority_species = species
+                break
+
+        if majority_species:
+            tree["pred_species"] = majority_species
+        else:
+            tree["pred_species"] = "uncertain"
+    create_shp_from_dict(trees, output_inventory_path)
 

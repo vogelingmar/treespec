@@ -267,6 +267,31 @@ def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
             return cfg.essen_dataset.pictures_extracted
         case _:
             raise ValueError(f"Unknown parameter: {param}")
+        
+def predict_essen_config_values(param: str, cfg: TreespecConfig):
+    r"""Takes a parameter and the config and returns the corresponding value or object.
+
+    Args:
+        param: The parameter to extract.
+        cfg: The TreespecConfig object containing the configuration.
+
+    Returns:
+        The value or object corresponding to the parameter.
+
+    Raises:
+        ValueError: If the parameter is unknown or not supported.
+    """
+    match param:
+        case "tree_images_dir":
+            return cfg.predict_essen.tree_images_dir
+        case "input_inventory_path":
+            return cfg.predict_essen.input_inventory_path
+        case "output_inventory_path":
+            return cfg.predict_essen.output_inventory_path
+        case "trained_model_path":
+            return cfg.predict_essen.trained_model_path
+        case _:
+            raise ValueError(f"Unknown parameter: {param}")
 
 
 def matching_config_values(
