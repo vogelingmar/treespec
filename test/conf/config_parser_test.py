@@ -130,3 +130,17 @@ def test_matching_config_values(mock_cfg):
     assert isinstance(config_parser.matching_config_values("cadastre_path", mock_cfg), str)
     assert isinstance(config_parser.matching_config_values("output_path", mock_cfg), str)
     assert isinstance(config_parser.matching_config_values("use_dbh_filter", mock_cfg), bool)
+
+def test_predict_essen_config_values(mock_cfg):
+    # All possible params for predict_essen_config_values
+    # Add a minimal mock for predict_essen to mock_cfg
+    mock_cfg.predict_essen = SimpleNamespace(
+        tree_images_dir="/some/tree/images/dir",
+        input_inventory_path="/some/input/inventory/path",
+        output_inventory_path="/some/output/inventory/path",
+        trained_model_path="/some/trained/model/path",
+    )
+    assert isinstance(config_parser.predict_essen_config_values("tree_images_dir", mock_cfg), str)
+    assert isinstance(config_parser.predict_essen_config_values("input_inventory_path", mock_cfg), str)
+    assert isinstance(config_parser.predict_essen_config_values("output_inventory_path", mock_cfg), str)
+    assert isinstance(config_parser.predict_essen_config_values("trained_model_path", mock_cfg), str)

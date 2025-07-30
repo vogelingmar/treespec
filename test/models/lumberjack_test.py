@@ -70,7 +70,7 @@ def test_process_images(lumberjack):
         pass
     else:
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        image_dir = os.path.join(base_path, "mock/essen")
+        image_dir = os.path.join(base_path, "mock/essen_mock/rgb")
 
         output_dir = lumberjack.output_trees_dir
         predict_dir = lumberjack.predict_video_dest_dir

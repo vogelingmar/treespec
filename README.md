@@ -2,6 +2,7 @@
 A deeplearning pipeline to classify tree species in terrestrial panorama pictures and map the results on a 3D point cloud.
 
 # Setup
+Having ffmpeg installed on your host system is required to use the image based tree extraction (Lumberjack).
 When first setting up treespec you have to have Python3 installed on your system. To create a virtual environment
 and install all the required dependecies to run the treespec pipeline follow these steps:
 1. Navigate into your local treespec repo.
