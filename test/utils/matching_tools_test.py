@@ -11,6 +11,7 @@ from treespec.models.classification_model import ClassificationModel
 testpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def test_match_and_export():
+    """Tests the match_and_export function by checking the output files if there are attributes from both inventories."""
     pred_attributes_path = os.path.join(testpath, "mock/essen_mock/run_70/matching_70/run70/run70")
     inventory_path = os.path.join(testpath, "mock/essen_mock/run_70/matching_70/Whole-Essen/cadastre_essen")
     output_file = os.path.join(testpath, "mock/temp/matching_70/matching_70")
@@ -23,9 +24,16 @@ def test_match_and_export():
     assert os.path.exists(output_file + ".dbf")
     assert os.path.exists(output_file + ".shx")
 
+    matched_inventory = create_dictionary(output_file)
+    assert len(matched_inventory) > 0
+    for tree in matched_inventory.values():
+        assert "pred_id" in tree.keys()
+        assert "BAUMART" in tree.keys()
+
     shutil.rmtree(output_dir, ignore_errors=True)
 
 def test_create_lists_from_shapefile():
+    """Tests the create_lists_from_shapefile function by checking if the output lists contain points and records with the expected prefix."""
     path = os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output")
     prefix = "test"
     
@@ -38,6 +46,7 @@ def test_create_lists_from_shapefile():
             assert key.startswith(prefix + "_")
 
 def test_create_dictionary():
+    """Tests the create_dictionary function by checking if the output dictionary contains attributes with integer keys and 'pred_id'."""
     path = os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output")
     
     attributes = create_dictionary(path)
@@ -47,6 +56,7 @@ def test_create_dictionary():
         assert "pred_id" in attributes[key]
 
 def test_create_shp_from_dict():
+    """Tests the create_shp_from_dict function by checking if the output shapefile and its associated files are created successfully."""
     dictionary = {
         '14': {'ANGELEDAT': '',
           'AREA': '1865061.0818356618',
@@ -171,6 +181,7 @@ def test_create_shp_from_dict():
     shutil.rmtree(os.path.dirname(output_path), ignore_errors=True)
 
 def test_match_predicted_tree_species():
+    """Tests the match_predicted_tree_species function."""
     tree_images_dir = os.path.join(testpath, "mock/essen_mock/run_70/trees_70")
     input_inventory_path = os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output")
     output_inventory_path = os.path.join(testpath, "mock/temp/predicted_tree_species_inventory/pred")

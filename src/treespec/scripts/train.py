@@ -41,10 +41,10 @@ def main(cfg: TreespecConfig):
     )
 
     early_stop_callback = EarlyStopping(
-        monitor="train_loss",  # or another metric, e.g. "val_acc"
-        patience=10,  # number of epochs with no improvement after which training will be stopped
+        monitor="train_loss", # exchange for any metric (adjust mode accordingly)
+        patience=10,
         verbose=True,
-        mode="min",  # "min" for loss, "max" for accuracy
+        mode="min",
     )
 
     filename = f"{cfg.train.model}_{pathlib.Path(train_config_values("dataset_dir", cfg)).name}_best"
@@ -68,7 +68,6 @@ def main(cfg: TreespecConfig):
         val_dataloaders=dataset.val_dataloader(),
     )
 
-    # Optionally, test using the best checkpoint
     best_model_path = checkpoint_callback.best_model_path
     if best_model_path:
         model = ClassificationModel.load_from_checkpoint(
@@ -81,7 +80,6 @@ def main(cfg: TreespecConfig):
         )
     trainer.test(model=model, dataloaders=dataset.test_dataloader())
 
-    # Save the best model weights
     if best_model_path:
         torch.save(
             model.model.state_dict(),

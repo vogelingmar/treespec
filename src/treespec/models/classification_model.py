@@ -41,7 +41,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
         elif hasattr(self.model, "head"):
             self.model.head = nn.Linear(self.model.head.in_features, num_classes)
-        elif hasattr(self.model, "classifier"):  # Add support for models with 'classifier'
+        elif hasattr(self.model, "classifier"):
             if isinstance(self.model.classifier, nn.Sequential):
                 self.model.classifier[-1] = nn.Linear(self.model.classifier[-1].in_features, num_classes)
             else:
@@ -68,12 +68,19 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         Returns:
             Output tensor
-
+        
         Shape:
-            - :code:`x`: idk
-            - Output: idk
-        """
+            - :code:`x`: :math:`(B, C, H, W)`
+            - Output: :math:`(B, N)`
 
+            | where
+            |
+            | :math:`B = \text{ batch size}`
+            | :math:`C = \text{ number of channels}`
+            | :math:`H = \text{ height of the input image}`
+            | :math:`W = \text{ width of the input image}`
+            | :math:`N = \text{ number of classes to be differentiated by the model}`
+        """
         return self.model(x)
 
     def calculate_per_class_metrics(self, predictions: torch.Tensor, labels: torch.Tensor) -> dict:
@@ -88,16 +95,13 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             A dictionary containing per-class metrics.
         """
 
-        # Compute confusion matrix
         confusion_matrix = self.confusion_matrix(predictions, labels)
 
-        # Extract TP, FP, FN, TN per class
         tp = torch.diag(confusion_matrix)
         fp = confusion_matrix.sum(dim=0) - tp
         fn = confusion_matrix.sum(dim=1) - tp
         tn = confusion_matrix.sum() - (tp + fp + fn)
 
-        # Compute precision, recall, and F1-score per class
         precision = tp / (tp + fp + 1e-8)
         recall = tp / (tp + fn + 1e-8)
         f1_score = 2 * (precision * recall) / (precision + recall + 1e-8)
@@ -127,15 +131,13 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             batch: The batch of data to be used for training.
             batch_idx: The index of the batch.
             stage: The stage of the model (train, val, test).
+            logging: Whether to log the metrics or not.
 
         Returns:
             The loss of the model during the step.
 
         Shape:
             - :code:`batch`: :math:`(I_k, L_k)`
-            - :code:`batch_idx`: b
-            - :code:`stage`: str
-            - Output: idk
 
             | where
             |
@@ -202,8 +204,6 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         Shape:
             - :code:`batch`: :math:`(I_k, L_k)`
-            - :code:`batch_idx`: b
-            - Output: idk
 
             | where
             |
@@ -223,7 +223,6 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         Shape:
             - :code:`batch`: :math:`(I_k, L_k)`
-            - :code:`batch_idx`: b
 
             | where
             |
@@ -243,7 +242,6 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         Shape:
             - :code:`batch`: :math:`(I_k, L_k)`
-            - :code:`batch_idx`: b
 
             | where
             |
@@ -268,15 +266,11 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         Shape:
             - :code:`batch`: :math:`(I_k, L_k)`
-            - :code:`batch_idx`: b
-            - Output: (class_id, score)
 
             | where
             |
             | :math:`I_k = \text{ k-th input image of the batch encoded as tensor}`
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
-            | :math:`class_id = \text{ id of the predicted class}`
-            | :math:`score = \text{ score of the predicted class}`
         """
 
         predictions = self.forward(batch).squeeze(0).softmax(0)
@@ -305,11 +299,9 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         Returns:
             A dictionary containing the predicted category and confidence score.
         """
-        # Decode the image and apply the model's transforms
         picture = decode_image(img_path)
         batch = self.model_weights.transforms()(picture).unsqueeze(0)
 
         class_id, score = self.predict_step(batch, 0)
 
-        # Return the prediction as a dictionary
         return {"category": class_id, "score": score}

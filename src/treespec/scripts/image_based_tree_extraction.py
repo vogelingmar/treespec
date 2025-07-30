@@ -25,7 +25,6 @@ def main(cfg: TreespecConfig):
     if config_values("predict_video_dest_dir", cfg) is not None:
         prediction_video_dir = config_values("predict_video_dest_dir", cfg)
 
-    # Initialize Lumberjack and ClassificationModel
     lumberjack = Lumberjack(
         model=config_values("model", cfg),
         output_trees_dir=config_values("output_trees_dir", cfg),
@@ -41,12 +40,10 @@ def main(cfg: TreespecConfig):
         learning_rate=train_config_values("learning_rate", cfg),
     )
 
-    # Load the trained model weights
     trained_model_path = str(train_config_values("trained_model_dir", cfg)) + cfg.train.model + "_finetuned" + ".pth"
     classification_model.model.load_state_dict(torch.load(trained_model_path))
-    classification_model.eval()  # Set the model to evaluation mode
+    classification_model.eval()
 
-    # Process video to extract tree images
     if config_values("video", cfg) is not None and config_values("corrected", cfg) is not None:
         lumberjack.process_video(
             video_path=config_values("video", cfg),
@@ -66,7 +63,6 @@ def main(cfg: TreespecConfig):
         )
 
     if config_values("predict", cfg) is True:
-        # Directory containing extracted tree images
         output_trees_dir = lumberjack.output_trees_dir
 
         dataset = train_config_values("dataset", cfg)(
@@ -74,27 +70,21 @@ def main(cfg: TreespecConfig):
             batch_size=train_config_values("batch_size", cfg),
             num_workers=train_config_values("num_workers", cfg),
         )
-        # Define output directories for each class
         class_names = dataset.classes
         output_dirs = {class_name: os.path.join(output_trees_dir, class_name) for class_name in class_names}
 
-        # Create directories for each class
         for class_dir in output_dirs.values():
             os.makedirs(class_dir, exist_ok=True)
 
-        # Predict and organize images
         for image_name in os.listdir(output_trees_dir):
             image_path = os.path.join(output_trees_dir, image_name)
 
-            # Skip directories
             if os.path.isdir(image_path):
                 continue
 
-            # Predict the class of the image
             prediction = classification_model.predict(image_path)
             predicted_class_id = prediction["category"]
 
-            # Move the image to the corresponding class folder
             target_dir = output_dirs[class_names[predicted_class_id]]
             shutil.move(image_path, os.path.join(target_dir, image_name))
 

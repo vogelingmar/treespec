@@ -17,14 +17,16 @@ cs.store(name="treespec_config", node=TreespecConfig)
 
 @hydra.main(config_path="../conf", config_name="config")
 def main(cfg: TreespecConfig):
-    """Script that creates the Essen dataset from RGB and SegmentID images."""
+    """Script that creates the Essen dataset from RGB, SegmentID and SemanticClass images and inventory data."""
+
+    if config_values("apply_center_crop", cfg):
+        image_tools.select_rgb_images(
+           input_dir=config_values["original_color_images_path"],
+           output_dir=config_values["color_images_path"],
+           image_type=config_values["color_type"],
+        )
 
     tree_attributes_dict = create_dictionary(config_values("attribute_path", cfg))
-    # image_tools.select_rgb_images(
-    #    input_dir=config_values["original_color_images_path"],
-    #    output_dir=config_values["color_images_path"],
-    #    image_type=config_values["color_type"],
-    # )
 
     if not config_values("pictures_extracted", cfg):
 
@@ -34,7 +36,7 @@ def main(cfg: TreespecConfig):
             input_file_type=config_values("color_type", cfg),
             output_file_type=config_values("color_output_type", cfg),
             run_number=config_values("run", cfg),
-            apply_center_crop=False,
+            apply_center_crop=config_values("apply_center_crop", cfg),
         )
 
         image_tools.extract_pano_faces(
@@ -44,7 +46,7 @@ def main(cfg: TreespecConfig):
             output_file_type=config_values("seg_output_type", cfg),
             run_number=config_values("run", cfg),
             filter=config_values("filter_id", cfg),
-            apply_center_crop=False,
+            apply_center_crop=config_values("apply_center_crop", cfg),
         )
 
         image_tools.extract_pano_faces(
@@ -54,7 +56,7 @@ def main(cfg: TreespecConfig):
             output_file_type=config_values("sem_output_type", cfg),
             run_number=config_values("run", cfg),
             filter=config_values("filter_semantic", cfg),
-            apply_center_crop=False,
+            apply_center_crop=config_values("apply_center_crop", cfg),
         )
 
     image_tools.find_all_trees(
@@ -69,21 +71,6 @@ def main(cfg: TreespecConfig):
     output_trees_dir = config_values("output_trees_dir", cfg)
 
     image_tools.create_dataset(output_trees_dir, output_trees_dir, only_copy=False)
-
-    #classes = []
-    #for tree in os.listdir(output_trees_dir):
-    #    filename = os.path.splitext(tree)[0]
-    #    parts = filename.split("_")
-    #    if len(parts) < 2:
-    #        continue  # Skip files that don't match the expected pattern
-    #    if parts[2] not in classes:
-    #        classes.append(parts[2])
-    #        os.makedirs(os.path.join(output_trees_dir, parts[2]), exist_ok=True)
-    #    shutil.move(
-    #        os.path.join(output_trees_dir, tree),
-    #        os.path.join(os.path.join(output_trees_dir, parts[2]), tree),
-    #    )
-
 
 if __name__ == "__main__":
     main()  # pylint: disable=no-value-for-parameter

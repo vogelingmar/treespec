@@ -12,14 +12,7 @@ cs.store(name="treespec_config", node=TreespecConfig)
 
 @hydra.main(config_path="../conf", config_name="config")
 def predict_species(cfg: TreespecConfig):
-    """Match predicted tree species from images to the matched cadastre shapefile and writes it to the input path.
-    Args:
-        tree_images_dir: Directory containing images of trees to classify.
-        input_inventory_path: Path to the matched cadastre shapefile.
-        output_inventory_path: Path where the output shapefile will be saved.
-    Raises:
-        ValueError: If a tree ID from the images is not found in the matched cadastre
-        data.
+    """Match predicted tree species from images to the matched inventory shapefile and writes it to the input path.
     """
 
     classification_model = ClassificationModel(

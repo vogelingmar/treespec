@@ -2,6 +2,7 @@
 
 # pylint: disable=redefined-outer-name
 import os
+import numpy as np
 import pytest
 import torch
 import pytorch_lightning as L
@@ -15,7 +16,7 @@ from treespec.datasets.image_dataset import ImageDataset
 
 @pytest.fixture
 def classification_model():
-    """Fixture that holds a ClassificationModel instance"""
+    """ClassificationModel instance for testing"""
     return ClassificationModel(
         model_weights=ResNet50_Weights.DEFAULT,
         model=resnet50,
@@ -56,7 +57,7 @@ def test_configure_optimizers(classification_model):
 
 def test_overfitting(classification_model):
     """Tries to overfit one training batch in order to test that the model is able to fit the training data."""
-    trainer = L.Trainer(max_epochs=15, log_every_n_steps=30)
+    trainer = L.Trainer(max_epochs=15, log_every_n_steps=30, deterministic=True, benchmark=True)
 
     data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/sauen_v1")
     sauen_dataset = ImageDataset(data_dir=data_dir, batch_size=5, num_workers=27, use_ids=False)

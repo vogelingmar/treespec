@@ -17,32 +17,18 @@ def sauen_dataset():
 def test_setup(use_ids):
     """Tests the setup method of SauenDataset and checks for dataset leakage when use_ids is True"""
     data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/essen_mock/run_70/big_dataset_70")
+    faulty_data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/essen_mock/run_70/dataset_70")
     dataset = ImageDataset(data_dir=data_dir, batch_size=5, num_workers=2, use_ids=use_ids)
+    faulty_dataset = ImageDataset(data_dir=faulty_data_dir, batch_size=5, num_workers=2, use_ids=use_ids)
     dataset.setup()
+
+    with pytest.raises(ValueError):
+        faulty_dataset.setup()
 
     assert len(dataset.dataset) > 0
     assert len(dataset.train) > 0
     assert len(dataset.val) > 0
     assert len(dataset.test) > 0
-
-    def get_tree_ids(split):
-        ids = set()
-        for sample in split:
-            # sample is (img, label) tuple for ImageFolder
-            if hasattr(sample, 'path'):  # for Subset of ImageFolder
-                path = sample.path
-            elif isinstance(sample, tuple):
-                # For Subset, sample[0] is PIL image, sample[1] is label, but we need the path
-                # So we need to access the underlying dataset
-                # This works for torch.utils.data.Subset
-                idx = split.indices[split.dataset.index(sample)]
-                path = split.dataset.dataset.samples[idx][0]
-            else:
-                continue
-            filename = os.path.basename(path)
-            tree_id = filename.split("_")[0]
-            ids.add(tree_id)
-        return ids
 
     # For Subset, need to access indices and underlying dataset
     def extract_ids(subset):

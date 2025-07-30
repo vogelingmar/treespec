@@ -8,6 +8,7 @@ testpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def test_select_rgb_images():
+    """Tests the select_rgb_images function."""
     input_dir = os.path.join(testpath, "mock/essen_mock/rgb")
     output_dir = os.path.join(testpath, "mock/temp/pictures/selected_rgb")
     image_type = "jpg"
@@ -28,6 +29,7 @@ def test_select_rgb_images():
 
 
 def test_extract_pano_faces():
+    """Tests the extract_pano_faces function for different filters and image types."""
     input_dir = os.path.join(testpath, "mock/essen_mock/run_70/panos_70")
     id_output_dir = os.path.join(testpath, "mock/temp/pictures/id_70")
     sem_output_dir = os.path.join(testpath, "mock/temp/pictures/sem_70")
@@ -87,6 +89,7 @@ def test_extract_pano_faces():
 
 
 def test_find_all_trees():
+    """Tests the find_all_trees function for both tree and bark covers."""
     color_dir = os.path.join(testpath, "mock/essen_mock/run_70/rgb_70")
     segmentid_dir = os.path.join(testpath, "mock/essen_mock/run_70/id_70")
     semantic_dir = os.path.join(testpath, "mock/essen_mock/run_70/sem_70")
@@ -128,7 +131,8 @@ def test_find_all_trees():
     
     shutil.rmtree(barks_output_dir, ignore_errors=True)
 
-def test_create_dataset(): 
+def test_create_dataset():
+    """Tests the create_dataset function.""" 
     output_dataset_dir = os.path.join(testpath, "mock/temp/pictures/trees_70")
     input_trees_dir = os.path.join(testpath, "mock/essen_mock/run_70/trees_70")
     

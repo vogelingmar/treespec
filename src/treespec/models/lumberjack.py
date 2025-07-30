@@ -17,7 +17,7 @@ from detectron2.utils.logger import setup_logger  # type: ignore
 
 
 class Lumberjack:
-    """
+    r"""
     Extracts tree images from video or images using Detectron2.
 
     Args:
@@ -79,6 +79,7 @@ class Lumberjack:
         Args:
             video: The path to the video file from which to extract tree images.
             corrected: If true, the video can be used as is for extraction. If false, the video will be corrected first.
+            mask : If True, apply predicted mask to crops.
         """
         if not corrected:
             directory = os.path.dirname(video_path)
@@ -98,8 +99,6 @@ class Lumberjack:
 
         w = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
         h = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        # fps = int(vcap.get(cv2.CAP_PROP_FPS))
-        # n_frames = int(vcap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         if self.predict_video_dest_dir is not None:
             dest = os.path.join(
@@ -116,13 +115,11 @@ class Lumberjack:
         nframes = 0
         while vcap.isOpened():
             ret, frame = vcap.read()
-            # if frame is read correctly ret is True
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
             y, x = 0, 0
             crop_frame = frame[y : y + h, x : x + w]
-            # cv2.imshow('frame'<, crop_frame)
             if cv2.waitKey(1) == ord("q"):
                 break
             # Process every 12th frame (approx. 5 fps)
@@ -132,13 +129,11 @@ class Lumberjack:
 
                 i = 0
                 if mask:
-                    # Use bounding boxes to crop, but apply mask to the crop
                     pred_tree_masks = outputs_pred["instances"].pred_masks.cpu().numpy()
                     for j, (box_coords, mask_arr) in enumerate(zip(pred_tree_boxes, pred_tree_masks)):
                         x1, y1, x2, y2 = map(int, box_coords)
                         cropped_box = crop_frame[y1:y2, x1:x2]
                         mask_crop = mask_arr[y1:y2, x1:x2]
-                        # Ensure mask_crop shape matches cropped_box
                         if mask_crop.shape[:2] != cropped_box.shape[:2]:
                             continue
                         masked_img = cropped_box.copy()
@@ -177,7 +172,7 @@ class Lumberjack:
         cv2.destroyAllWindows()
 
     def process_image(self, image_path: str, mask: bool = False):
-        """
+        r"""
         Extracts tree images from a single image.
         Args:
             image_path: Path to image file.
@@ -239,7 +234,7 @@ class Lumberjack:
         filetype: str = "jpg",
         mask: bool = False,
     ):
-        """
+        r"""
         Processes all images in a directory (recursively).
         Args:
             image_dir: Directory containing images or subdirectories.

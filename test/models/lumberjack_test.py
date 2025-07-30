@@ -23,16 +23,20 @@ def lumberjack():  # pylint: disable=inconsistent-return-statements
 
 
 def test_process_video(lumberjack):
-    """Tests the process_video method of the Lumberjack model"""
+    """Tests the process_video method of the Lumberjack model if CUDA is available."""
     if not torch.cuda.is_available():
         pass
 
     else:
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         video_path = os.path.join(base_path, "mock/10sec_example.mp4")
-
         output_dir = lumberjack.output_trees_dir
         predict_dir = lumberjack.predict_video_dest_dir
+        mock_dir = os.path.dirname(os.path.dirname(os.path.dirname(output_dir)))
+
+        if os.path.exists(os.path.join(mock_dir, "corrected_10sec_example.mp4")):
+            os.remove(os.path.join(mock_dir, "corrected_10sec_example.mp4"))
+
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -60,12 +64,11 @@ def test_process_video(lumberjack):
         for video in os.listdir(predict_dir):
             os.remove(os.path.join(predict_dir, video))
 
-        mock_dir = os.path.dirname(os.path.dirname(os.path.dirname(output_dir)))
         os.remove(os.path.join(mock_dir, "corrected_10sec_example.mp4"))
 
 
 def test_process_images(lumberjack):
-    """Tests the process_images method of the Lumberjack model using process_image"""
+    """Tests the process_images method of the Lumberjack model using process_image if CUDA is available."""
     if not torch.cuda.is_available():
         pass
     else:

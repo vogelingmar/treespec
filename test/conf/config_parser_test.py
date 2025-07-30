@@ -4,7 +4,6 @@ from treespec.conf import config_parser
 
 @pytest.fixture
 def mock_cfg():
-    # Mock config using values from config.yaml and config.py
     return SimpleNamespace(
         train=SimpleNamespace(
             model="resnet50",
@@ -121,7 +120,7 @@ def test_create_essen_dataset_config_values(mock_cfg):
     assert isinstance(config_parser.create_essen_dataset_config_values("mask", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("filter_id", mock_cfg), str)
     assert isinstance(config_parser.create_essen_dataset_config_values("filter_semantic", mock_cfg), str)
-    assert isinstance(config_parser.create_essen_dataset_config_values("crop", mock_cfg), bool)
+    assert isinstance(config_parser.create_essen_dataset_config_values("apply_center_crop", mock_cfg), bool)
     assert isinstance(config_parser.create_essen_dataset_config_values("pictures_extracted", mock_cfg), bool)
 
 def test_matching_config_values(mock_cfg):

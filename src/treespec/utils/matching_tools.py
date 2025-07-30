@@ -11,7 +11,7 @@ from treespec.models.classification_model import ClassificationModel
 from treespec.conf.config_parser import train_config_values
 
 def create_lists_from_shapefile(path: str, prefix: Optional[str]):
-    """Create lists of points and records from a shapefile.
+    r"""Create lists of points and records from a shapefile.
 
     Args:
         path: Path to the shapefile.
@@ -38,7 +38,7 @@ def create_lists_from_shapefile(path: str, prefix: Optional[str]):
 
 
 def create_dictionary(path: str):
-    """Create a dictionary from a shapefile where keys are predicted tree IDs.
+    r"""Create a dictionary from a shapefile where keys are predicted tree IDs.
 
     Args:
         path: Path to the shapefile.
@@ -58,7 +58,7 @@ def create_dictionary(path: str):
 
 
 def create_shp_from_dict(dictionary: dict, output_path: str):
-    """Create a shapefile from a dictionary where keys are predicted tree IDs and save it to the output_path.
+    r"""Create a shapefile from a dictionary where keys are predicted tree IDs and save it to the output_path.
 
     Args:
         dictionary: Dictionary where keys are predicted tree IDs and values are records.
@@ -66,6 +66,7 @@ def create_shp_from_dict(dictionary: dict, output_path: str):
 
     Raises:
         ValueError: If coordinate keys are not found in the records.
+        ValueError: If the input dictionary is empty.
     """
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     if not dictionary:
@@ -94,17 +95,21 @@ def create_shp_from_dict(dictionary: dict, output_path: str):
 
 
 def match_and_export(
-    attributes_path: str,
-    cadastre_path: str,
+    predicted_inventory_path: str,
+    inventory_path: str,
     output_path: str,
     use_dbh_filter: bool = True,
 ):
-    """Match predicted cadastre with cadastre points and export to a new shapefile at output_path."""
-    cadastre = shapefile.Reader(cadastre_path)
-    attributes = shapefile.Reader(attributes_path)
+    r"""Match predicted cadastre with inventory points and export to a new shapefile at output_path.
+    
+    Args:
+        predicted_inventory_path: Path to the predicted inventory shapefile.
+        inventory_path: Path to the inventory shapefile.
+        output_path: Path to save the matched shapefile (without extension).
+        use_dbh_filter: If True, only match points where the predicted DBH is within 10 cm of the actual DBH."""
 
-    attribute_points, attribute_records = create_lists_from_shapefile(attributes_path, "pred")
-    cadastre_points, cadastre_records = create_lists_from_shapefile(cadastre_path, None)
+    attribute_points, attribute_records = create_lists_from_shapefile(predicted_inventory_path, "pred")
+    cadastre_points, cadastre_records = create_lists_from_shapefile(inventory_path, None)
 
     cadastre_tree = cKDTree(cadastre_points)
     attribute_tree = cKDTree(attribute_points)
@@ -130,15 +135,15 @@ def match_and_export(
 
 
 def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_inventory_path, trained_model_path, classification_model, dataset):  # pylint: disable=too-many-locals
-    """Match predicted tree species from images to the matched cadastre shapefile and writes it to the input path.
+    r"""Match predicted tree species from images to the matched inventory shapefile and writes it to the input path.
 
     Args:
         tree_images_dir: Directory containing images of trees to classify.
-        matched_cadastre_path: Path to the matched cadastre shapefile.
-        cfg: Configuration object containing model and dataset parameters.
-
-    Raises:
-        ValueError: If a tree ID from the images is not found in the matched cadastre data.
+        input_inventory_path: Path to the matched inventory shapefile.
+        output_inventory_path: Path to save the updated inventory shapefile with predicted species.
+        trained_model_path: Path to the trained classification model.
+        classification_model: Instance of ClassificationModel used for prediction.
+        dataset: Dataset containing class names for species classification.
     """
     classification_model.model.load_state_dict(torch.load(trained_model_path))
     classification_model.eval()  # Set the model to evaluation mode

@@ -10,7 +10,7 @@ from skimage.transform import resize
 
 
 def select_rgb_images(input_dir: str, output_dir: str, image_file_type: str):
-    """Selects and renames RGB images from an input directory and copies them to an output directory 
+    r"""Selects and renames RGB images from an input directory and copies them to an output directory 
     based on their naming convention.
 
     Args:
@@ -25,7 +25,7 @@ def select_rgb_images(input_dir: str, output_dir: str, image_file_type: str):
             name_wo_ext = os.path.splitext(file)[0]
             parts = name_wo_ext.split("_")
             if len(parts) < 2:
-                continue  # Skip files that don't match the expected pattern
+                continue
             idx = parts[-2]
             if file.endswith(f"{1}.{image_file_type}"):
                 new_name = f"{idx}_rgb_left.{image_file_type}"
@@ -47,7 +47,7 @@ def extract_pano_faces(
     apply_center_crop: bool,
     filter: Optional[str] = "",
 ):
-    """Extracts left and right faces from panoramic images in the input directory 
+    r"""Extracts left and right faces from panoramic images in the input directory 
     and saves them to the output directory.
 
     Args:
@@ -71,19 +71,18 @@ def extract_pano_faces(
             filename = os.path.splitext(file)[0]
             parts = filename.split("_")
             if len(parts) < 2:
-                continue  #Skip files not matching the pattern
+                continue
             if parts[1].endswith(str(run_number)):
                 img = imageio.imread(os.path.join(input_dir, file))
                 cube_faces = py360convert.e2c(
                     img, face_w=4096, cube_format="list", mode="nearest"
-                )  # returns list of 6 faces
+                )  # returns list of 6 faces (only select relevant faces
 
                 image_number = int(parts[2])
                 for i, face in enumerate(cube_faces):
                     if i in (1, 3):
                         height, width = face.shape[:2]
                         if apply_center_crop:
-                            # crop to the center square when using square RGB images
                             start_y, end_y = height // 4, 3 * height // 4
                             start_x, end_x = width // 4, 3 * width // 4
                             cropped_face = face[start_y:end_y, start_x:end_x]
@@ -104,7 +103,7 @@ def extract_pano_faces(
                                 cropped_face,
                             )
 
-    print(f"Extracted {image_type} faces from the panoramic images to {output_dir}")
+    print(f"Extracted {image_type} left and right faces from the panoramic images to {output_dir}")
 
 
 def extract_tree_images(
@@ -116,7 +115,8 @@ def extract_tree_images(
     cover: Optional[str],
     image_number: str,
 ):
-    """Extracts tree images from segmentid and color images based on segment IDs.
+    r"""Extracts tree/ bark images from segmentid, color and semanticclass images and optionaly masks out certain areas.
+
     Args:
         color_face_path: Path to the color face image.
         segmentid_face_path: Path to the segment ID face image.
@@ -148,17 +148,14 @@ def extract_tree_images(
         y0, x0 = coords.min(axis=0)
         y1, x1 = coords.max(axis=0) + 1  # +1 for slicing
 
-        # Calculate relative coordinates
         rel_y0, rel_x0 = y0 / seg_h, x0 / seg_w
         rel_y1, rel_x1 = y1 / seg_h, x1 / seg_w
 
-        # Map to color_face coordinates
         col_y0 = int(rel_y0 * col_h)
         col_x0 = int(rel_x0 * col_w)
         col_y1 = int(rel_y1 * col_h)
         col_x1 = int(rel_x1 * col_w)
 
-        # Crop from color image
         cropped = color_face[col_y0:col_y1, col_x0:col_x1]
 
         if float(seg_id) in tree_attributes_dict.keys():
@@ -169,11 +166,9 @@ def extract_tree_images(
         out_path = os.path.join(output_dir, f"{seg_id}_{image_number}_{tree_species}.png")
 
         if cover in ["tree", "bark"]:
-            # Resize mask to match cropped shape
             mask_cropped = mask[y0:y1, x0:x1]
             mask_resized = np.array(mask_cropped, dtype=np.uint8)
             if cropped.shape[:2] != mask_resized.shape:
-                # If shapes don't match due to rounding, resize mask
                 mask_resized = resize(
                     mask_cropped,
                     cropped.shape[:2],
@@ -182,7 +177,6 @@ def extract_tree_images(
                     anti_aliasing=False,
                 ).astype(np.uint8)
 
-            # Apply mask: set everything outside mask to black
             if cropped.ndim == 3:
                 masked_cropped = cropped * mask_resized[..., None]
             else:
@@ -191,14 +185,12 @@ def extract_tree_images(
             if cover == "bark":
                 semantic_face = imageio.imread(semantic_face_path)
                 sem_h, sem_w = semantic_face.shape[:2]
-                # Crop semantic face using the same relative coordinates as the tree crop
                 sem_y0 = int(rel_y0 * sem_h)
                 sem_x0 = int(rel_x0 * sem_w)
                 sem_y1 = int(rel_y1 * sem_h)
                 sem_x1 = int(rel_x1 * sem_w)
 
                 sem_crop = semantic_face[sem_y0:sem_y1, sem_x0:sem_x1]
-                # Resize semantic crop if needed
                 if sem_crop.shape[:2] != masked_cropped.shape[:2]:
                     sem_crop = resize(
                         sem_crop,
@@ -207,15 +199,12 @@ def extract_tree_images(
                         preserve_range=True,
                         anti_aliasing=False,
                     ).astype(semantic_face.dtype)
-                # Bark mask: 1 where semantic == 0, else 0
                 bark_mask = (sem_crop == 0).astype(np.uint8)
-                # Mask out everything except bark (in addition to tree mask)
                 if masked_cropped.ndim == 3:
                     masked_cropped = masked_cropped * bark_mask[..., None]
                 else:
                     masked_cropped = masked_cropped * bark_mask
 
-                # Crop to bounding box of visible bark pixels
                 bark_coords = np.argwhere((bark_mask > 0) & (np.any(masked_cropped != 0, axis=-1) if masked_cropped.ndim == 3 else masked_cropped != 0))
                 if bark_coords.size > 0:
                     bark_y0, bark_x0 = bark_coords.min(axis=0)
@@ -228,7 +217,8 @@ def extract_tree_images(
                         masked_cropped = masked_cropped[bark_y0:bark_y1, bark_x0:bark_x1]
                         non_black = np.count_nonzero(masked_cropped != 0)
                         total = masked_cropped.size
-                    # filter the results
+
+                    # filter results to guarantee quality
                     min_size = 200
                     if (
                         masked_cropped.shape[0] < min_size
@@ -238,7 +228,7 @@ def extract_tree_images(
                     ):
                         continue
                 else:
-                    continue  # No bark found, skip saving
+                    continue
 
             imageio.imwrite(out_path, masked_cropped)
         elif cover is None:
@@ -254,14 +244,19 @@ def find_all_trees(
     cover: Optional[str] = None,
     semantic_dir: Optional[str] = None,
 ):
-    """Extracts tree images from segmentid and color directories based on segment IDs.
+    r"""Finds and extracts tree images from segment ID, color, and semantic images from the specified directories by matching their IDs.
+
     Args:
         segmentid_dir: Directory containing segment ID images.
         color_dir: Directory containing color images.
-        semantic_dir: Directory containing semantic images.
         output_dir: Directory where the extracted tree images will be saved.
         tree_attributes_dict: Dictionary containing tree attributes.
-        tree_cover: Whether to apply a mask to the cropped images.
+        input_file_type: The file type of the input images (e.g., 'png', 'jpg').
+        cover: Whether to apply a mask to the cropped images.
+        semantic_dir: Directory containing semantic images.
+
+    Raises:
+        ValueError: If `cover` is "bark" and `semantic_dir` is None.
     """
     if semantic_dir == None and cover == "bark":
         raise ValueError("To extract only the barks from the images, semantic images are required! Give a semantic dir.")
@@ -271,7 +266,7 @@ def find_all_trees(
         filename = os.path.splitext(segmentid_image)[0]
         parts = filename.split("_")
         if len(parts) < 2:
-            continue  # Skip files that don't match the expected pattern
+            continue
         image_number = parts[0]
         orientation = parts[2]
         color_path = os.path.join(color_dir, f"{image_number}_rgb_{orientation}.{input_file_type}")
@@ -290,7 +285,8 @@ def find_all_trees(
     print(f"Extracted tree images to {output_dir}")
 
 def create_dataset(input_trees_dir: str, output_dataset_dir: str, only_copy: bool):
-    """Creates a dataset from the extracted tree images based on their names.
+    r"""Creates a dataset from the extracted tree images based on their names.
+    
     Args:
         input_trees_dir: Directory where the pictures for the dataset are stored.
         output_dataset_dir: Directory where the dataset will be created.
@@ -301,7 +297,7 @@ def create_dataset(input_trees_dir: str, output_dataset_dir: str, only_copy: boo
         filename = os.path.splitext(tree)[0]
         parts = filename.split("_")
         if len(parts) < 2:
-            continue  # Skip files that don't match the expected pattern
+            continue
         if parts[2] not in classes:
             classes.append(parts[2])
             os.makedirs(os.path.join(output_dataset_dir, parts[2]), exist_ok=True)

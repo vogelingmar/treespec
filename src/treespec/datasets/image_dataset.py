@@ -15,12 +15,13 @@ import pytorch_lightning as L
 
 class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-attributes
     r"""
-    Image Dataset Class.
+    Image Dataset Class. That creates a classification dataset with training, validation and test splits from a folder structure.
 
     Args:
-        data_dir (str): Path to the dataset directory.
-        batch_size (int): Batch size for data loaders.
-        num_workers (int): Number of workers for data loaders.
+        data_dir: Path to the dataset directory.
+        batch_size: Batch size for data loaders.
+        num_workers: Number of workers for data loaders.
+        use_ids: If True, uses tree IDs from the beginning of filenames to ensure that there is no data leakage between splits.
     """
 
     def __init__(self, data_dir: str, batch_size: int, num_workers: int, use_ids: bool):
@@ -37,13 +38,6 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
 
         self.classes = sorted(folder.name for folder in os.scandir(data_dir) if folder.is_dir())
 
-    def prepare_data(self):
-        r"""
-        Downloads the dataset to the data_dir if not already present there.
-        """
-
-        pass  # pylint: disable=unnecessary-pass
-
     def setup(
         self, transform: Optional[Transform] = None
     ):  # pylint: disable=arguments-renamed, disable=too-many-locals
@@ -53,16 +47,25 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
 
         Args:
             transform: Default transformations to be applied to the images.
+
+        Raises:
+            ValueError: If the dataset does not contain at least 10 images or 10 unique tree IDs.
         """
 
-        # Create the dataset without splitting yet
         full_dataset = datasets.ImageFolder(root=self.data_dir, transform=transform)
+
+        if len(full_dataset.samples) < 10:
+            raise ValueError("Dataset must contain at least 10 images.")
+
         if self.use_ids:
             tree_to_indices = defaultdict(list)
             for idx, (path, _) in enumerate(full_dataset.samples):
                 filename = os.path.basename(path)
                 tree_id = filename.split("_")[0]
                 tree_to_indices[tree_id].append(idx)
+
+            if len(tree_to_indices) < 10:
+                raise ValueError("Dataset must contain at least 10 unique tree IDs.")
 
             tree_ids = list(tree_to_indices.keys())
             random.shuffle(tree_ids)
@@ -76,31 +79,28 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
             val_ids = tree_ids[train_trees : train_trees + val_trees]
             test_ids = tree_ids[train_trees + val_trees :]
 
-            # Collect indices for each split
             train_indices = [idx for tid in train_ids for idx in tree_to_indices[tid]]
             val_indices = [idx for tid in val_ids for idx in tree_to_indices[tid]]
             test_indices = [idx for tid in test_ids for idx in tree_to_indices[tid]]
 
-            # Create Subsets
-            self.dataset = full_dataset  # Save for loss_weights
+            self.dataset = full_dataset
             self.train = data.Subset(full_dataset, train_indices)
             self.val = data.Subset(full_dataset, val_indices)
             self.test = data.Subset(full_dataset, test_indices)
 
         else:
-            # create image folder dataset from images
             self.dataset = datasets.ImageFolder(  # pylint: disable=attribute-defined-outside-init
                 root=self.data_dir, transform=transform
             )
 
-            # calculation of different set sizes (80% traning, 10% validation, 10% test)
+            # (80% traning, 10% validation, 10% test)
             total_size = len(self.dataset)
             val_size = int(0.1 * total_size)
             test_size = int(0.1 * total_size)
             train_size = total_size - val_size - test_size
 
             self.train, self.val, self.test = data.random_split(  # pylint: disable=attribute-defined-outside-init
-                self.dataset, [train_size, val_size, test_size]
+                self.dataset, [train_size, val_size, test_size], generator=torch.Generator().manual_seed(42)
             )
 
     def train_dataloader(self, augmentation: Optional[Transform] = None):

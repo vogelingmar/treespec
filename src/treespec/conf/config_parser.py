@@ -261,7 +261,7 @@ def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
             return cfg.essen_dataset.filter_id
         case "filter_semantic":
             return cfg.essen_dataset.filter_semantic
-        case "crop":
+        case "apply_center_crop":
             return cfg.essen_dataset.crop
         case "pictures_extracted":
             return cfg.essen_dataset.pictures_extracted
