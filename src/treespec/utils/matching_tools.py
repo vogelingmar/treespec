@@ -10,6 +10,7 @@ from treespec.models.classification_model import ClassificationModel
 
 from treespec.conf.config_parser import train_config_values
 
+
 def create_lists_from_shapefile(path: str, prefix: Optional[str]):
     r"""Create lists of points and records from a shapefile.
 
@@ -101,7 +102,7 @@ def match_and_export(
     use_dbh_filter: bool = True,
 ):
     r"""Match predicted cadastre with inventory points and export to a new shapefile at output_path.
-    
+
     Args:
         predicted_inventory_path: Path to the predicted inventory shapefile.
         inventory_path: Path to the inventory shapefile.
@@ -117,9 +118,7 @@ def match_and_export(
     att_distances, att_indices = attribute_tree.query(cadastre_points)
 
     merged_dict = {}
-    for i, (attr_pt, cad_idx, cad_dist) in enumerate(
-        zip(attribute_points, cad_indices, cad_distances)
-    ):
+    for i, (attr_pt, cad_idx, cad_dist) in enumerate(zip(attribute_points, cad_indices, cad_distances)):
         if cad_dist <= 5.0 and att_indices[cad_idx] == i:
             combined = {**cadastre_records[cad_idx], **attribute_records[i]}
             x, y = cadastre_points[cad_idx]
@@ -127,14 +126,19 @@ def match_and_export(
             combined["Y"] = y
             if not use_dbh_filter:
                 merged_dict[i] = combined
-            elif combined.get("pred_dbh") is not None and (float(combined["DURCHM"]) - float(combined["pred_dbh"]) * 100) < 10:
+            elif (
+                combined.get("pred_dbh") is not None
+                and (float(combined["DURCHM"]) - float(combined["pred_dbh"]) * 100) < 10
+            ):
                 merged_dict[i] = combined
 
     create_shp_from_dict(merged_dict, output_path)
     print(f"Exported matched points to {output_path}.shp")
 
 
-def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_inventory_path, trained_model_path, classification_model, dataset):  # pylint: disable=too-many-locals
+def match_predicted_tree_species(
+    tree_images_dir, input_inventory_path, output_inventory_path, trained_model_path, classification_model, dataset
+):  # pylint: disable=too-many-locals
     r"""Match predicted tree species from images to the matched inventory shapefile and writes it to the input path.
 
     Args:
@@ -172,7 +176,7 @@ def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_i
                 trees[tree_id]["pred_species"] = predicted_class
         else:
             print(f"Tree ID {tree_id} not found in the matched cadastre data. Skipping.")
-            #raise ValueError(f"Tree ID {tree_id} not found in the matched cadastre data.")
+            # raise ValueError(f"Tree ID {tree_id} not found in the matched cadastre data.")
 
     for tree in trees.values():
         number_of_votes = 0
@@ -196,4 +200,3 @@ def match_predicted_tree_species(tree_images_dir, input_inventory_path, output_i
         else:
             tree["pred_species"] = "uncertain"
     create_shp_from_dict(trees, output_inventory_path)
-

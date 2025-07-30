@@ -10,7 +10,7 @@ from skimage.transform import resize
 
 
 def select_rgb_images(input_dir: str, output_dir: str, image_file_type: str):
-    r"""Selects and renames RGB images from an input directory and copies them to an output directory 
+    r"""Selects and renames RGB images from an input directory and copies them to an output directory
     based on their naming convention.
 
     Args:
@@ -47,7 +47,7 @@ def extract_pano_faces(
     apply_center_crop: bool,
     filter: Optional[str] = "",
 ):
-    r"""Extracts left and right faces from panoramic images in the input directory 
+    r"""Extracts left and right faces from panoramic images in the input directory
     and saves them to the output directory.
 
     Args:
@@ -183,7 +183,7 @@ def extract_tree_images(
                 masked_cropped = cropped * mask_resized
 
             if cover == "bark":
-                semantic_face = imageio.imread(semantic_face_path)
+                semantic_face = imageio.imread(semantic_face_path) #type: ignore
                 sem_h, sem_w = semantic_face.shape[:2]
                 sem_y0 = int(rel_y0 * sem_h)
                 sem_x0 = int(rel_x0 * sem_w)
@@ -205,7 +205,10 @@ def extract_tree_images(
                 else:
                     masked_cropped = masked_cropped * bark_mask
 
-                bark_coords = np.argwhere((bark_mask > 0) & (np.any(masked_cropped != 0, axis=-1) if masked_cropped.ndim == 3 else masked_cropped != 0))
+                bark_coords = np.argwhere(
+                    (bark_mask > 0)
+                    & (np.any(masked_cropped != 0, axis=-1) if masked_cropped.ndim == 3 else masked_cropped != 0)
+                )
                 if bark_coords.size > 0:
                     bark_y0, bark_x0 = bark_coords.min(axis=0)
                     bark_y1, bark_x1 = bark_coords.max(axis=0) + 1  # +1 for slicing
@@ -259,7 +262,9 @@ def find_all_trees(
         ValueError: If `cover` is "bark" and `semantic_dir` is None.
     """
     if semantic_dir == None and cover == "bark":
-        raise ValueError("To extract only the barks from the images, semantic images are required! Give a semantic dir.")
+        raise ValueError(
+            "To extract only the barks from the images, semantic images are required! Give a semantic dir."
+        )
 
     os.makedirs(output_dir, exist_ok=True)
     for segmentid_image in os.listdir(segmentid_dir):
@@ -270,7 +275,11 @@ def find_all_trees(
         image_number = parts[0]
         orientation = parts[2]
         color_path = os.path.join(color_dir, f"{image_number}_rgb_{orientation}.{input_file_type}")
-        semantic_path = os.path.join(semantic_dir, f"{image_number}_semanticclass_{orientation}.{input_file_type}") if semantic_dir else None
+        semantic_path = (
+            os.path.join(semantic_dir, f"{image_number}_semanticclass_{orientation}.{input_file_type}")
+            if semantic_dir
+            else None
+        )
         segmentid_path = os.path.join(segmentid_dir, segmentid_image)
         extract_tree_images(
             segmentid_face_path=segmentid_path,
@@ -284,9 +293,10 @@ def find_all_trees(
 
     print(f"Extracted tree images to {output_dir}")
 
+
 def create_dataset(input_trees_dir: str, output_dataset_dir: str, only_copy: bool):
     r"""Creates a dataset from the extracted tree images based on their names.
-    
+
     Args:
         input_trees_dir: Directory where the pictures for the dataset are stored.
         output_dataset_dir: Directory where the dataset will be created.

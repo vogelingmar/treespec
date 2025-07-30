@@ -2,6 +2,7 @@ import pytest
 from types import SimpleNamespace
 from treespec.conf import config_parser
 
+
 @pytest.fixture
 def mock_cfg():
     return SimpleNamespace(
@@ -56,6 +57,7 @@ def mock_cfg():
         ),
     )
 
+
 def test_train_config_values(mock_cfg):
     # All possible params for train_config_values
     assert callable(config_parser.train_config_values("model", mock_cfg))
@@ -72,6 +74,7 @@ def test_train_config_values(mock_cfg):
     assert isinstance(config_parser.train_config_values("learning_rate", mock_cfg), float)
     assert isinstance(config_parser.train_config_values("use_augmentations", mock_cfg), bool)
     assert isinstance(config_parser.train_config_values("trained_model_dir", mock_cfg), str)
+
 
 def test_create_essen_dataset_config_values(mock_cfg):
     # All possible params for create_essen_dataset_config_values
@@ -96,12 +99,14 @@ def test_create_essen_dataset_config_values(mock_cfg):
     assert isinstance(config_parser.create_essen_dataset_config_values("apply_center_crop", mock_cfg), bool)
     assert isinstance(config_parser.create_essen_dataset_config_values("pictures_extracted", mock_cfg), bool)
 
+
 def test_matching_config_values(mock_cfg):
     # All possible params for matching_config_values
     assert isinstance(config_parser.matching_config_values("predicted_cadastre_path", mock_cfg), str)
     assert isinstance(config_parser.matching_config_values("cadastre_path", mock_cfg), str)
     assert isinstance(config_parser.matching_config_values("output_path", mock_cfg), str)
     assert isinstance(config_parser.matching_config_values("use_dbh_filter", mock_cfg), bool)
+
 
 def test_predict_essen_config_values(mock_cfg):
     # All possible params for predict_essen_config_values

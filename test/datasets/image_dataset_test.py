@@ -13,11 +13,16 @@ def sauen_dataset():
     data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/sauen_v1")
     return ImageDataset(data_dir=data_dir, batch_size=5, num_workers=27, use_ids=False)
 
+
 @pytest.mark.parametrize("use_ids", [True, False])
 def test_setup(use_ids):
     """Tests the setup method of SauenDataset and checks for dataset leakage when use_ids is True"""
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/essen_mock/run_70/big_dataset_70")
-    faulty_data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/essen_mock/run_70/dataset_70")
+    data_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/essen_mock/run_70/big_dataset_70"
+    )
+    faulty_data_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "mock/essen_mock/run_70/dataset_70"
+    )
     dataset = ImageDataset(data_dir=data_dir, batch_size=5, num_workers=2, use_ids=use_ids)
     faulty_dataset = ImageDataset(data_dir=faulty_data_dir, batch_size=5, num_workers=2, use_ids=use_ids)
     dataset.setup()
@@ -32,7 +37,7 @@ def test_setup(use_ids):
 
     # For Subset, need to access indices and underlying dataset
     def extract_ids(subset):
-        if hasattr(subset, 'indices'):
+        if hasattr(subset, "indices"):
             return set(os.path.basename(subset.dataset.samples[i][0]).split("_")[0] for i in subset.indices)
         else:
             # fallback for ImageFolder

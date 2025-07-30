@@ -98,6 +98,7 @@ def test_calculate_per_class_metrics(classification_model):
     assert set(metrics.keys()) == {"tp", "fp", "tn", "fn", "precision", "recall", "f1_score"}
     assert all(isinstance(v, torch.Tensor) for v in metrics.values())
 
+
 def test_predict_step(classification_model):
     """Tests the predict_step method of the ClassificationModel"""
     batch = torch.randn(1, 3, 224, 224)

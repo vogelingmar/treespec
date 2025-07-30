@@ -167,6 +167,7 @@ def train_config_values(  # pylint: disable=too-many-locals
         case _:
             raise ValueError(f"Unknown parameter: {param}")
 
+
 def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
     r"""Takes a parameter and the config and returns the corresponding value or object.
 
@@ -223,7 +224,8 @@ def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
             return cfg.essen_dataset.pictures_extracted
         case _:
             raise ValueError(f"Unknown parameter: {param}")
-        
+
+
 def predict_essen_config_values(param: str, cfg: TreespecConfig):
     r"""Takes a parameter and the config and returns the corresponding value or object.
 

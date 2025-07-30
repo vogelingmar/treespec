@@ -68,7 +68,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         Returns:
             Output tensor
-        
+
         Shape:
             - :code:`x`: :math:`(B, C, H, W)`
             - Output: :math:`(B, N)`

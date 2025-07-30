@@ -21,9 +21,9 @@ def main(cfg: TreespecConfig):
 
     if config_values("apply_center_crop", cfg):
         image_tools.select_rgb_images(
-           input_dir=config_values["original_color_images_path"],
-           output_dir=config_values["color_images_path"],
-           image_type=config_values["color_type"],
+            input_dir=config_values["original_color_images_path"],
+            output_dir=config_values["color_images_path"],
+            image_type=config_values["color_type"],
         )
 
     tree_attributes_dict = create_dictionary(config_values("attribute_path", cfg))
@@ -66,11 +66,12 @@ def main(cfg: TreespecConfig):
         tree_attributes_dict=tree_attributes_dict,
         semantic_dir=config_values("semantic_images_path", cfg),
         cover=config_values("mask", cfg),
-        input_file_type="png"
+        input_file_type="png",
     )
     output_trees_dir = config_values("output_trees_dir", cfg)
 
     image_tools.create_dataset(output_trees_dir, output_trees_dir, only_copy=False)
+
 
 if __name__ == "__main__":
     main()  # pylint: disable=no-value-for-parameter

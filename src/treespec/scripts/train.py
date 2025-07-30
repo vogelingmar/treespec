@@ -41,7 +41,7 @@ def main(cfg: TreespecConfig):
     )
 
     early_stop_callback = EarlyStopping(
-        monitor="train_loss", # exchange for any metric (adjust mode accordingly)
+        monitor="train_loss",  # exchange for any metric (adjust mode accordingly)
         patience=10,
         verbose=True,
         mode="min",
@@ -88,7 +88,13 @@ def main(cfg: TreespecConfig):
     else:
         torch.save(
             model.model.state_dict(),
-            (train_config_values("trained_model_dir", cfg) + cfg.train.model + pathlib.Path(train_config_values("dataset_dir", cfg)).name + "_finetuned" + ".pth"),
+            (
+                train_config_values("trained_model_dir", cfg)
+                + cfg.train.model
+                + pathlib.Path(train_config_values("dataset_dir", cfg)).name
+                + "_finetuned"
+                + ".pth"
+            ),
         )
 
 
