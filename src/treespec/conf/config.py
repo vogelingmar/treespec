@@ -22,24 +22,6 @@ class TrainParams:  # pylint: disable=too-many-instance-attributes
     trained_model_dir: str
     train_augmentations: list
 
-
-@dataclass
-class ExtractParams:  # pylint: disable=too-many-instance-attributes
-    """Configuration of parameters fot the extraction process"""
-
-    model: str
-    output_trees_dir: str
-    predict_video_dest_dir: str
-    visualize: bool
-    video: str
-    corrected: bool
-    image_dir: str
-    cameras: list
-    image_filetype: str
-    predict: bool
-    mask: bool
-
-
 @dataclass
 class EssenDatasetParams:  # pylint: disable=too-many-instance-attributes
     """Configuration of parameters for the create_essen_dataset script"""
@@ -89,7 +71,6 @@ class TreespecConfig:
     """Configuration of the configs going into the treespec config"""
 
     train: TrainParams
-    extract: ExtractParams
     essen_dataset: EssenDatasetParams
     predict_essen: PredictEssen
     matching: Matching

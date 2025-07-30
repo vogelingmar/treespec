@@ -167,50 +167,6 @@ def train_config_values(  # pylint: disable=too-many-locals
         case _:
             raise ValueError(f"Unknown parameter: {param}")
 
-
-def image_based_extract_config_values(param: str, cfg: TreespecConfig):
-    r"""Takes a parameter and the config and returns the corresponding value or object.
-
-    Args:
-        param: The parameter to extract.
-        cfg: The TreespecConfig object containing the configuration.
-
-    Returns:
-        The value or object corresponding to the parameter.
-
-    Raises:
-        ValueError: If the parameter is unknown or not supported.
-    """
-    match param:
-        case "model":
-            return cfg.extract.model
-        case "output_trees_dir":
-            return cfg.extract.output_trees_dir
-        case "predict_video_dest_dir":
-            return cfg.extract.predict_video_dest_dir
-        case "visualize":
-            return cfg.extract.visualize
-        case "video":
-            if hasattr(cfg.extract, "video"):
-                return cfg.extract.video
-            else: 
-                return None
-        case "corrected":
-            return cfg.extract.corrected
-        case "image_dir":
-            return cfg.extract.image_dir
-        case "cameras":
-            return cfg.extract.cameras
-        case "image_filetype":
-            return cfg.extract.image_filetype
-        case "predict":
-            return cfg.extract.predict
-        case "mask":
-            return cfg.extract.mask
-        case _:
-            raise ValueError(f"Unknown parameter: {param}")
-
-
 def create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
     r"""Takes a parameter and the config and returns the corresponding value or object.
 

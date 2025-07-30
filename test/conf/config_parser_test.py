@@ -26,19 +26,6 @@ def mock_cfg():
                 {"name": "RandomPerspective", "distortion_scale": 0.3, "p": 0.3},
             ],
         ),
-        extract=SimpleNamespace(
-            model="/home/ingmar/Documents/repos/treespec/src/treespec/io/models/X-101_RGB_60k.pth",
-            output_trees_dir="/home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/",
-            video="/data/sauen_videos/3512a1/part1/corrected_VID_20231109_182711_00_001.mp4",
-            corrected=True,
-            predict_video_dest_dir="/home/ingmar/Documents/repos/treespec/src/treespec/io/videos/",
-            visualize=False,
-            predict=False,
-            mask=True,
-            image_dir="/some/image/dir",
-            cameras=[1, 2],
-            image_filetype="jpg",
-        ),
         essen_dataset=SimpleNamespace(
             attribute_path="/data/essen/inventory/matched_output_70/matched_output",
             original_color_images_path="/data/essen/data/MG4/13.09.2022/panos",
@@ -85,20 +72,6 @@ def test_train_config_values(mock_cfg):
     assert isinstance(config_parser.train_config_values("learning_rate", mock_cfg), float)
     assert isinstance(config_parser.train_config_values("use_augmentations", mock_cfg), bool)
     assert isinstance(config_parser.train_config_values("trained_model_dir", mock_cfg), str)
-
-def test_image_based_extract_config_values(mock_cfg):
-    # All possible params for image_based_extract_config_values
-    assert isinstance(config_parser.image_based_extract_config_values("model", mock_cfg), str)
-    assert isinstance(config_parser.image_based_extract_config_values("output_trees_dir", mock_cfg), str)
-    assert isinstance(config_parser.image_based_extract_config_values("predict_video_dest_dir", mock_cfg), str)
-    assert isinstance(config_parser.image_based_extract_config_values("visualize", mock_cfg), bool)
-    assert isinstance(config_parser.image_based_extract_config_values("video", mock_cfg), str)
-    assert isinstance(config_parser.image_based_extract_config_values("corrected", mock_cfg), bool)
-    assert isinstance(config_parser.image_based_extract_config_values("image_dir", mock_cfg), str)
-    assert isinstance(config_parser.image_based_extract_config_values("cameras", mock_cfg), list)
-    assert isinstance(config_parser.image_based_extract_config_values("image_filetype", mock_cfg), str)
-    assert isinstance(config_parser.image_based_extract_config_values("predict", mock_cfg), bool)
-    assert isinstance(config_parser.image_based_extract_config_values("mask", mock_cfg), bool)
 
 def test_create_essen_dataset_config_values(mock_cfg):
     # All possible params for create_essen_dataset_config_values

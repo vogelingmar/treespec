@@ -23,16 +23,6 @@ train:
       distortion_scale: 0.3
       p: 0.3
 
-extract:
-  model: /home/ingmar/Documents/repos/treespec/src/treespec/io/models/X-101_RGB_60k.pth
-  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/
-  video: /data/sauen_videos/3512a1/part1/corrected_VID_20231109_182711_00_001.mp4
-  corrected: True
-  predict_video_dest_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/videos/
-  visualize: false
-  predict: false
-  mask: true
-
 essen_dataset:
   attribute_path: /data/essen/inventory/matched_output_70/matched_output
   original_color_images_path: /data/essen/data/MG4/13.09.2022/panos
