@@ -107,7 +107,8 @@ def match_and_export(  # pylint: disable=too-many-locals
         predicted_inventory_path: Path to the predicted inventory shapefile.
         inventory_path: Path to the inventory shapefile.
         output_path: Path to save the matched shapefile (without extension).
-        use_dbh_filter: If True, only match points where the predicted DBH is within 10 cm of the actual DBH."""
+        use_dbh_filter: If True, only match points where the predicted DBH is within 10 cm of the actual DBH.
+    """
 
     attribute_points, attribute_records = create_lists_from_shapefile(predicted_inventory_path, "pred")
     cadastre_points, cadastre_records = create_lists_from_shapefile(inventory_path, None)
@@ -137,7 +138,12 @@ def match_and_export(  # pylint: disable=too-many-locals
 
 
 def match_predicted_tree_species(  # pylint: disable=too-many-arguments, too-many-positional-arguments
-    tree_images_dir, input_inventory_path, output_inventory_path, trained_model_path, classification_model, dataset
+    tree_images_dir,
+    input_inventory_path,
+    output_inventory_path,
+    trained_model_path,
+    classification_model,
+    dataset,
 ):  # pylint: disable=too-many-locals
     r"""Match predicted tree species from images to the matched inventory shapefile and writes it to the input path.
 
@@ -171,7 +177,7 @@ def match_predicted_tree_species(  # pylint: disable=too-many-arguments, too-man
 
         if tree_id in trees.keys():
             if "pred_species" in trees[tree_id].keys():
-                trees[tree_id][f"pred_species_{parts[1]}"] = predicted_class
+                trees[tree_id][f"pred_sp_{parts[1]}"] = predicted_class
             else:
                 trees[tree_id]["pred_species"] = predicted_class
         else:
@@ -183,7 +189,7 @@ def match_predicted_tree_species(  # pylint: disable=too-many-arguments, too-man
         votes = {}
         attributes = tree.keys()
         for attribute in attributes:
-            if attribute.startswith("pred_species"):
+            if attribute.startswith("pred_sp"):
                 number_of_votes += 1
                 species = tree[attribute]
                 votes[species] = votes.get(species, 0) + 1

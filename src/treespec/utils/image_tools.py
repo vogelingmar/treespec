@@ -37,7 +37,6 @@ def select_rgb_images(input_dir: str, output_dir: str, image_file_type: str):
 
     print(f"Copied images to {output_dir}")
 
-
 def extract_pano_faces(
     input_dir: str,
     output_dir: str,
@@ -76,32 +75,29 @@ def extract_pano_faces(
                 img = imageio.imread(os.path.join(input_dir, file))
                 cube_faces = py360convert.e2c(
                     img, face_w=4096, cube_format="list", mode="nearest"
-                )  # returns list of 6 faces (only select relevant faces
+                )
 
                 image_number = int(parts[2])
                 for i, face in enumerate(cube_faces):
-                    if i in (1, 3):
+                    if i in (1, 3):  # 1 = left, 3 = right
                         height, width = face.shape[:2]
                         if apply_center_crop:
                             start_y, end_y = height // 4, 3 * height // 4
                             start_x, end_x = width // 4, 3 * width // 4
-                            cropped_face = face[start_y:end_y, start_x:end_x]
-                        else:
-                            cropped_face = face
+                            face = face[start_y:end_y, start_x:end_x]
 
-                        if i == 1:
-                            imageio.imwrite(
-                                os.path.join(output_dir, f"{image_number}_{image_type}_left.{output_file_type}"),
-                                cropped_face,
-                            )
-                        if i == 3:
-                            imageio.imwrite(
-                                os.path.join(
-                                    output_dir,
-                                    f"{image_number}_{image_type}_right.{output_file_type}",
-                                ),
-                                cropped_face,
-                            )
+                        # If semanticclass, extract red channel only
+                        if image_type == "semanticclass":
+                            # Ensure face has at least 3 channels
+                            if face.ndim == 3 and face.shape[2] >= 1:
+                                face = face[:, :, 0]  # R channel
+
+                        filename_prefix = f"{image_number}_{image_type}"
+                        face_label = "left" if i == 1 else "right"
+                        output_path = os.path.join(
+                            output_dir, f"{filename_prefix}_{face_label}.{output_file_type}"
+                        )
+                        imageio.imwrite(output_path, face)
 
     print(f"Extracted {image_type} left and right faces from the panoramic images to {output_dir}")
 
@@ -199,7 +195,7 @@ def extract_tree_images(
                         preserve_range=True,
                         anti_aliasing=False,
                     ).astype(semantic_face.dtype)
-                bark_mask = (sem_crop == 0).astype(np.uint8)
+                bark_mask = (sem_crop == 1).astype(np.uint8)
                 if masked_cropped.ndim == 3:
                     masked_cropped = masked_cropped * bark_mask[..., None]
                 else:
@@ -276,7 +272,10 @@ def find_all_trees(
         orientation = parts[2]
         color_path = os.path.join(color_dir, f"{image_number}_rgb_{orientation}.{input_file_type}")
         semantic_path = (
-            os.path.join(semantic_dir, f"{image_number}_semanticclass_{orientation}.{input_file_type}")
+            os.path.join(
+                semantic_dir,
+                f"{image_number}_semanticclass_{orientation}.{input_file_type}",
+            )
             if semantic_dir
             else None
         )

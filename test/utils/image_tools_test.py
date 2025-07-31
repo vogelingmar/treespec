@@ -1,7 +1,12 @@
 import pytest
 import os
 import shutil
-from treespec.utils.image_tools import select_rgb_images, extract_pano_faces, find_all_trees, create_dataset
+from treespec.utils.image_tools import (
+    select_rgb_images,
+    extract_pano_faces,
+    find_all_trees,
+    create_dataset,
+)
 from treespec.utils.matching_tools import create_dictionary
 
 testpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,7 +51,13 @@ def test_extract_pano_faces():
     shutil.rmtree(id_output_dir, ignore_errors=True)
 
     extract_pano_faces(
-        input_dir, id_output_dir, sem_id_input_file_type, output_file_type, run_number, apply_center_crop, id_filter
+        input_dir,
+        id_output_dir,
+        sem_id_input_file_type,
+        output_file_type,
+        run_number,
+        apply_center_crop,
+        id_filter,
     )
 
     output = os.listdir(id_output_dir)
@@ -65,7 +76,13 @@ def test_extract_pano_faces():
     shutil.rmtree(sem_output_dir, ignore_errors=True)
 
     extract_pano_faces(
-        input_dir, sem_output_dir, sem_id_input_file_type, output_file_type, run_number, apply_center_crop, sem_filter
+        input_dir,
+        sem_output_dir,
+        sem_id_input_file_type,
+        output_file_type,
+        run_number,
+        apply_center_crop,
+        sem_filter,
     )
 
     output = os.listdir(sem_output_dir)
@@ -84,7 +101,12 @@ def test_extract_pano_faces():
     shutil.rmtree(color_output_dir, ignore_errors=True)
 
     extract_pano_faces(
-        input_dir, color_output_dir, rgb_input_file_type, output_file_type, run_number, apply_center_crop
+        input_dir,
+        color_output_dir,
+        rgb_input_file_type,
+        output_file_type,
+        run_number,
+        apply_center_crop,
     )
 
     output = os.listdir(color_output_dir)
@@ -135,7 +157,7 @@ def test_find_all_trees():
 
     # test for barks
     shutil.rmtree(barks_output_dir, ignore_errors=True)
-    os.makedirs(trees_output_dir, exist_ok=True)
+    os.makedirs(barks_output_dir, exist_ok=True)
 
     find_all_trees(
         segmentid_dir=segmentid_dir,
@@ -165,7 +187,11 @@ def test_create_dataset():
     shutil.rmtree(output_dataset_dir, ignore_errors=True)
     os.makedirs(output_dataset_dir, exist_ok=True)
 
-    create_dataset(input_trees_dir=input_trees_dir, output_dataset_dir=output_dataset_dir, only_copy=True)
+    create_dataset(
+        input_trees_dir=input_trees_dir,
+        output_dataset_dir=output_dataset_dir,
+        only_copy=True,
+    )
 
     assert os.path.exists(output_dataset_dir)
     dataset = os.listdir(output_dataset_dir)

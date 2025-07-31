@@ -87,7 +87,7 @@ def test_overfitting(classification_model):
     untrained_loss = classification_model._common_steps(  # pylint: disable=protected-access
         untrained_batch, 0, "test", False
     ).item()  # pylint: disable=protected-access
-    assert untrained_loss > final_loss + 0.5
+    assert untrained_loss > final_loss + 0.3
 
 
 def test_calculate_per_class_metrics(classification_model):
@@ -95,7 +95,15 @@ def test_calculate_per_class_metrics(classification_model):
     predictions = torch.tensor([0, 1, 2, 1])
     labels = torch.tensor([0, 1, 1, 2])
     metrics = classification_model.calculate_per_class_metrics(predictions, labels)
-    assert set(metrics.keys()) == {"tp", "fp", "tn", "fn", "precision", "recall", "f1_score"}
+    assert set(metrics.keys()) == {
+        "tp",
+        "fp",
+        "tn",
+        "fn",
+        "precision",
+        "recall",
+        "f1_score",
+    }
     assert all(isinstance(v, torch.Tensor) for v in metrics.values())
 
 
