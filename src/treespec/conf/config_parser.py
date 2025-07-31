@@ -85,9 +85,7 @@ def train_config_values(  # pylint: disable=too-many-locals
 
                     return Wide_ResNet101_2_Weights.DEFAULT
                 case _:
-                    raise ValueError(
-                        f"Unknown model weights: {cfg.train.model_weights}"
-                    )
+                    raise ValueError(f"Unknown model weights: {cfg.train.model_weights}")
         case "dataset":
             match cfg.train.dataset:
                 case "folder":
@@ -103,9 +101,7 @@ def train_config_values(  # pylint: disable=too-many-locals
 
                     return nn.CrossEntropyLoss
                 case _:
-                    raise ValueError(
-                        f"Unknown loss function: {cfg.train.loss_function}"
-                    )
+                    raise ValueError(f"Unknown loss function: {cfg.train.loss_function}")
         case "train_augmentations":
             default_transforms = train_config_values("model_weights", cfg).transforms()
 

@@ -183,7 +183,7 @@ def extract_tree_images(
                 masked_cropped = cropped * mask_resized
 
             if cover == "bark":
-                semantic_face = imageio.imread(semantic_face_path) #type: ignore
+                semantic_face = imageio.imread(semantic_face_path)  # type: ignore
                 sem_h, sem_w = semantic_face.shape[:2]
                 sem_y0 = int(rel_y0 * sem_h)
                 sem_x0 = int(rel_x0 * sem_w)

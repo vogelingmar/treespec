@@ -95,7 +95,7 @@ def create_shp_from_dict(dictionary: dict, output_path: str):
     print(f"Exported {len(dictionary)} points to {output_path}.shp")
 
 
-def match_and_export( # pylint: disable=too-many-locals
+def match_and_export(  # pylint: disable=too-many-locals
     predicted_inventory_path: str,
     inventory_path: str,
     output_path: str,
@@ -136,7 +136,7 @@ def match_and_export( # pylint: disable=too-many-locals
     print(f"Exported matched points to {output_path}.shp")
 
 
-def match_predicted_tree_species( # pylint: disable=too-many-arguments, too-many-positional-arguments
+def match_predicted_tree_species(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     tree_images_dir, input_inventory_path, output_inventory_path, trained_model_path, classification_model, dataset
 ):  # pylint: disable=too-many-locals
     r"""Match predicted tree species from images to the matched inventory shapefile and writes it to the input path.
