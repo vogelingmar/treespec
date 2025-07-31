@@ -13,15 +13,19 @@ from torchvision.transforms.v2 import Transform  # type: ignore
 import pytorch_lightning as L
 
 
-class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-attributes
+class ImageDataset(
+    L.LightningDataModule
+):  # pylint: disable=too-many-instance-attributes
     r"""
-    Image Dataset Class. That creates a classification dataset with training, validation and test splits from a folder structure.
+    Image Dataset Class. That creates a classification dataset with training,
+    validation and test splits from a folder structure.
 
     Args:
         data_dir: Path to the dataset directory.
         batch_size: Batch size for data loaders.
         num_workers: Number of workers for data loaders.
-        use_ids: If True, uses tree IDs from the beginning of filenames to ensure that there is no data leakage between splits.
+        use_ids: If True, uses tree IDs from the beginning of filenames
+            to ensure that there is no data leakage between splits.
     """
 
     def __init__(self, data_dir: str, batch_size: int, num_workers: int, use_ids: bool):
@@ -36,7 +40,9 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
         self.val = None
         self.test = None
 
-        self.classes = sorted(folder.name for folder in os.scandir(data_dir) if folder.is_dir())
+        self.classes = sorted(
+            folder.name for folder in os.scandir(data_dir) if folder.is_dir()
+        )
 
     def setup(
         self, transform: Optional[Transform] = None
@@ -89,8 +95,10 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
             self.test = data.Subset(full_dataset, test_indices)
 
         else:
-            self.dataset = datasets.ImageFolder(  # pylint: disable=attribute-defined-outside-init
-                root=self.data_dir, transform=transform
+            self.dataset = (
+                datasets.ImageFolder(  # pylint: disable=attribute-defined-outside-init
+                    root=self.data_dir, transform=transform
+                )
             )
 
             # (80% traning, 10% validation, 10% test)
@@ -99,8 +107,12 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
             test_size = int(0.1 * total_size)
             train_size = total_size - val_size - test_size
 
-            self.train, self.val, self.test = data.random_split(  # pylint: disable=attribute-defined-outside-init
-                self.dataset, [train_size, val_size, test_size], generator=torch.Generator().manual_seed(42)
+            self.train, self.val, self.test = (
+                data.random_split(  # pylint: disable=attribute-defined-outside-init
+                    self.dataset,
+                    [train_size, val_size, test_size],
+                    generator=torch.Generator().manual_seed(42),
+                )
             )
 
     def train_dataloader(self, augmentation: Optional[Transform] = None):

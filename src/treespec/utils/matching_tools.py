@@ -95,7 +95,7 @@ def create_shp_from_dict(dictionary: dict, output_path: str):
     print(f"Exported {len(dictionary)} points to {output_path}.shp")
 
 
-def match_and_export(
+def match_and_export( # pylint: disable=too-many-locals
     predicted_inventory_path: str,
     inventory_path: str,
     output_path: str,
@@ -115,10 +115,10 @@ def match_and_export(
     cadastre_tree = cKDTree(cadastre_points)
     attribute_tree = cKDTree(attribute_points)
     cad_distances, cad_indices = cadastre_tree.query(attribute_points)
-    att_distances, att_indices = attribute_tree.query(cadastre_points)
+    _, att_indices = attribute_tree.query(cadastre_points)
 
     merged_dict = {}
-    for i, (attr_pt, cad_idx, cad_dist) in enumerate(zip(attribute_points, cad_indices, cad_distances)):
+    for i, (_, cad_idx, cad_dist) in enumerate(zip(attribute_points, cad_indices, cad_distances)):
         if cad_dist <= 5.0 and att_indices[cad_idx] == i:
             combined = {**cadastre_records[cad_idx], **attribute_records[i]}
             x, y = cadastre_points[cad_idx]
@@ -136,7 +136,7 @@ def match_and_export(
     print(f"Exported matched points to {output_path}.shp")
 
 
-def match_predicted_tree_species(
+def match_predicted_tree_species( # pylint: disable=too-many-arguments, too-many-positional-arguments
     tree_images_dir, input_inventory_path, output_inventory_path, trained_model_path, classification_model, dataset
 ):  # pylint: disable=too-many-locals
     r"""Match predicted tree species from images to the matched inventory shapefile and writes it to the input path.
