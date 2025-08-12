@@ -24,26 +24,26 @@ train:
       p: 0.3
 
 essen_dataset:
-  attribute_path: /data/essen/inventory/matched_output_70/matched_output
-  original_color_images_path: /data/essen/data/MG4/13.09.2022/panos
-  color_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_70
+  attribute_path: /data/essen/inventory/matched_output_82/matched_output
+  original_color_images_path: /data/essen/data/MG4/panos/run82
+  color_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/color_82
   color_type: jpg
   color_output_type: png
-  original_id_images_path: /home/ingmar/Downloads/tree_filtering/output
-  segmentid_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_70
+  original_id_images_path: /data/essen/data/MG4/panos/run82
+  segmentid_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/segmentid_82
   seg_type: tif
   seg_output_type: png
-  original_sem_images_path: /home/ingmar/Downloads/tree_filtering/output
-  semantic_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/semantic_70
+  original_sem_images_path: /data/essen/data/MG4/panos/run82
+  semantic_images_path: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/semantic_82
   sem_type: tif
   sem_output_type: png
-  run: 70
-  mask: bark
-  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/barks_70
+  run: 82
+  mask: tree
+  output_trees_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures/barks_82
   filter_id: segmentid
   filter_semantic: semanticclass
   crop: false
-  pictures_extracted: false
+  pictures_extracted: true
 
 predict_essen:
   tree_images_dir: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/run_70/trees_70
