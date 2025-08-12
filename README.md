@@ -1,7 +1,10 @@
 # treespec
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tests](https://github.com/vogelingmar/treespec/workflows/test/badge.svg)](https://github.com/vogelingmar/treespec/actions/workflows/code-quality.yml)
+![pypi-image](https://badge.fury.io/py/treespec.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) 
+[![CI](https://github.com/vogelingmar/treespec/actions/workflows/main.yml/badge.svg)](https://github.com/vogelingmar/treespec/actions/workflows/main.yml)
+[![coverage](https://codecov.io/gh/vogelingmar/treespec/branch/main/graph/badge.svg)](https://codecov.io/github/vogelingmar/treespec?branch=main)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/treespec)
 
 
 > A deeplearning pipeline to classify tree species in terrestrial panorama pictures.
