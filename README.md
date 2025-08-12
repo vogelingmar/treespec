@@ -7,10 +7,14 @@ todo
 ## Installation
 
 ### Method 1: Docker Container
-Download the current [treespec container](https://hub.docker.com/repository/docker/vogelingmar/treespec/general) on Docker Hub: docker pull vogelingmar/treespec:latest.
+Download the current [treespec container](https://hub.docker.com/repository/docker/vogelingmar/treespec/general) on Docker Hub ([Docker](https://docs.docker.com/engine/install/) required).
+```BibTeX
+docker pull vogelingmar/treespec:latest
+```
 
 ### Method 2: GitHub Repository
-Clone the [treespec repository](https://github.com/vogelingmar/treespec) from GitHub.
+Clone the [treespec repository](https://github.com/vogelingmar/treespec) from GitHub ([Git](https://github.com/git-guides/install-git) required).
+
 
 ## Setup
 
