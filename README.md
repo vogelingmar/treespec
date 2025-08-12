@@ -2,7 +2,7 @@
 A deeplearning pipeline to classify tree species in terrestrial panorama pictures. Automatically create datasets for model training and prediction and link the results spatially by using 3D point clouds and existing inventory data.
 
 # Setup
-When first setting up treespec you have to have Python3 installed on your system. To create a virtual environment
+When first setting up treespec you have to have [Python3](https://www.python.org/downloads/) installed on your system. To create a virtual environment
 and install all the required dependecies to run the treespec pipeline follow these steps:
 1. Navigate into your local treespec repo.
    
