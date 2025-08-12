@@ -15,7 +15,7 @@ treespec is a PyTorch-lightning based deep learning pipeline equipped with tools
 **Features:**
 - match tree inventories
 - create masked datasets
-- train torchvision models
+- train standard torchvision models
 
 ## Installation
 
