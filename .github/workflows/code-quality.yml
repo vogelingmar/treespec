@@ -87,3 +87,7 @@ jobs:
           cd /github/workspace/
           python -m pip install --upgrade .'[dev, docs]'
           coverage run -m pytest
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
