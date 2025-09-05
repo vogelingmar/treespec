@@ -157,9 +157,8 @@ def extract_tree_images(
         col_x1 = int(rel_x1 * col_w)
 
         cropped = color_face[col_y0:col_y1, col_x0:col_x1]
-
-        if float(seg_id) in tree_attributes_dict.keys():
-            tree_species = tree_attributes_dict[float(seg_id)]["BAUMART"]
+        if str(seg_id) in tree_attributes_dict.keys():
+            tree_species = tree_attributes_dict[str(seg_id)]["BAUMART"]
         else:
             tree_species = "unknown"
 
@@ -349,19 +348,20 @@ def create_dataset(input_trees_dir: str, output_dataset_dir: str, only_copy: boo
     for tree in os.listdir(input_trees_dir):
         filename = os.path.splitext(tree)[0]
         parts = filename.split("_")
-        if len(parts) < 2:
+        if len(parts) < 5:
             continue
-        if parts[2] not in classes:
-            classes.append(parts[2])
-            os.makedirs(os.path.join(output_dataset_dir, parts[2]), exist_ok=True)
+        species = parts[5]
+        if species not in classes:
+            classes.append(species)
+            os.makedirs(os.path.join(output_dataset_dir, species), exist_ok=True)
         if only_copy:
             shutil.copy2(
                 os.path.join(input_trees_dir, tree),
-                os.path.join(os.path.join(output_dataset_dir, parts[2]), tree),
+                os.path.join(os.path.join(output_dataset_dir, species), tree),
             )
         else:
             shutil.move(
                 os.path.join(input_trees_dir, tree),
-                os.path.join(os.path.join(output_dataset_dir, parts[2]), tree),
+                os.path.join(os.path.join(output_dataset_dir, species), tree),
             )
     print(f"Created dataset with {len(classes)} classes in {output_dataset_dir}")

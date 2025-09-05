@@ -207,7 +207,7 @@ def test_create_dataset():
         for file in os.listdir(dir_path):
             assert file.endswith(".png")
             parts = file.split("_")
-            assert len(parts) == 3
+            assert len(parts) == 6
             assert parts[0].isdigit()
 
     shutil.rmtree(output_dataset_dir, ignore_errors=True)

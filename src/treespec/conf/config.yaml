@@ -51,8 +51,8 @@ create_essen_dataset:
   input_dir: /home/ingmar/Downloads/dataset_creation/2022-09-12
   output_dir: /home/ingmar/Downloads/dataset_creation/2022-09-12/datasets
   runs: [30]
-  crop: bark
-  pictures_extracted: false
+  crop: bark_crop
+  pictures_extracted: true
 
 predict_essen:
   tree_images_dir: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/run_70/trees_70

@@ -70,11 +70,11 @@ def main(cfg: TreespecConfig):
 
         output_trees_dir = os.path.join(config_values("output_dir", cfg), f"trees_{run}")
         image_tools.find_all_trees(
-            segmentid_dir=os.path.join(config_values("output_dir", cfg), f"id_crops_{run}"),
-            color_dir=os.path.join(config_values("output_dir", cfg), f"rgb_crops_{run}"),
+            segmentid_dir=os.path.join(config_values("output_dir", cfg), date, f"id_crops_{date}_{run}"),
+            color_dir=os.path.join(config_values("output_dir", cfg), date, f"rgb_crops_{date}_{run}"),
             output_dir=output_trees_dir,
             tree_attributes_dict=tree_attributes_dict,
-            semantic_dir=os.path.join(config_values("output_dir", cfg), f"sem_crops_{run}"),
+            semantic_dir=os.path.join(config_values("output_dir", cfg), date, f"sem_crops_{date}_{run}"),
             cover=config_values("crop", cfg),
             input_file_type="png",
             run_number=run,
