@@ -23,6 +23,8 @@ dependencies = [
     "pytorch-lightning",
     "opencv-python",
     "dataclasses",
+    "hydra",
+    "omegaconf",
     "py360convert",
     "scikit-image",
     "imageio",

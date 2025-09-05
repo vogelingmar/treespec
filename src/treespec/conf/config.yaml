@@ -47,7 +47,7 @@ essen_dataset:
 
 create_essen_dataset:
   rgb_format: pano
-  groundtruth_inventory_path: /data/essen/inventory_MG4/inventory_MG4
+  groundtruth_inventory_path: /data/essen/dataset_creation/inventory_MG4/inventory_MG4
   input_dir: /home/ingmar/Downloads/dataset_creation/2022-09-12
   output_dir: /home/ingmar/Downloads/dataset_creation/2022-09-12/datasets
   runs: [30]
