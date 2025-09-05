@@ -21,9 +21,9 @@ def main(cfg: TreespecConfig):
 
     if config_values("apply_center_crop", cfg):
         image_tools.select_rgb_images(
-            input_dir=config_values["original_color_images_path"],
-            output_dir=config_values["color_images_path"],
-            image_type=config_values["color_type"],
+            input_dir=config_values("original_color_images_path", cfg),
+            output_dir=config_values("color_images_path", cfg),
+            image_file_type=config_values("color_type", cfg),
         )
 
     tree_attributes_dict = create_dictionary(config_values("attribute_path", cfg))

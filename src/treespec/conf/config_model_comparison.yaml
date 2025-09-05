@@ -1,0 +1,29 @@
+defaults:
+  - _self_
+  - model: resnet50  # default model from the model group
+  - dataset: sauen_small  # default dataset from the dataset group
+
+train:
+  model: ${model.name}
+  model_weights: ${model.weights}
+  dataset: folder
+  dataset_dir: ${dataset.dataset_dir}
+  num_classes: ${dataset.num_classes}
+  use_ids: ${dataset.use_ids}
+  epoch_count: 20
+  batch_size: 5
+  num_workers: 27
+  learning_rate: 0.001
+  loss_function: cross_entropy
+  use_augmentations: true
+  trained_model_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/models
+  train_augmentations: 
+    - name: RandomVerticalFlip
+      p: 0.1
+    - name: RandomRotation
+      degrees: 15
+    - name: RandomResizedCrop
+      size: [224, 224]
+    - name: RandomPerspective
+      distortion_scale: 0.3
+      p: 0.3

@@ -1,0 +1,2 @@
+name: vgg16
+weights: vgg16_default

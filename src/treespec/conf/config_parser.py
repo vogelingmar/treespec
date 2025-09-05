@@ -24,6 +24,10 @@ def train_config_values(  # pylint: disable=too-many-locals
     match param:
         case "model":
             match cfg.train.model:
+                case "resnet18": #TODO: TEST
+                    from torchvision.models import resnet18  # type: ignore
+
+                    return resnet18
                 case "resnet50":
                     from torchvision.models import resnet50  # type: ignore
 
@@ -44,7 +48,11 @@ def train_config_values(  # pylint: disable=too-many-locals
                     from torchvision.models import googlenet
 
                     return googlenet
-                case "mobilenet":
+                case "mobilenet_v2": #TODO: TEST
+                    from torchvision.models import mobilenet_v2
+
+                    return mobilenet_v2
+                case "mobilenet_v3":
                     from torchvision.models import mobilenet_v3_large
 
                     return mobilenet_v3_large
@@ -52,10 +60,30 @@ def train_config_values(  # pylint: disable=too-many-locals
                     from torchvision.models import wide_resnet101_2
 
                     return wide_resnet101_2
+                case "convnext": #TODO: TEST
+                    from torchvision.models import convnext_base
+
+                    return convnext_base
+                case "alexnet": #TODO: TEST
+                    from torchvision.models import alexnet
+
+                    return alexnet
+                case "vgg16": #TODO: TEST
+                    from torchvision.models import vgg16
+
+                    return vgg16
+                case "densenet": #TODO: TEST
+                    from torchvision.models import densenet121
+
+                    return densenet121
                 case _:
                     raise ValueError(f"Unknown model: {cfg.train.model}")
         case "model_weights":
             match cfg.train.model_weights:
+                case "resnet18_default": #TODO: TEST
+                    from torchvision.models import ResNet18_Weights  # type: ignore
+
+                    return ResNet18_Weights.DEFAULT
                 case "resnet50_default":
                     from torchvision.models import ResNet50_Weights
 
@@ -76,7 +104,11 @@ def train_config_values(  # pylint: disable=too-many-locals
                     from torchvision.models import GoogLeNet_Weights
 
                     return GoogLeNet_Weights.DEFAULT
-                case "mobilenet_default":
+                case "mobilenet_v2_default": #TODO: TEST
+                    from torchvision.models import MobileNet_V2_Weights
+
+                    return MobileNet_V2_Weights.DEFAULT
+                case "mobilenet_v3_default":
                     from torchvision.models import MobileNet_V3_Large_Weights
 
                     return MobileNet_V3_Large_Weights.DEFAULT
@@ -84,6 +116,22 @@ def train_config_values(  # pylint: disable=too-many-locals
                     from torchvision.models import Wide_ResNet101_2_Weights
 
                     return Wide_ResNet101_2_Weights.DEFAULT
+                case "convnext_default": #TODO: TEST
+                    from torchvision.models import ConvNeXt_Base_Weights
+
+                    return ConvNeXt_Base_Weights.DEFAULT
+                case "alexnet_default": #TODO: TEST
+                    from torchvision.models import AlexNet_Weights
+
+                    return AlexNet_Weights.DEFAULT
+                case "vgg16_default": #TODO: TEST
+                    from torchvision.models import VGG16_Weights
+
+                    return VGG16_Weights.DEFAULT
+                case "densenet_default": #TODO: TEST
+                    from torchvision.models import DenseNet121_Weights
+
+                    return DenseNet121_Weights.DEFAULT
                 case _:
                     raise ValueError(f"Unknown model weights: {cfg.train.model_weights}")
         case "dataset":
@@ -251,6 +299,36 @@ def predict_essen_config_values(param: str, cfg: TreespecConfig):
         case _:
             raise ValueError(f"Unknown parameter: {param}")
 
+def new_create_essen_dataset_config_values(param: str, cfg: TreespecConfig):
+    r"""Takes a parameter and the config and returns the corresponding value or object.
+
+    Args:
+        param: The parameter to extract.
+        cfg: The TreespecConfig object containing the configuration.
+
+    Returns:
+        The value or object corresponding to the parameter.
+
+    Raises:
+        ValueError: If the parameter is unknown or not supported.
+    """
+    match param:
+        case "rgb_format":
+            return cfg.create_essen_dataset.rgb_format
+        case "groundtruth_inventory_path":
+            return cfg.create_essen_dataset.groundtruth_inventory_path
+        case "input_dir":
+            return cfg.create_essen_dataset.input_dir
+        case "output_dir":
+            return cfg.create_essen_dataset.output_dir
+        case "runs":
+            return cfg.create_essen_dataset.runs
+        case "crop":
+            return cfg.create_essen_dataset.crop
+        case "pictures_extracted":
+            return cfg.create_essen_dataset.pictures_extracted
+        case _:
+            raise ValueError(f"Unknown parameter: {param}")
 
 def matching_config_values(
     param: str,

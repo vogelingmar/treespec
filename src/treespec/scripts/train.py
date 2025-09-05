@@ -15,7 +15,7 @@ cs = ConfigStore.instance()
 cs.store(name="treespec_config", node=TreespecConfig)
 
 
-@hydra.main(config_path="../conf", config_name="config")
+@hydra.main(config_path="../conf", config_name="config_model_comparison")
 def main(cfg: TreespecConfig):
     """Training Script of the Treespec Pipeline"""
 

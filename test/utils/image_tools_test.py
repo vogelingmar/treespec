@@ -131,6 +131,8 @@ def test_find_all_trees():
         os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output")
     )
     input_file_type = "png"
+    date = "2025-09-02"
+    run_number = "70"
 
     # test for trees
     shutil.rmtree(trees_output_dir, ignore_errors=True)
@@ -144,13 +146,15 @@ def test_find_all_trees():
         cover="tree",
         semantic_dir=semantic_dir,
         input_file_type=input_file_type,
+        run_number=run_number,
+        date=date,
     )
 
     output = os.listdir(trees_output_dir)
     assert len(output) > 0
     for file in output:
         parts = file.split("_")
-        assert len(parts) == 3
+        assert len(parts) == 6
         assert parts[0].isdigit()
 
     shutil.rmtree(trees_output_dir, ignore_errors=True)
@@ -167,13 +171,15 @@ def test_find_all_trees():
         cover="bark",
         semantic_dir=semantic_dir,
         input_file_type=input_file_type,
+        run_number = run_number,
+        date=date,
     )
 
     output = os.listdir(barks_output_dir)
     assert len(output) > 0
     for file in output:
         parts = file.split("_")
-        assert len(parts) == 3
+        assert len(parts) == 6
         assert parts[0].isdigit()
 
     shutil.rmtree(barks_output_dir, ignore_errors=True)

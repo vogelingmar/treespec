@@ -48,6 +48,18 @@ class EssenDatasetParams:  # pylint: disable=too-many-instance-attributes
     crop: bool
     pictures_extracted: bool
 
+@dataclass
+class CreateEssenDataset:
+    """Configuration of parameters for the create_essen_dataset script"""
+
+    rgb_format: str
+    groundtruth_inventory_path: str
+    input_dir: str
+    output_dir: str
+    runs: list
+    crop: str
+    pictures_extracted: bool
+
 
 @dataclass
 class PredictEssen:
@@ -75,5 +87,6 @@ class TreespecConfig:
 
     train: TrainParams
     essen_dataset: EssenDatasetParams
+    create_essen_dataset: CreateEssenDataset
     predict_essen: PredictEssen
     matching: Matching
