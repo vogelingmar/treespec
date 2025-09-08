@@ -119,14 +119,13 @@ def test_extract_pano_faces():
 
     shutil.rmtree(color_output_dir, ignore_errors=True)
 
-
-def test_find_all_trees():
+@pytest.mark.parametrize("cover", ["tree", "bark", "tree_crop", "bark_crop"])
+def test_find_all_trees(cover: str):
     """Tests the find_all_trees function for both tree and bark covers."""
     color_dir = os.path.join(testpath, "mock/essen_mock/run_70/rgb_70")
     segmentid_dir = os.path.join(testpath, "mock/essen_mock/run_70/id_70")
     semantic_dir = os.path.join(testpath, "mock/essen_mock/run_70/sem_70")
-    trees_output_dir = os.path.join(testpath, "mock/temp/pictures/trees_70")
-    barks_output_dir = os.path.join(testpath, "mock/temp/pictures/barks_70")
+    trees_output_dir = os.path.join(testpath, f"mock/temp/pictures/{cover}_70")
     tree_attributes_dict = create_dictionary(
         os.path.join(testpath, "mock/essen_mock/run_70/inventory_70/matched_output")
     )
@@ -143,7 +142,7 @@ def test_find_all_trees():
         color_dir=color_dir,
         output_dir=trees_output_dir,
         tree_attributes_dict=tree_attributes_dict,
-        cover="tree",
+        cover=cover,
         semantic_dir=semantic_dir,
         input_file_type=input_file_type,
         run_number=run_number,
@@ -157,37 +156,11 @@ def test_find_all_trees():
         assert len(parts) == 6
         assert parts[0].isdigit()
 
-    shutil.rmtree(trees_output_dir, ignore_errors=True)
-
-    # test for barks
-    shutil.rmtree(barks_output_dir, ignore_errors=True)
-    os.makedirs(barks_output_dir, exist_ok=True)
-
-    find_all_trees(
-        segmentid_dir=segmentid_dir,
-        color_dir=color_dir,
-        output_dir=barks_output_dir,
-        tree_attributes_dict=tree_attributes_dict,
-        cover="bark",
-        semantic_dir=semantic_dir,
-        input_file_type=input_file_type,
-        run_number = run_number,
-        date=date,
-    )
-
-    output = os.listdir(barks_output_dir)
-    assert len(output) > 0
-    for file in output:
-        parts = file.split("_")
-        assert len(parts) == 6
-        assert parts[0].isdigit()
-
-    shutil.rmtree(barks_output_dir, ignore_errors=True)
-
+    #shutil.rmtree(trees_output_dir, ignore_errors=True)
 
 def test_create_dataset():
     """Tests the create_dataset function."""
-    output_dataset_dir = os.path.join(testpath, "mock/temp/pictures/trees_70")
+    output_dataset_dir = os.path.join(testpath, "mock/temp/pictures/trees_dataset_70")
     input_trees_dir = os.path.join(testpath, "mock/essen_mock/run_70/trees_70")
 
     shutil.rmtree(output_dataset_dir, ignore_errors=True)
