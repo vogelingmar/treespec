@@ -33,8 +33,8 @@ def main(cfg: TreespecConfig):
         image_tools.extract_pano_faces(
             input_dir=config_values("original_color_images_path", cfg),
             output_dir=config_values("color_images_path", cfg),
-            input_file_type=config_values("color_type", cfg),
-            output_file_type=config_values("color_output_type", cfg),
+            input_pano_file_type=config_values("color_type", cfg),
+            output_image_file_type=config_values("color_output_type", cfg),
             run_number=config_values("run", cfg),
             apply_center_crop=config_values("apply_center_crop", cfg),
         )
@@ -42,20 +42,20 @@ def main(cfg: TreespecConfig):
         image_tools.extract_pano_faces(
             input_dir=config_values("original_id_images_path", cfg),
             output_dir=config_values("segmentid_images_path", cfg),
-            input_file_type=config_values("seg_type", cfg),
-            output_file_type=config_values("seg_output_type", cfg),
+            input_pano_file_type=config_values("seg_type", cfg),
+            output_image_file_type=config_values("seg_output_type", cfg),
             run_number=config_values("run", cfg),
-            filter=config_values("filter_id", cfg),
+            name_filter=config_values("filter_id", cfg),
             apply_center_crop=config_values("apply_center_crop", cfg),
         )
 
         image_tools.extract_pano_faces(
             input_dir=config_values("original_sem_images_path", cfg),
             output_dir=config_values("semantic_images_path", cfg),
-            input_file_type=config_values("sem_type", cfg),
-            output_file_type=config_values("sem_output_type", cfg),
+            input_pano_file_type=config_values("sem_type", cfg),
+            output_image_file_type=config_values("sem_output_type", cfg),
             run_number=config_values("run", cfg),
-            filter=config_values("filter_semantic", cfg),
+            name_filter=config_values("filter_semantic", cfg),
             apply_center_crop=config_values("apply_center_crop", cfg),
         )
 

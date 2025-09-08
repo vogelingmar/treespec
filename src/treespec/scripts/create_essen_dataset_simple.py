@@ -34,8 +34,8 @@ def main(cfg: TreespecConfig):
                 image_tools.extract_pano_faces(
                     input_dir=os.path.join(config_values("input_dir", cfg), "panos"),
                     output_dir=os.path.join(config_values("output_dir", cfg), date, f"rgb_crops_{date}_{run}"),
-                    input_file_type="jpg",
-                    output_file_type="png",
+                    input_pano_file_type="jpg",
+                    output_image_file_type="png",
                     run_number=run,
                     apply_center_crop=config_values("rgb_format", cfg) == "rectangle",
                 )
@@ -43,20 +43,20 @@ def main(cfg: TreespecConfig):
             image_tools.extract_pano_faces(
                     input_dir=os.path.join(config_values("input_dir", cfg), "panos", f"rend{run}"),
                     output_dir=os.path.join(config_values("output_dir", cfg), date, f"id_crops_{date}_{run}"),
-                    input_file_type="tif",
-                    output_file_type="png",
+                    input_pano_file_type="tif",
+                    output_image_file_type="png",
                     run_number=run,
-                    filter="segmentid",
+                    name_filter="segmentid",
                     apply_center_crop=config_values("rgb_format", cfg) == "rectangle",
                 )
             
             image_tools.extract_pano_faces(
                     input_dir=os.path.join(config_values("input_dir", cfg), "panos", f"rend{run}"),
                     output_dir=os.path.join(config_values("output_dir", cfg), date, f"sem_crops_{date}_{run}"),
-                    input_file_type="tif",
-                    output_file_type="png",
+                    input_pano_file_type="tif",
+                    output_image_file_type="png",
                     run_number=run,
-                    filter="semanticclass",
+                    name_filter="semanticclass",
                     apply_center_crop=config_values("rgb_format", cfg) == "rectangle",
                 )
             

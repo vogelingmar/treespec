@@ -1,12 +1,7 @@
 create_essen_dataset:
   rgb_format: pano
-  input_dir: /data/essen/data/MG4/2022-09-12
-  output_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/pictures
-  runs: [70, 82, 6, 7]
-  crop: tree
-  pictures_extracted: false
-matching:
-  predicted_cadastre_path: /data/essen/inventory/pred_cadastre_6-82/run70/run70
-  cadastre_path: /data/essen/inventory/Whole-Essen/cadastre_essen
-  output_path: /data/essen/inventory/matched_output_70/matched_output
-  use_dbh_filter: False
+  groundtruth_inventory_path: /data/essen/dataset_creation/inventory_MG4/inventory_MG4
+  input_dir: /home/ingmar/Downloads/dataset_creation/2022-09-12
+  output_dir: /home/ingmar/Downloads/dataset_creation/2022-09-12/datasets
+  runs: [30]
+  pictures_extracted: true

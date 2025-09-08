@@ -40,11 +40,11 @@ def select_rgb_images(input_dir: str, output_dir: str, image_file_type: str):
 def extract_pano_faces(
     input_dir: str,
     output_dir: str,
-    input_file_type: str,
-    output_file_type: str,
+    input_pano_file_type: str,
+    output_image_file_type: str,
     run_number: int,
     apply_center_crop: bool,
-    filter: Optional[str] = "",
+    name_filter: Optional[str] = "",
 ):
     r"""Extracts left and right faces from panoramic images in the input directory
     and saves them to the output directory.
@@ -60,25 +60,26 @@ def extract_pano_faces(
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    if filter is None or filter == "":
+    if name_filter is None or name_filter == "":
         image_type = "rgb"
     else:
-        image_type = filter
+        image_type = name_filter
 
     for file in sorted(os.listdir(input_dir)):
-        if file.endswith(f"{filter}.{input_file_type}"):
+        if file.endswith(f"{name_filter}.{input_pano_file_type}"):
             filename = os.path.splitext(file)[0]
             parts = filename.split("_")
             if len(parts) < 2:
                 continue
-            if parts[1].endswith(str(run_number)):
-                img = imageio.imread(os.path.join(input_dir, file))
-                img_h, img_w = img.shape[:2]
+            pano_run_number = parts[1]
+            if pano_run_number.endswith(str(run_number)):
+                pano = imageio.imread(os.path.join(input_dir, file))
+                pano_width = pano.shape[1]
                 # Set face_w to one fourth of the panorama width, but at least 500px
-                face_w = max(img_w // 4, 500)
+                face_width = max(pano_width // 4, 500)
 
                 cube_faces = py360convert.e2c(
-                    img, face_w=face_w, cube_format="list", mode="nearest"
+                    pano, face_w=face_width, cube_format="list", mode="nearest"
                 )
 
                 image_number = int(parts[2])
@@ -99,12 +100,79 @@ def extract_pano_faces(
                         filename_prefix = f"{image_number}_{image_type}"
                         face_label = "left" if i == 1 else "right"
                         output_path = os.path.join(
-                            output_dir, f"{filename_prefix}_{face_label}.{output_file_type}"
+                            output_dir, f"{filename_prefix}_{face_label}.{output_image_file_type}"
                         )
                         imageio.imwrite(output_path, face)
 
     print(f"Extracted {image_type} left and right faces from the panoramic images to {output_dir}")
 
+def determine_output_path(
+    tree_id, tree_attributes_dict, output_dir, image_id
+) -> str:
+    r"""
+    Determines the output path for a tree image based on its ID and species."""
+    if str(tree_id) in tree_attributes_dict.keys():
+        tree_species = tree_attributes_dict[str(tree_id)]["BAUMART"]
+    else:
+        tree_species = "unknown"
+    return os.path.join(output_dir, f"{tree_id}_{image_id}_{tree_species}.png")
+
+def extract_relevant_patch(mask, color_face):
+    r"""Extracts the relevant zoomed and cropped patches from the color face based on the provided mask."""
+
+    crop_coords = np.argwhere(mask)
+    if crop_coords.size < 200 * 200 or crop_coords.shape[0] < crop_coords.shape[1]: # filter small and wide images
+        return
+    
+    crop_bound_y0, crop_bound_x0 = crop_coords.min(axis=0)
+    crop_bound_y1, crop_bound_x1 = crop_coords.max(axis=0) + 1  # +1 for slicing
+
+    zoomed_color_face = color_face[crop_bound_y0:crop_bound_y1, crop_bound_x0:crop_bound_x1]
+    zoomed_mask = mask[crop_bound_y0:crop_bound_y1, crop_bound_x0:crop_bound_x1] # gives cropped mask of whole tree
+
+    zoomed_cropped_color_face = zoomed_color_face * zoomed_mask[..., None]
+
+    return zoomed_cropped_color_face, zoomed_color_face, zoomed_mask, crop_bound_y0, crop_bound_y1, crop_bound_x0, crop_bound_x1
+
+def determine_colored_area(zoomed_cropped_color_face):
+    r"""Determines the proportion of colored (non-black) area in the zoomed and cropped color face for filtering."""
+    colored = np.count_nonzero(np.any(zoomed_cropped_color_face != 0, axis=-1))
+    total = zoomed_cropped_color_face.shape[0] * zoomed_cropped_color_face.shape[1]
+    return colored / total
+
+def create_tree_image(tree_id, tree_attributes_dict, segmentid_face, color_face, semanticclass_face, output_dir, cover, image_id):
+    r"""Creates, filters and saves a tree or bark image based on the provided parameters and masks."""
+
+    output_path = determine_output_path(tree_id, tree_attributes_dict, output_dir, image_id)
+
+    id_mask = segmentid_face == tree_id # binary mask for the current tree id
+    patch_result = extract_relevant_patch(id_mask, color_face)
+    if patch_result is None:
+        return  # Skip this tree, nothing to extract
+
+    zoomed_cropped_tree_face, zoomed_tree_face, zoomed_id_mask, id_bound_y0, id_bound_y1, id_bound_x0, id_bound_x1 = patch_result
+    
+    semanticclass_zoomed = semanticclass_face[id_bound_y0:id_bound_y1, id_bound_x0:id_bound_x1]
+
+    zoomed_bark_mask = (semanticclass_zoomed == 1).astype(np.uint8) & zoomed_id_mask # binary mask for bark only within the current tree id
+    patch_result = extract_relevant_patch(zoomed_bark_mask, zoomed_tree_face)
+    if patch_result is None:
+        return
+    
+    zoomed_cropped_bark_face, zoomed_bark_face, zoomed_bark_mask, _, _, _, _ = patch_result
+
+    if determine_colored_area(zoomed_cropped_bark_face) < 0.5:
+        return
+
+    # structured like this to also filter tree images according to trunk
+    output_image = zoomed_tree_face
+    if cover == "tree_crop":
+        output_image = zoomed_cropped_tree_face
+    if cover == "bark":
+        output_image = zoomed_bark_face
+    if cover == "bark_crop":
+        output_image = zoomed_cropped_bark_face
+    imageio.imwrite(output_path, output_image)
 
 def extract_tree_images(
     color_face_path: str,
@@ -148,66 +216,19 @@ def extract_tree_images(
             anti_aliasing=False
         ).astype(semanticclass_face.dtype)
 
-
     tree_ids = np.unique(segmentid_face)
     for tree_id in tree_ids:
-        if tree_id in (0, 1): # skip background and ground
-            continue
-        elif str(tree_id) in tree_attributes_dict.keys():
-            tree_species = tree_attributes_dict[str(tree_id)]["BAUMART"]
-        else:
-            tree_species = "unknown"
-        out_path = os.path.join(output_dir, f"{tree_id}_{image_id}_{tree_species}.png")
-
-        id_mask = segmentid_face == tree_id # binary mask for the current tree id
-        id_coords = np.argwhere(id_mask)
-        if id_coords.size < 200 * 200 or id_coords.shape[0] < id_coords.shape[1]: # filter very small trees
-            continue
-        id_bound_y0, id_bound_x0 = id_coords.min(axis=0)
-        id_bound_y1, id_bound_x1 = id_coords.max(axis=0) + 1  # +1 for slicing
-        zoomed_tree_face = color_face[id_bound_y0:id_bound_y1, id_bound_x0:id_bound_x1]
-
-        id_mask_zoomed = id_mask[id_bound_y0:id_bound_y1, id_bound_x0:id_bound_x1] # gives cropped mask of whole tree
-
-        if zoomed_tree_face.ndim == 3:
-            zoomed_cropped_tree_face = zoomed_tree_face * id_mask_zoomed[..., None]
-        else:
-            zoomed_cropped_tree_face = zoomed_tree_face * id_mask_zoomed
-            
-
-        semanticclass_zoomed = semanticclass_face[id_bound_y0:id_bound_y1, id_bound_x0:id_bound_x1]
-        bark_mask = (semanticclass_zoomed == 1).astype(np.uint8) & id_mask_zoomed # binary mask for bark only within the current tree id
-        bark_coords = np.argwhere(bark_mask)
-        if bark_coords.size < 200 * 200 or bark_coords.shape[0] < bark_coords.shape[1]: # filter very small trees
-            continue
-        bark_bound_y0, bark_bound_x0 = bark_coords.min(axis=0)
-        bark_bound_y1, bark_bound_x1 = bark_coords.max(axis=0) + 1  # +1 for slicing
-        zoomed_bark_face = zoomed_tree_face[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
-        zoomed_bark_mask = bark_mask[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
-        zoomed_tree_cropped_bark_face = zoomed_cropped_tree_face[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
-        if zoomed_tree_cropped_bark_face.ndim == 3:
-            zoomed_cropped_bark_face = zoomed_tree_cropped_bark_face * zoomed_bark_mask[..., None]
-        else:
-            zoomed_cropped_bark_face = zoomed_tree_cropped_bark_face * zoomed_bark_mask
-        if zoomed_cropped_bark_face.ndim == 3:
-            non_black = np.count_nonzero(np.any(zoomed_cropped_bark_face != 0, axis=-1))
-            total = zoomed_cropped_bark_face.shape[0] * zoomed_cropped_bark_face.shape[1]
-        else:
-            non_black = np.count_nonzero(zoomed_cropped_bark_face != 0)
-            total = zoomed_cropped_bark_face.size
-        if non_black / total < 0.5: # filter images with too much black area
-            continue
-
-        # structured like this to also filter tree images according to trunk
-        output_image = zoomed_tree_face
-        if cover == "tree_crop":
-            output_image = zoomed_cropped_tree_face
-        if cover == "bark":
-            output_image = zoomed_bark_face
-        if cover == "bark_crop":
-            output_image = zoomed_cropped_bark_face
-
-        imageio.imwrite(out_path, output_image)
+        if tree_id not in (0, 1): # skip background and ground
+            create_tree_image(
+                tree_id=tree_id,
+                tree_attributes_dict=tree_attributes_dict,
+                color_face=color_face,
+                segmentid_face=segmentid_face,
+                semanticclass_face=semanticclass_face,
+                output_dir=output_dir,
+                cover=cover,
+                image_id=image_id,
+            )
 
 
 def find_all_trees(

@@ -156,7 +156,7 @@ def test_find_all_trees(cover: str):
         assert len(parts) == 6
         assert parts[0].isdigit()
 
-    #shutil.rmtree(trees_output_dir, ignore_errors=True)
+    shutil.rmtree(trees_output_dir, ignore_errors=True)
 
 def test_create_dataset():
     """Tests the create_dataset function."""
