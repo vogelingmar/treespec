@@ -128,6 +128,7 @@ def extract_tree_images(
     """
     color_face = imageio.imread(color_face_path)
     segmentid_face = imageio.imread(segmentid_face_path)
+    semanticclass_face = imageio.imread(semanticclass_face_path)
 
     # Resize segmentid_face to match color_face resolution using nearest-neighbor interpolation
     if segmentid_face.shape[:2] != color_face.shape[:2]:
@@ -138,6 +139,15 @@ def extract_tree_images(
             preserve_range=True,
             anti_aliasing=False
         ).astype(segmentid_face.dtype)
+    if semanticclass_face.shape[:2] != color_face.shape[:2]:
+        semanticclass_face = resize(
+            semanticclass_face,
+            color_face.shape[:2],
+            order=0,  # nearest-neighbor
+            preserve_range=True,
+            anti_aliasing=False
+        ).astype(semanticclass_face.dtype)
+
 
     tree_ids = np.unique(segmentid_face)
     for tree_id in tree_ids:
@@ -159,59 +169,43 @@ def extract_tree_images(
 
         id_mask_zoomed = id_mask[id_bound_y0:id_bound_y1, id_bound_x0:id_bound_x1] # gives cropped mask of whole tree
 
-        #TODO: add filtering here to only include trees where both tree crown and trunk are visible
-        output_image = zoomed_tree_face
-
         if zoomed_tree_face.ndim == 3:
             zoomed_cropped_tree_face = zoomed_tree_face * id_mask_zoomed[..., None]
         else:
             zoomed_cropped_tree_face = zoomed_tree_face * id_mask_zoomed
+            
 
+        semanticclass_zoomed = semanticclass_face[id_bound_y0:id_bound_y1, id_bound_x0:id_bound_x1]
+        bark_mask = (semanticclass_zoomed == 1).astype(np.uint8) & id_mask_zoomed # binary mask for bark only within the current tree id
+        bark_coords = np.argwhere(bark_mask)
+        if bark_coords.size < 200 * 200 or bark_coords.shape[0] < bark_coords.shape[1]: # filter very small trees
+            continue
+        bark_bound_y0, bark_bound_x0 = bark_coords.min(axis=0)
+        bark_bound_y1, bark_bound_x1 = bark_coords.max(axis=0) + 1  # +1 for slicing
+        zoomed_bark_face = zoomed_tree_face[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
+        zoomed_bark_mask = bark_mask[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
+        zoomed_tree_cropped_bark_face = zoomed_cropped_tree_face[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
+        if zoomed_tree_cropped_bark_face.ndim == 3:
+            zoomed_cropped_bark_face = zoomed_tree_cropped_bark_face * zoomed_bark_mask[..., None]
+        else:
+            zoomed_cropped_bark_face = zoomed_tree_cropped_bark_face * zoomed_bark_mask
+        if zoomed_cropped_bark_face.ndim == 3:
+            non_black = np.count_nonzero(np.any(zoomed_cropped_bark_face != 0, axis=-1))
+            total = zoomed_cropped_bark_face.shape[0] * zoomed_cropped_bark_face.shape[1]
+        else:
+            non_black = np.count_nonzero(zoomed_cropped_bark_face != 0)
+            total = zoomed_cropped_bark_face.size
+        if non_black / total < 0.5: # filter images with too much black area
+            continue
+
+        # structured like this to also filter tree images according to trunk
+        output_image = zoomed_tree_face
         if cover == "tree_crop":
             output_image = zoomed_cropped_tree_face
-
-        elif cover in ["bark", "bark_crop"]:
-            if semanticclass_face_path is None:
-                raise ValueError("To extract only the barks from the image a semantic face is required!")
-            else:
-                semanticclass_face = imageio.imread(semanticclass_face_path)
-                if semanticclass_face.shape[:2] != color_face.shape[:2]:
-                    semanticclass_face = resize(
-                        semanticclass_face,
-                        color_face.shape[:2],
-                        order=0,  # nearest-neighbor
-                        preserve_range=True,
-                        anti_aliasing=False
-                    ).astype(semanticclass_face.dtype)
-                semanticclass_zoomed = semanticclass_face[id_bound_y0:id_bound_y1, id_bound_x0:id_bound_x1]
-
-                bark_mask = (semanticclass_zoomed == 1).astype(np.uint8) & id_mask_zoomed # binary mask for bark only within the current tree id
-                bark_coords = np.argwhere(bark_mask)
-                if bark_coords.size < 200 * 200 or bark_coords.shape[0] < bark_coords.shape[1]: # filter very small trees
-                    continue
-                bark_bound_y0, bark_bound_x0 = bark_coords.min(axis=0)
-                bark_bound_y1, bark_bound_x1 = bark_coords.max(axis=0) + 1  # +1 for slicing
-                zoomed_bark_face = zoomed_tree_face[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
-
-                output_image = zoomed_bark_face
-
-                zoomed_bark_mask = bark_mask[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
-                zoomed_tree_cropped_bark_face = zoomed_cropped_tree_face[bark_bound_y0:bark_bound_y1, bark_bound_x0:bark_bound_x1]
-                if zoomed_tree_cropped_bark_face.ndim == 3:
-                    zoomed_cropped_bark_face = zoomed_tree_cropped_bark_face * zoomed_bark_mask[..., None]
-                else:
-                    zoomed_cropped_bark_face = zoomed_tree_cropped_bark_face * zoomed_bark_mask
-                if zoomed_cropped_bark_face.ndim == 3:
-                    non_black = np.count_nonzero(np.any(zoomed_cropped_bark_face != 0, axis=-1))
-                    total = zoomed_cropped_bark_face.shape[0] * zoomed_cropped_bark_face.shape[1]
-                else:
-                    non_black = np.count_nonzero(zoomed_cropped_bark_face != 0)
-                    total = zoomed_cropped_bark_face.size
-                if non_black / total < 0.5: # filter images with too much black area
-                    continue
-
-                if cover == "bark_crop":
-                    output_image = zoomed_cropped_bark_face
+        if cover == "bark":
+            output_image = zoomed_bark_face
+        if cover == "bark_crop":
+            output_image = zoomed_cropped_bark_face
 
         imageio.imwrite(out_path, output_image)
 
