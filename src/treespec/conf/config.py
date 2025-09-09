@@ -60,6 +60,14 @@ class CreateEssenDataset:
     crop: str
     pictures_extracted: bool
 
+@dataclass
+class CreateBigEssenDataset:
+    """Configuration of parameters for the create_essen_dataset_big script"""
+
+    groundtruth_inventory_path: str
+    input_dir: str
+    output_dir: str
+    date_and_runs: dict
 
 @dataclass
 class PredictEssen:
@@ -88,5 +96,6 @@ class TreespecConfig:
     train: TrainParams
     essen_dataset: EssenDatasetParams
     create_essen_dataset: CreateEssenDataset
+    create_big_essen_dataset: CreateBigEssenDataset
     predict_essen: PredictEssen
     matching: Matching

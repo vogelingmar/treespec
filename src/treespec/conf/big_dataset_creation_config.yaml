@@ -1,0 +1,6 @@
+create_big_essen_dataset:
+  groundtruth_inventory_path: /data/essen/dataset_creation/inventory_MG4/inventory_MG4
+  input_dir: /home/ingmar/Downloads/dataset_creation/
+  output_dir: /home/ingmar/Downloads/dataset_creation/dataset
+  date_and_runs:
+    "2022-09-12": [30]

@@ -107,7 +107,7 @@ def extract_pano_faces(
     print(f"Extracted {image_type} left and right faces from the panoramic images to {output_dir}")
 
 def determine_output_path(
-    tree_id, tree_attributes_dict, output_dir, image_id
+    tree_id, tree_attributes_dict, output_dir, image_id, cover
 ) -> str:
     r"""
     Determines the output path for a tree image based on its ID and species."""
@@ -115,7 +115,7 @@ def determine_output_path(
         tree_species = tree_attributes_dict[str(tree_id)]["BAUMART"]
     else:
         tree_species = "unknown"
-    return os.path.join(output_dir, f"{tree_id}_{image_id}_{tree_species}.png")
+    return os.path.join(output_dir, cover, f"{tree_id}_{image_id}_{tree_species}.png")
 
 def extract_relevant_patch(mask, color_face):
     r"""Extracts the relevant zoomed and cropped patches from the color face based on the provided mask."""
@@ -143,8 +143,6 @@ def determine_colored_area(zoomed_cropped_color_face):
 def create_tree_image(tree_id, tree_attributes_dict, segmentid_face, color_face, semanticclass_face, output_dir, cover, image_id):
     r"""Creates, filters and saves a tree or bark image based on the provided parameters and masks."""
 
-    output_path = determine_output_path(tree_id, tree_attributes_dict, output_dir, image_id)
-
     id_mask = segmentid_face == tree_id # binary mask for the current tree id
     patch_result = extract_relevant_patch(id_mask, color_face)
     if patch_result is None:
@@ -163,16 +161,21 @@ def create_tree_image(tree_id, tree_attributes_dict, segmentid_face, color_face,
 
     if determine_colored_area(zoomed_cropped_bark_face) < 0.5:
         return
-
-    # structured like this to also filter tree images according to trunk
-    output_image = zoomed_tree_face
-    if cover == "tree_crop":
-        output_image = zoomed_cropped_tree_face
-    if cover == "bark":
-        output_image = zoomed_bark_face
-    if cover == "bark_crop":
-        output_image = zoomed_cropped_bark_face
-    imageio.imwrite(output_path, output_image)
+    
+    covers = ["tree", "tree_crop", "bark", "bark_crop"]
+    for coverer in covers:
+        output_image = None
+        match coverer:
+            case "tree":
+                output_image = zoomed_tree_face
+            case "tree_crop":
+                output_image = zoomed_cropped_tree_face
+            case "bark":
+                output_image = zoomed_bark_face
+            case "bark_crop":
+                output_image = zoomed_cropped_bark_face
+        os.makedirs(os.path.join(output_dir, coverer), exist_ok=True)
+        imageio.imwrite(determine_output_path(tree_id, tree_attributes_dict, output_dir, image_id, coverer), output_image)
 
 def extract_tree_images(
     color_face_path: str,
