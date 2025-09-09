@@ -5,7 +5,7 @@ from typing import Callable
 import torch
 from torch import nn
 from torch.nn.modules.loss import _Loss
-from torchvision.io import decode_image  # type: ignore
+from torchvision.io import read_image  # instead of decode_image
 from torchvision.models._api import WeightsEnum  # type: ignore
 import torchmetrics
 from torchmetrics import ConfusionMatrix
@@ -97,20 +97,20 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         confusion_matrix = self.confusion_matrix(predictions, labels)
 
-        tp = torch.diag(confusion_matrix)
-        fp = confusion_matrix.sum(dim=0) - tp
-        fn = confusion_matrix.sum(dim=1) - tp
-        tn = confusion_matrix.sum() - (tp + fp + fn)
+        true_positive = torch.diag(confusion_matrix)
+        false_positive = confusion_matrix.sum(dim=0) - true_positive
+        false_negative = confusion_matrix.sum(dim=1) - true_positive
+        true_negative = confusion_matrix.sum() - (true_positive + false_positive + false_negative)
 
-        precision = tp / (tp + fp + 1e-8)
-        recall = tp / (tp + fn + 1e-8)
+        precision = true_positive / (true_positive + false_positive + 1e-8)
+        recall = true_positive / (true_positive + false_negative + 1e-8)
         f1_score = 2 * (precision * recall) / (precision + recall + 1e-8)
 
         return {
-            "tp": tp,
-            "fp": fp,
-            "tn": tn,
-            "fn": fn,
+            "true_positive": true_positive,
+            "false_positive": false_positive,
+            "true_negative": true_negative,
+            "false_negative": false_negative,
             "precision": precision,
             "recall": recall,
             "f1_score": f1_score,
@@ -166,15 +166,15 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
             per_class_metrics = self.calculate_per_class_metrics(predictions, labels)
 
-            for i, (precision, recall, f1, tp, fp, tn, fn) in enumerate(
+            for i, (precision, recall, f1, true_positive, false_positive, true_negative, false_negative) in enumerate(
                 zip(
                     per_class_metrics["f1_score"],
                     per_class_metrics["precision"],
                     per_class_metrics["recall"],
-                    per_class_metrics["tp"],
-                    per_class_metrics["fp"],
-                    per_class_metrics["tn"],
-                    per_class_metrics["fn"],
+                    per_class_metrics["true_positive"],
+                    per_class_metrics["false_positive"],
+                    per_class_metrics["true_negative"],
+                    per_class_metrics["false_negative"],
                 )
             ):
                 self.log_dict(
@@ -182,10 +182,10 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
                         f"{stage}_precision_class_{i}": precision.float(),
                         f"{stage}_recall_class_{i}": recall.float(),
                         f"{stage}_f1_score_class_{i}": f1.float(),
-                        f"{stage}_tp_class_{i}": tp.float(),
-                        f"{stage}_fp_class_{i}": fp.float(),
-                        f"{stage}_tn_class_{i}": tn.float(),
-                        f"{stage}_fn_class_{i}": fn.float(),
+                        f"{stage}_tp_class_{i}": true_positive.float(),
+                        f"{stage}_fp_class_{i}": false_positive.float(),
+                        f"{stage}_tn_class_{i}": true_negative.float(),
+                        f"{stage}_fn_class_{i}": false_negative.float(),
                     }
                 )
 
@@ -299,7 +299,10 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         Returns:
             A dictionary containing the predicted category and confidence score.
         """
-        picture = decode_image(img_path)
+        try:
+            picture = read_image(img_path)
+        except Exception as e:
+            raise ValueError(f"Could not read image: {e}")
         batch = self.model_weights.transforms()(picture).unsqueeze(0)
 
         class_id, score = self.predict_step(batch, 0)

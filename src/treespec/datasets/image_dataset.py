@@ -107,7 +107,7 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
                 generator=torch.Generator().manual_seed(42),
             )
 
-    def train_dataloader(self, augmentation: Optional[Transform] = None):
+    def train_dataloader(self, augmentation: Optional[Transform] = None) -> data.DataLoader:
         r"""
         Applies data augmentations to the training dataset and returns a dataloader for the training set.
 
@@ -124,7 +124,7 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
             shuffle=True,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> data.DataLoader:
         r"""
         Returns a dataloader for the validation subset of the dataset.
         """
@@ -136,7 +136,7 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
             shuffle=False,
         )
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> data.DataLoader:
         r"""
         Returns a dataloader for the testing subset of the dataset.
         """
@@ -148,7 +148,7 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
             shuffle=False,
         )
 
-    def loss_weights(self):
+    def loss_weights(self) -> torch.Tensor:
         r"""
         Returns a tensor of weights for the different classes of the dataset to balance training.
         """
