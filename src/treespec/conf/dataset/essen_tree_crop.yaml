@@ -1,3 +1,3 @@
-dataset_dir:
-num_classes:
-use_ids:
+dataset_dir: /home/ingmar/Downloads/datasets/tree_crop
+num_classes: 26
+use_ids: true
