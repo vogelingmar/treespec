@@ -1,0 +1,31 @@
+train:
+  model: googlenet
+  model_weights: googlenet_default
+  dataset: folder
+  dataset_dir: /Users/ingmar/repos/refactor/test/dataset_creation/mock/datasets/dataset_sorted
+  num_classes: 5
+  use_ids: true
+  epoch_count: 20
+  batch_size: 5
+  num_workers: 8
+  learning_rate: 0.001
+  loss_function: cross_entropy
+  use_augmentations: true
+  trained_model_dir: /Users/ingmar/repos/refactor/test/classification/mock/trained_classification_models
+  train_augmentations: 
+    - name: RandomVerticalFlip
+      p: 0.1
+    - name: RandomRotation
+      degrees: 15
+    - name: RandomResizedCrop
+      size: [224, 224]
+    - name: RandomPerspective
+      distortion_scale: 0.3
+      p: 0.3
+
+
+predict:
+  tree_images_dir: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/run_70/trees_70
+  input_inventory_path: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/run_70/inventory_70/matched_output
+  output_inventory_path: /home/ingmar/Documents/repos/treespec/test/mock/temp/predicted_tree_species_inventory/pred
+  trained_model_path: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/trained_models/trained_modelsresnet50trees_70_finetuned.pth

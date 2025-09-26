@@ -1,0 +1,2 @@
+test/classification/mock/trained_classification_models/GoogLeNet_dataset_sorted_5_finetuned filter=lfs diff=lfs merge=lfs -text
+ filter=lfs diff=lfs merge=lfs -text

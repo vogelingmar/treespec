@@ -1,0 +1,40 @@
+create_dataset:
+  input_color_images_dir_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/images/pano_color_images
+  input_color_image_filetype: jpg
+  input_color_images_format: pano
+  input_segmentid_images_dir_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/images/pano_segmentid_images
+  input_segmentid_image_filetype: tif
+  input_semanticclass_images_dir_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/images/pano_semanticclass_images
+  input_semanticclass_image_filetype: tif
+  pre_processed: false
+  date: 2025-09-10
+  run_number: 70
+  processed_color_images_path: /home/ingmar/Downloads/processed/processed_color_images
+  processed_color_image_filetype: png
+  processed_segmentid_images_path: /home/ingmar/Downloads/processed/processed_segmentid_images
+  processed_segmentid_image_filetype: png
+  processed_semanticclass_images_path: /home/ingmar/Downloads/processed/processed_semanticclass_images
+  processed_semanticclass_image_filetype: png
+  output_dataset_dir_path: /home/ingmar/Downloads/dataset
+  input_tree_inventory_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/inventories/inventory_matched/matched_output
+
+create_simple_dataset:
+  input_color_images_format: rectangle
+  groundtruth_tree_inventory_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/inventories/inventory_groundtruth/cadastre_essen
+  input_dir_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/simple_dataset_creation_input
+  processed_dir_path: /home/ingmar/Downloads/processed
+  pre_processed: false
+  output_dataset_dir_path: /home/ingmar/Downloads/simple_dataset
+  runs_numbers: [70]
+
+create_large_scale_dataset:
+  input_dir_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/large_scale_dataset_creation_input
+  output_dir_path: /home/ingmar/Downloads/large_scale_dataset
+  dates_and_runs:
+    '2025-09-10': [70]
+
+match_inventories:
+  predicted_tree_inventory_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/inventories/inventory_predicted/run70
+  groundtruth_tree_inventory_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/inventories/inventory_groundtruth/cadastre_essen
+  matched_tree_inventory_output_path: /home/ingmar/Downloads/matched_inventory/matched_inventory
+  use_dbh_matching_filter: true

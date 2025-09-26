@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "treespec"
 version = "0.1.0"
+requires-python = ">=3.10"
 description = "A deeplearning pipeline to classify tree species in terrestrial panorama pictures."
 authors = [
     { name = "Ingmar Vogel", email = "ingmar.vogel@student.hpi.uni-potsdam.de" }
