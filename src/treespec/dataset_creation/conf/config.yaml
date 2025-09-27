@@ -28,8 +28,8 @@ create_simple_dataset:
   runs_numbers: [70]
 
 create_large_scale_dataset:
-  input_dir_path: /home/ingmar/Documents/repos/refactor/test/dataset_creation/mock/large_scale_dataset_creation_input
-  output_dir_path: /home/ingmar/Downloads/large_scale_dataset
+  input_dir_path: /Users/ingmar/repos/refactor/test/dataset_creation/mock/large_scale_dataset_creation_input
+  output_dir_path: /Users/ingmar/Downloads/large_scale_dataset
   dates_and_runs:
     '2025-09-10': [70]
 

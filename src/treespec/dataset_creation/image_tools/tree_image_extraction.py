@@ -6,6 +6,9 @@ from typing import Optional
 import imageio.v2 as imageio
 import numpy as np
 from skimage.transform import resize
+from enum import Enum, auto
+from dataclasses import dataclass, field
+from collections import Counter
 
 
 def determine_output_path(tree_id: int, tree_inventory_dict: dict, output_datasets_dir_path: Path, image_id: str, tree_attribute: str) -> Path:
@@ -93,6 +96,29 @@ def determine_colored_area(cropped_color_face: np.ndarray) -> float:
     return number_of_colored_pixels / number_of_total_pixels
 
 
+class TreeExtractionStatus(Enum):
+    SUCCESS = auto()
+    TREE_TOO_SMALL_OR_WIDE = auto()
+    BARK_TOO_SMALL_OR_WIDE = auto()
+    BARK_TOO_SPARSE = auto()
+    UNKNOWN_SPECIES = auto()
+
+@dataclass
+class ExtractionMetrics:
+    status_counts: Counter = field(default_factory=Counter)
+    total_trees_detected: int = 0
+
+    def update(self, status: TreeExtractionStatus):
+        self.status_counts[status] += 1
+
+    def print_summary(self, output_path: Path):
+        print(f"\n Extraction Summary for output path: {output_path}")
+        print(f"--------------------------------------------")
+        print(f"Total tree IDs detected:     {self.total_trees_detected}")
+        for status in TreeExtractionStatus:
+            print(f"{status.name.replace('_', ' ').title()}: {self.status_counts[status]}")
+
+
 def create_dataset_images(
     color_face: np.ndarray,
     segmentid_face: np.ndarray,
@@ -102,24 +128,14 @@ def create_dataset_images(
     image_id: str,
     tree_id: int,
     tree_attributes: list,
-) -> None:
+) -> Optional[TreeExtractionStatus]:
     r"""Creates and saves dataset images for each tree attribute given in tree_attributes.
-    
-    Args:
-        color_face: The color image from which to extract patches.
-        segmentid_face: The segment ID image corresponding to the color image.
-        semanticclass_face: The semantic class image corresponding to the color image.
-        tree_inventory_dict: A dictionary containing tree inventory data.
-        output_tree_patch_dir_path: The base directory for output tree patches.
-        image_id: The ID of the image being processed.
-        tree_id: The ID of the tree to process.
-        tree_attributes: A list of tree attributes to extract (e.g., 'tree', 'bark').
+    Returns a status enum for metrics collection.
     """
-
     segmentid_mask = segmentid_face == tree_id  # binary mask for the current tree id
     tree_patches_and_bounds = extract_masked_patches_and_bounds(segmentid_mask, color_face)
     if tree_patches_and_bounds is None:
-        return 
+        return TreeExtractionStatus.TREE_TOO_SMALL_OR_WIDE
 
     (
         zoomed_cropped_tree_patch,
@@ -138,12 +154,12 @@ def create_dataset_images(
     ) & zoomed_id_mask  # binary mask for bark only within the current tree id
     bark_patches = extract_masked_patches_and_bounds(zoomed_bark_mask, zoomed_tree_patch)
     if bark_patches is None:
-        return
+        return TreeExtractionStatus.BARK_TOO_SMALL_OR_WIDE
 
     zoomed_cropped_bark_patch, zoomed_bark_patch, zoomed_bark_mask, _, _, _, _ = bark_patches
 
     if determine_colored_area(zoomed_cropped_bark_patch) < 0.5:
-        return
+        return TreeExtractionStatus.BARK_TOO_SPARSE
 
     for attribute in tree_attributes:
         output_image = None
@@ -157,10 +173,12 @@ def create_dataset_images(
             case "bark_crop":
                 output_image = zoomed_cropped_bark_patch
         os.makedirs(os.path.join(output_tree_patch_dir_path, attribute), exist_ok=True)
-        imageio.imwrite(
-            determine_output_path(tree_id, tree_inventory_dict, output_tree_patch_dir_path, image_id, attribute),
-            output_image,
-        )
+        output_path = determine_output_path(tree_id, tree_inventory_dict, output_tree_patch_dir_path, image_id, attribute)
+        imageio.imwrite(output_path, output_image)
+        # If any output_path ends with unknown, return UNKNOWN_SPECIES
+        if os.path.basename(output_path).startswith(f"{tree_id}_{image_id}_unknown"):
+            return TreeExtractionStatus.UNKNOWN_SPECIES
+    return TreeExtractionStatus.SUCCESS
 
 
 def extract_tree_images(
@@ -171,17 +189,10 @@ def extract_tree_images(
     tree_inventory_dict: dict,
     image_id: str,
     tree_attributes: list,
+    metrics: ExtractionMetrics,
 ) -> None:
     r"""Extracts tree/bark images from corresponding segmentid, color and semanticclass images.
-
-    Args:
-        color_face_path: Path to the color face image.
-        segmentid_face_path: Path to the segment ID face image.
-        semantic_face_path: Path to the semantic image.
-        output_tree_patches_dir_path: Path to directory where the extracted tree images will be saved.
-        tree_inventory_dict: Dictionary containing tree attributes.
-        image_id: Identifier for the image being processed.
-        tree_attributes: List of tree attributes to extract (e.g., 'tree', 'bark').
+    Updates metrics for each tree processed.
     """
     color_face = imageio.imread(color_face_path)
     segmentid_face = imageio.imread(segmentid_face_path)
@@ -204,7 +215,8 @@ def extract_tree_images(
     tree_ids = np.unique(segmentid_face)
     for tree_id in tree_ids:
         if tree_id not in (0, 1):  # skip background and ground
-            create_dataset_images(
+            metrics.total_trees_detected += 1
+            status = create_dataset_images(
                 color_face=color_face,
                 segmentid_face=segmentid_face,
                 semanticclass_face=semanticclass_face,
@@ -214,6 +226,8 @@ def extract_tree_images(
                 tree_id=tree_id,
                 tree_attributes=tree_attributes,
             )
+            if status:
+                metrics.update(status)
 
 
 def find_all_trees(
@@ -230,21 +244,9 @@ def find_all_trees(
     tree_attributes: list,
 ) -> None:
     r"""Finds and extracts tree images from segment ID, color, and semantic images from the specified directories by matching their IDs.
-
-    Args:
-        input_color_faces_dir_path: Directory containing color face images.
-        input_color_faces_filetype: File type/extension of color face images (e.g., 'png').
-        input_segmentid_faces_dir_path: Directory containing segment ID face images.
-        input_segmentid_faces_filetype: File type/extension of segment ID face images (e.g., 'tif').
-        input_semanticclass_faces_dir_path: Directory containing semantic class face images
-        input_semanticclass_faces_filetype: File type/extension of semantic class face images (e.g., 'tif').
-        output_dataset_dir_path: Directory where the extracted tree images will be saved.
-        tree_inventory_dict: Dictionary containing tree attributes.
-        run_number: The run number associated with the images.
-        date: The date associated with the images (format: YYYY-MM-DD).
-        tree_attributes: List of tree attributes to extract (e.g., 'tree', 'bark').
+    Uses ExtractionMetrics to collect and print summary statistics.
     """
-
+    metrics = ExtractionMetrics()
     os.makedirs(output_dataset_dir_path, exist_ok=True)
     for segmentid_face in os.listdir(input_segmentid_faces_dir_path):
         if segmentid_face.endswith(f".{input_segmentid_faces_filetype}"):
@@ -271,6 +273,7 @@ def find_all_trees(
                 semanticclass_face_path=semanticclass_face_path,
                 image_id=f"{date}_{run_number}_{image_number}_{orientation}",
                 tree_attributes=tree_attributes,
+                metrics=metrics,
             )
 
-    print(f"Extracted tree images to {output_dataset_dir_path}")
+    metrics.print_summary(output_dataset_dir_path)

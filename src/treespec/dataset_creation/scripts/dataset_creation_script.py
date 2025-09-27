@@ -70,5 +70,5 @@ if __name__ == "__main__":
     # Uncomment the desired function to run
     # create_dataset_script()  # pylint: disable=no-value-for-parameter
     # create_simple_dataset_script()  # pylint: disable=no-value-for-parameter
-    # create_big_scale_dataset_script()  # pylint: disable=no-value-for-parameter
+    create_big_scale_dataset_script()  # pylint: disable=no-value-for-parameter
     pass
