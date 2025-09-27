@@ -12,11 +12,11 @@ train:
   use_ids: ${dataset.use_ids}
   epoch_count: 20
   batch_size: 5
-  num_workers: 27
+  num_workers: 8
   learning_rate: 0.001
   loss_function: cross_entropy
   use_augmentations: true
-  trained_model_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/models
+  trained_model_dir: /Users/ingmar/Downloads/trained_models
   train_augmentations: 
     - name: RandomVerticalFlip
       p: 0.1

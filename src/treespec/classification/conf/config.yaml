@@ -22,6 +22,9 @@ train:
     - name: RandomPerspective
       distortion_scale: 0.3
       p: 0.3
+    - name: ElasticTransform
+      alpha: 20
+      sigma: 20
 
 
 predict:
