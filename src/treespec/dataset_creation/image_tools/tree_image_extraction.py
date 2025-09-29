@@ -37,7 +37,7 @@ def determine_output_path(tree_id: int, tree_inventory_dict: dict, output_datase
         return os.path.join(tree_attribute_dataset_dir_path, f"{tree_id}_{image_id}_{tree_species}.png")
     else:
         tree_species = "unknown"
-        unkown_trees_dir_path = os.path.join(output_datasets_dir_path, f"unkown_{tree_attribute}s")
+        unkown_trees_dir_path = os.path.join(output_datasets_dir_path, f"unknown_{tree_attribute}s")
         os.makedirs(unkown_trees_dir_path, exist_ok=True)
         return os.path.join(unkown_trees_dir_path, f"{tree_id}_{image_id}_{tree_species}.png")
 
@@ -98,10 +98,10 @@ def determine_colored_area(cropped_color_face: np.ndarray) -> float:
 
 class TreeExtractionStatus(Enum):
     SUCCESS = auto()
-    TREE_TOO_SMALL_OR_WIDE = auto()
-    BARK_TOO_SMALL_OR_WIDE = auto()
-    BARK_TOO_SPARSE = auto()
     UNKNOWN_SPECIES = auto()
+    TREE_RESOLUTION_OR_WIDTH = auto()
+    BARK_RESOLUTION_OR_WIDTH = auto()
+    FAULTY_BARK = auto()
 
 @dataclass
 class ExtractionMetrics:
@@ -135,7 +135,7 @@ def create_dataset_images(
     segmentid_mask = segmentid_face == tree_id  # binary mask for the current tree id
     tree_patches_and_bounds = extract_masked_patches_and_bounds(segmentid_mask, color_face)
     if tree_patches_and_bounds is None:
-        return TreeExtractionStatus.TREE_TOO_SMALL_OR_WIDE
+        return TreeExtractionStatus.TREE_RESOLUTION_OR_WIDTH
 
     (
         zoomed_cropped_tree_patch,
@@ -154,12 +154,12 @@ def create_dataset_images(
     ) & zoomed_id_mask  # binary mask for bark only within the current tree id
     bark_patches = extract_masked_patches_and_bounds(zoomed_bark_mask, zoomed_tree_patch)
     if bark_patches is None:
-        return TreeExtractionStatus.BARK_TOO_SMALL_OR_WIDE
+        return TreeExtractionStatus.BARK_RESOLUTION_OR_WIDTH
 
     zoomed_cropped_bark_patch, zoomed_bark_patch, zoomed_bark_mask, _, _, _, _ = bark_patches
 
     if determine_colored_area(zoomed_cropped_bark_patch) < 0.5:
-        return TreeExtractionStatus.BARK_TOO_SPARSE
+        return TreeExtractionStatus.FAULTY_BARK
 
     for attribute in tree_attributes:
         output_image = None
@@ -276,4 +276,5 @@ def find_all_trees(
                 metrics=metrics,
             )
 
+    print(f"Date: {date}, Run: {run_number}")
     metrics.print_summary(output_dataset_dir_path)

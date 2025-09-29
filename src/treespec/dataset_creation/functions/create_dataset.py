@@ -1,6 +1,7 @@
 """Creates an image dataset from color, segmentid and semanticclass images/ panoramas."""
 
 import os
+import time
 from pathlib import Path
 
 from treespec.dataset_creation.image_tools import pre_processing, tree_image_extraction, dataset_organization
@@ -127,6 +128,7 @@ def create_dataset(
         tree_attributes: List of tree attributes to be included in the dataset (e.g. ["tree", "tree_crop", "bark", "bark_crop"]).
     """
 
+    start_time = time.time()
     if not pre_processed:
         pre_process(
             input_color_images_dir_path=input_color_images_dir_path,
@@ -144,9 +146,12 @@ def create_dataset(
             processed_semanticclass_images_path=processed_semanticclass_images_path,
             processed_semanticclass_image_filetype=processed_semanticclass_image_filetype,
         )
+        pre_process_time = time.time()
+        print(f"Pre-processing for run {run_number} took {pre_process_time - start_time} seconds.")
 
     tree_inventory_dict = create_dictionary_from_shapefile(input_tree_inventory_path)
 
+    tree_extraction_start_time = time.time()
     tree_image_extraction.find_all_trees(
         input_color_faces_dir_path=processed_color_images_path,
         input_color_faces_filetype=processed_color_image_filetype,
@@ -160,12 +165,19 @@ def create_dataset(
         date=date,
         tree_attributes=tree_attributes,
     )
+    tree_extraction_end_time = time.time()
+    print(f"Tree extraction for date {date} run {run_number} took {tree_extraction_end_time - tree_extraction_start_time} seconds.")
 
+    dataset_organization_start_time = time.time()
     dataset_organization.organize_datasets(
         input_tree_patches_dir_path=output_dataset_dir_path,
         output_datasets_dir_path=output_dataset_dir_path,
         tree_attributes=tree_attributes,
     )
+    dataset_organization_end_time = time.time()
+    print(f"Dataset organization for date {date} run {run_number} took {dataset_organization_end_time - dataset_organization_start_time} seconds.")
+    end_time = time.time()
+    print(f"Dataset creation for date {date} run {run_number} took {end_time - start_time} seconds.")
 
 
 def create_simple_dataset(
@@ -189,6 +201,7 @@ def create_simple_dataset(
         output_dataset_dir_path: Path to the directory where the output dataset will be saved.
         run_numbers: List of run numbers to be processed.
     """
+    start_time = time.time()
 
     input_color_images_dir_path = (
         os.path.join(input_dir_path, "panos")
@@ -251,6 +264,8 @@ def create_simple_dataset(
             input_tree_inventory_path=input_tree_inventory_path,
             tree_attributes=tree_attributes,
         )
+    end_time = time.time()
+    print(f"Simple dataset creation for date {date} took {end_time - start_time} seconds.")
 
 
 def create_big_scale_dataset(input_dir_path: Path, output_dir_path: Path, dates_and_runs: dict) -> None:
@@ -260,7 +275,9 @@ def create_big_scale_dataset(input_dir_path: Path, output_dir_path: Path, dates_
         output_dir_path: Path to the directory where the output dataset will be saved.
         dates_and_runs: Dictionary with dates as keys and lists of run numbers as values."""
     
-    date_dirs = os.listdir(input_dir_path)
+    start_time = time.time()
+    
+    date_dirs = sorted(os.listdir(input_dir_path))
     for date_dir in date_dirs:
         if date_dir in dates_and_runs.keys():
             run_numbers = dates_and_runs[date_dir]
@@ -282,3 +299,6 @@ def create_big_scale_dataset(input_dir_path: Path, output_dir_path: Path, dates_
                 output_dataset_dir_path=output_dataset_dir_path,
                 run_numbers=run_numbers,
             )
+
+    end_time = time.time()
+    print(f"Big scale dataset creation took {end_time - start_time} seconds.")

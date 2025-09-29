@@ -16,7 +16,7 @@ train:
   learning_rate: 0.001
   loss_function: cross_entropy
   use_augmentations: true
-  trained_model_dir: /Users/ingmar/Downloads/trained_models
+  trained_model_dir: /data/trained_models
   train_augmentations: 
     - name: RandomVerticalFlip
       p: 0.1

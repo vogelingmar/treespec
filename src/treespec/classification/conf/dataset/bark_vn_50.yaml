@@ -1,0 +1,3 @@
+dataset_dir: /data/BarkVN-50
+num_classes: 50
+use_ids: false

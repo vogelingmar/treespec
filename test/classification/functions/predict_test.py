@@ -30,7 +30,7 @@ def test_predict_species():
         test_path, "classification", "mock", "temp", "predicted_species_inventory", "pred_species_inventory"
     )
     trained_model_path = os.path.join(
-        test_path, "classification", "mock", "trained_classification_models", "GoogLeNet_dataset_sorted_5_finetuned.ckpt"
+        test_path, "classification", "mock", "trained_classification_models", "GoogLeNet_dataset_sorted_5_finetuned"
     )
 
     predict_species(

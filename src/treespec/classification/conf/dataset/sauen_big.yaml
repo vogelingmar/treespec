@@ -1,3 +1,3 @@
-dataset_dir: /home/ingmar/Documents/repos/treespec/src/treespec/io/sauen/sauen_big_clean(with_v6)
+dataset_dir: /data/sauen/sauen_big
 num_classes: 9
 use_ids: false
