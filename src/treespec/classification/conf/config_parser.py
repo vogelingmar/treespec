@@ -184,6 +184,10 @@ def train_config_values(  # pylint: disable=too-many-locals
                         from torchvision.transforms import v2
 
                         augmentation_class = v2.RandomResizedCrop
+                    case "ElasticTransform":
+                        from torchvision.transforms import v2
+
+                        augmentation_class = v2.ElasticTransform
                     case _:
                         raise ValueError(f"Unknown augmentation: {entry['name']}")
 
