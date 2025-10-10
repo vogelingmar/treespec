@@ -1,0 +1,9 @@
+@startuml packages
+!include https://raw.githubusercontent.com/guipatriota/dracula-plantuml-theme/v1.0.0/theme.puml
+skinparam packageStyle rect
+
+package "classification" as classification {}
+package "dataset_creation" as dataset_creation {}
+package "skimage" as skimage {}
+dataset_creation --> skimage
+@enduml

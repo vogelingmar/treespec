@@ -1,4 +1,4 @@
-from treespec.classification.functions.predict import predict_species, inventurize_trees
+from treespec.classification.functions.predict import predict_species, _inventurize_trees
 from treespec.dataset_creation.inventory_tools.inventory_convertion import create_dictionary_from_shapefile
 from treespec.classification.image_dataset import ImageDataset
 from treespec.classification.classification_model import ClassificationModel
@@ -84,7 +84,7 @@ def test_inventurize_trees():
 
     shutil.rmtree(os.path.dirname(output_inventory_path), ignore_errors=True)
 
-    inventurize_trees(
+    _inventurize_trees(
         input_tree_images_dir_path=tree_images_dir,
         input_inventory_path=input_inventory_path,
         output_inventory_path=output_inventory_path,

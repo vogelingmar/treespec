@@ -26,6 +26,7 @@ def mock_classification_config():
                 {"name": "RandomRotation", "degrees": 15},
                 {"name": "RandomResizedCrop", "size": [224, 224]},
                 {"name": "RandomPerspective", "distortion_scale": 0.3, "p": 0.3},
+                {"name": "ElasticTransform", "alpha": 20, "sigma": 20},
             ],
         ),
         predict=SimpleNamespace(

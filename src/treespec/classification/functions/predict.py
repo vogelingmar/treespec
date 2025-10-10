@@ -13,7 +13,7 @@ from torch.nn.modules.loss import _Loss
 from torchvision.models._api import WeightsEnum  # type: ignore
 
 
-def inventurize_trees(  # pylint: disable=too-many-arguments, too-many-positional-arguments
+def _inventurize_trees(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     input_tree_images_dir_path: Path,
     input_inventory_path: Path,
     output_inventory_path: Path,
@@ -139,7 +139,7 @@ def predict_species(
 
     classification_model = ClassificationModel.load_from_checkpoint(trained_model_path, model=model, model_weights=model_weights, num_classes=num_classes, loss_function=loss_function, learning_rate=learning_rate)
 
-    inventurize_trees(
+    _inventurize_trees(
         classification_model=classification_model,
         dataset=dataset_instance,
         input_tree_images_dir_path=tree_images_dir,
