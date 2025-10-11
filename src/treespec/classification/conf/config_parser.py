@@ -152,6 +152,8 @@ def train_config_values(  # pylint: disable=too-many-locals
                     return nn.CrossEntropyLoss
                 case _:
                     raise ValueError(f"Unknown loss function: {cfg.train.loss_function}")
+        case "pre_trained":
+            return cfg.train.pre_trained
         case "train_augmentations":
             default_transforms = train_config_values("model_weights", cfg).transforms()
 

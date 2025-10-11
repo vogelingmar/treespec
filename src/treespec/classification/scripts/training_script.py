@@ -12,7 +12,7 @@ cs = ConfigStore.instance()
 cs.store(name="classification_config", node=ClassificationConfig)
 
 
-@hydra.main(config_path="../conf", config_name="config_model_comparison")
+@hydra.main(config_path="../conf", config_name="config")
 def train(cfg: ClassificationConfig):
     """Training script for treespec Classification Pipeline"""
 
@@ -30,6 +30,7 @@ def train(cfg: ClassificationConfig):
         input_loss_function=train_config_values("loss_function", cfg),
         trained_model_dir=train_config_values("trained_model_dir", cfg),
         train_augmentations=train_config_values("train_augmentations", cfg),
+        pre_trained=train_config_values("pre_trained", cfg),
     )
 
 

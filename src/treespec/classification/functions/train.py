@@ -27,6 +27,7 @@ def train(
     input_loss_function: _Loss,
     trained_model_dir: Path,
     train_augmentations: Optional[Transform] = None,
+    pre_trained: bool = False,
 ) -> None:
     """
     Trains a tree species classification model using the Treespec pipeline.
@@ -46,8 +47,9 @@ def train(
         num_workers: Number of workers for data loading.
         learning_rate: Learning rate for the model.
         input_loss_function: Loss function to be used during training.
-        trained_model_dir: Directory to save the trained model checkpoints.
+        trained_model_dir: Directory to save the trained model checkpoints. If pre_trained is True, this is the path to the pre-trained model.
         train_augmentations: Optional augmentations to apply to the training data.
+        pre_trained: Whether to use pre-trained weights from the trained model directory for training.
     """
     default_transforms = model_weights.transforms()
 
@@ -62,13 +64,16 @@ def train(
 
     loss_function = input_loss_function(label_smoothing=0.1, weight=dataset.loss_weights())
 
-    classification_model = ClassificationModel(
-        model=model,
-        model_weights=model_weights,
-        num_classes=num_classes,
-        loss_function=loss_function,
-        learning_rate=learning_rate,
-    )
+    if pre_trained:
+        classification_model = ClassificationModel.load_from_checkpoint(trained_model_dir, num_classes=num_classes, learning_rate=learning_rate, strict=False)
+    else:
+        classification_model = ClassificationModel(
+            model=model,
+            model_weights=model_weights,
+            num_classes=num_classes,
+            loss_function=loss_function,
+            learning_rate=learning_rate,
+        )
 
     early_stop_callback = EarlyStopping(
         monitor="train_loss",  # exchange for any metric (adjust mode accordingly)
@@ -113,7 +118,8 @@ def train(
     trainer.test(model=classification_model, dataloaders=dataset.test_dataloader())
 
     final_model_path = os.path.join(trained_model_dir, final_name)
-    torch.save(
-        classification_model.model.state_dict(),
-        final_model_path,
-    )
+    #torch.save(
+    #    classification_model.model.state_dict(),
+    #    final_model_path,
+    #)
+    trainer.save_checkpoint(final_model_path)

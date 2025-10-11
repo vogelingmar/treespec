@@ -24,7 +24,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         num_classes: The number of classes to be differentiated by the model.
         loss_function: The loss function to be used for training.
         learning_rate: The learning rate to be used for training.
-    """ƒ
+    """
 
     def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,

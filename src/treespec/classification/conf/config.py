@@ -20,6 +20,7 @@ class TrainParams:  # pylint: disable=too-many-instance-attributes
     learning_rate: float
     loss_function: str
     trained_model_dir_path: Path
+    pre_trained: bool
     train_augmentations: list
 
 

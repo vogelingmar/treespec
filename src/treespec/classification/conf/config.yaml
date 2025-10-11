@@ -2,16 +2,17 @@ train:
   model: googlenet
   model_weights: googlenet_default
   dataset: folder
-  dataset_dir: /Users/ingmar/repos/refactor/test/dataset_creation/mock/datasets/dataset_sorted
-  num_classes: 5
+  dataset_dir: /Users/ingmar/Downloads/bark_crop_small
+  num_classes: 3
   use_ids: true
-  epoch_count: 20
+  epoch_count: 2
   batch_size: 5
   num_workers: 8
-  learning_rate: 0.001
+  learning_rate: 0.0001
   loss_function: cross_entropy
   use_augmentations: true
-  trained_model_dir: /Users/ingmar/repos/refactor/test/classification/mock/trained_classification_models
+  trained_model_dir: /Users/ingmar/repos/refactor/test/classification/mock/trained_classification_models/GoogLeNet_dataset_sorted_5_finetuned
+  pre_trained: true
   train_augmentations: 
     - name: RandomVerticalFlip
       p: 0.1

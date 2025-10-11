@@ -287,13 +287,17 @@ def create_big_scale_dataset(input_dir_path: Path, output_dir_path: Path, dates_
             processed_dir_path = os.path.join(output_dir_path, "pre_processing")
             pre_processed = False
             output_dataset_dir_path = os.path.join(output_dir_path, "datasets")
-            input_dir_path = os.path.join(input_dir_path, date_dir)
+            # Do not overwrite the original input_dir_path here. Create a date-specific
+            # input directory so subsequent loop iterations don't keep joining paths
+            # onto an already-joined path (which produced nested folders like
+            # '/data/2022-09-12/2022-09-122').
+            date_input_dir = os.path.join(input_dir_path, date_dir)
 
             create_simple_dataset(
                 input_color_images_format=input_color_images_format,
                 date=date,
                 groundtruth_tree_inventory_path=groundtruth_tree_inventory_path,
-                input_dir_path=input_dir_path,
+                input_dir_path=date_input_dir,
                 processed_dir_path=processed_dir_path,
                 pre_processed=pre_processed,
                 output_dataset_dir_path=output_dataset_dir_path,
