@@ -1,2 +1,3 @@
 name: alexnet
 weights: alexnet_default
+trained_model_dir: /data/trained_models/AlexNet_BarkVN-50_50_finetuned

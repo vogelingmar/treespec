@@ -1,2 +1,3 @@
 name: vgg16
 weights: vgg16_default
+trained_model_dir: /data/trained_models/VGG_BarkVN-50_50_finetuned

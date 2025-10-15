@@ -1,2 +1,3 @@
 name: efficientnet
 weights: efficientnet_default
+trained_model_dir: /data/trained_models/EfficientNet_BarkVN-50_50_finetuned

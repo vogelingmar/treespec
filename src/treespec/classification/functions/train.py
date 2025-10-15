@@ -1,5 +1,6 @@
 """Training function for tree species classification"""
 
+from torch import nn
 import torch
 import pytorch_lightning as L
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
@@ -64,16 +65,26 @@ def train(
 
     loss_function = input_loss_function(label_smoothing=0.1, weight=dataset.loss_weights())
 
-    if pre_trained:
-        classification_model = ClassificationModel.load_from_checkpoint(trained_model_dir, num_classes=num_classes, learning_rate=learning_rate, strict=False)
-    else:
-        classification_model = ClassificationModel(
+    classification_model = ClassificationModel(
             model=model,
             model_weights=model_weights,
             num_classes=num_classes,
             loss_function=loss_function,
             learning_rate=learning_rate,
         )
+    if pre_trained:
+
+        checkpoint = torch.load(trained_model_dir, map_location="cpu")
+
+        for key in [
+            "model.classifier.6.weight",
+            "model.classifier.6.bias",
+            "loss_function.weight",
+        ]:
+            if key in checkpoint["state_dict"]:
+                del checkpoint["state_dict"][key]
+
+        classification_model.model.load_state_dict(checkpoint["state_dict"], strict=False)
 
     early_stop_callback = EarlyStopping(
         monitor="train_loss",  # exchange for any metric (adjust mode accordingly)
