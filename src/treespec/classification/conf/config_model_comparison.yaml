@@ -16,8 +16,8 @@ train:
   learning_rate: 0.0001
   loss_function: cross_entropy
   use_augmentations: true
-  trained_model_dir: ${model.trained_model_dir}
-  pre_trained: true
+  trained_model_path: ${model.trained_model_path}
+  trained_model_dir_path: /data/trained_models/
   train_augmentations: 
     - name: RandomVerticalFlip
       p: 0.1

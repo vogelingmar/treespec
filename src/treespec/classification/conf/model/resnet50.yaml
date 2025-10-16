@@ -1,3 +1,3 @@
 name: resnet50
 weights: resnet50_default
-trained_model_dir: /data/trained_models/ResNet_BarkVN-50_50_finetuned
+trained_model_path: /data/trained_models/ResNet_BarkVN-50_50_finetuned

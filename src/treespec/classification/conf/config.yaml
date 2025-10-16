@@ -12,7 +12,6 @@ train:
   loss_function: cross_entropy
   use_augmentations: true
   trained_model_dir: /Users/ingmar/Downloads/AlexNet_BarkVN-50_50_finetuned
-  pre_trained: true
   train_augmentations: 
     - name: RandomVerticalFlip
       p: 0.1

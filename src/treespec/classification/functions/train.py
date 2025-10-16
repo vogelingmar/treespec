@@ -27,8 +27,8 @@ def train(
     learning_rate: float,
     input_loss_function: _Loss,
     trained_model_dir: Path,
+    trained_model_path: Optional[Path] = None,
     train_augmentations: Optional[Transform] = None,
-    pre_trained: bool = False,
 ) -> None:
     """
     Trains a tree species classification model using the Treespec pipeline.
@@ -72,9 +72,10 @@ def train(
             loss_function=loss_function,
             learning_rate=learning_rate,
         )
-    if pre_trained:
+    
+    if trained_model_path is not None:
 
-        checkpoint = torch.load(trained_model_dir, map_location="cpu")
+        checkpoint = torch.load(trained_model_path, map_location="cpu")
 
         for key in [
             "model.classifier.6.weight",

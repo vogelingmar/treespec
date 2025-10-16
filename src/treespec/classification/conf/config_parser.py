@@ -217,7 +217,9 @@ def train_config_values(  # pylint: disable=too-many-locals
         case "learning_rate":
             return cfg.train.learning_rate
         case "trained_model_dir":
-            return cfg.train.trained_model_dir
+            return cfg.train.trained_model_dir_path
+        case "trained_model_path":
+            return cfg.train.trained_model_path
         case _:
             raise ValueError(f"Unknown parameter: {param}")
 
