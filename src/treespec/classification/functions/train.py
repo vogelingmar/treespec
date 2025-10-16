@@ -96,6 +96,7 @@ def train(
 
     filename = f"{type(classification_model.model).__name__}_{Path(dataset_dir_path).stem}_{num_classes}_checkpoint"
     final_name = f"{type(classification_model.model).__name__}_{Path(dataset_dir_path).stem}_{num_classes}_finetuned"
+    transfer_learning_name = f"{final_name}_tl"
 
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
@@ -129,7 +130,7 @@ def train(
         )
     trainer.test(model=classification_model, dataloaders=dataset.test_dataloader())
 
-    final_model_path = os.path.join(trained_model_dir, final_name)
+    final_model_path = os.path.join(trained_model_dir, final_name if trained_model_path is None else transfer_learning_name)
     #torch.save(
     #    classification_model.model.state_dict(),
     #    final_model_path,
