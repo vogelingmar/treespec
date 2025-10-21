@@ -71,6 +71,7 @@ def train(
             num_classes=num_classes,
             loss_function=loss_function,
             learning_rate=learning_rate,
+            class_labels=dataset.classes,
         )
     
     if trained_model_path is not None:
@@ -87,6 +88,10 @@ def train(
 
         classification_model.model.load_state_dict(checkpoint["state_dict"], strict=False)
 
+    filename = f"{type(classification_model.model).__name__}_{Path(dataset_dir_path).stem}_{num_classes}_checkpoint"
+    final_name = f"{type(classification_model.model).__name__}_{Path(dataset_dir_path).stem}_{num_classes}_finetuned"
+    transfer_learning_name = f"{final_name}_tl"
+    
     early_stop_callback = EarlyStopping(
         monitor="train_loss",  # exchange for any metric (adjust mode accordingly)
         patience=10,
@@ -94,9 +99,6 @@ def train(
         mode="min",
     )
 
-    filename = f"{type(classification_model.model).__name__}_{Path(dataset_dir_path).stem}_{num_classes}_checkpoint"
-    final_name = f"{type(classification_model.model).__name__}_{Path(dataset_dir_path).stem}_{num_classes}_finetuned"
-    transfer_learning_name = f"{final_name}_tl"
 
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
@@ -131,8 +133,6 @@ def train(
     trainer.test(model=classification_model, dataloaders=dataset.test_dataloader())
 
     final_model_path = os.path.join(trained_model_dir, final_name if trained_model_path is None else transfer_learning_name)
-    #torch.save(
-    #    classification_model.model.state_dict(),
-    #    final_model_path,
-    #)
     trainer.save_checkpoint(final_model_path)
+
+

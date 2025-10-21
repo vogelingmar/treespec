@@ -1,6 +1,8 @@
 """Classification Model to classify tree images."""  # pylint: disable=duplicate-code
 
-from typing import Callable
+from typing import Callable, Optional
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay
 
 import torch
 from pathlib import Path
@@ -33,6 +35,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         num_classes: int,
         loss_function: _Loss,
         learning_rate: float,
+        class_labels: Optional[list[str]] = None,
     ) -> None:
         super().__init__()
         self.model_weights = model_weights
@@ -59,6 +62,9 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         self.avg_recall = torchmetrics.Recall(num_classes=num_classes, task="multiclass")
 
         self.confusion_matrix = ConfusionMatrix(num_classes=num_classes, task="multiclass")
+
+        self.test_confmat = ConfusionMatrix(task="multiclass", num_classes=num_classes)
+        self.class_labels = class_labels
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # pylint: disable=arguments-differ
         r"""
@@ -250,6 +256,12 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
+        inputs, labels = batch
+        outputs = self.forward(inputs)
+        preds = torch.argmax(outputs, dim=1)
+
+        self.test_confmat.update(preds, labels)
+
         self._common_steps(batch, batch_idx, "test", True)
 
     def predict_step(  # pylint: disable=arguments-differ
@@ -291,6 +303,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
     def predict(self, img_path: Path) -> dict:
+        #TODO: remove this from the classification model
         r"""
         The predict function of the classification model.
 
@@ -309,3 +322,25 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         batch = batch.to(device)
         class_id, score = self.predict_step(batch, 0)
         return {"category": class_id, "score": score}
+
+    def on_test_epoch_end(self):
+        """
+        Called at the end of the test epoch to compute and visualize the confusion matrix.
+        """
+        confmat = self.test_confmat.compute().cpu().numpy()
+
+        print("✅ Confusion Matrix:")
+        print(confmat)
+
+        # ✅ Optional: add class labels if available
+        # You can define them in your LightningModule init, or pass from outside
+        # Example:
+        class_labels = getattr(self, "class_labels", None)
+
+        disp = ConfusionMatrixDisplay(confusion_matrix=confmat, display_labels=class_labels)
+        disp.plot(cmap="Blues", xticks_rotation=45)
+        plt.title("Test Confusion Matrix")
+        plt.show()
+
+        # Reset confusion matrix for safety (especially if testing multiple times)
+        self.test_confmat.reset()

@@ -1,6 +1,7 @@
 """Prediction function for tree species classification."""
 
 from treespec.classification.classification_model import ClassificationModel
+from treespec.classification.image_dataset import ImageDataset
 import pytorch_lightning as L
 from treespec.dataset_creation.inventory_tools.inventory_convertion import create_dictionary_from_shapefile, create_shapefile_from_dictionary
 import torch
@@ -8,6 +9,8 @@ import os
 from typing import Callable
 from pathlib import Path
 from typing import Callable
+
+from torch import nn
 
 from torch.nn.modules.loss import _Loss
 from torchvision.models._api import WeightsEnum  # type: ignore
@@ -17,9 +20,9 @@ def _inventurize_trees(  # pylint: disable=too-many-arguments, too-many-position
     input_tree_images_dir_path: Path,
     input_inventory_path: Path,
     output_inventory_path: Path,
-    trained_model_path: Path,
     classification_model: ClassificationModel,
-    dataset: L.LightningDataModule,
+    class_names: list,
+    filetypes: list = [".jpg", ".png", ".jpeg"],
 ) -> None:  # pylint: disable=too-many-locals
     r"""Predicts tree species on input trees and exports predictions as an inventory shapefile.
 
@@ -29,19 +32,18 @@ def _inventurize_trees(  # pylint: disable=too-many-arguments, too-many-position
         output_inventory_path: Path to save the updated inventory shapefile with predicted species.
         trained_model_path: Path to the trained classification model weights.
         classification_model: Instance of the ClassificationModel used for prediction.
-        dataset: Dataset instance containing class names for species classification.
+        class_names: List of class names corresponding to the model's output classes.
     """
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     classification_model = classification_model.to(device)
     classification_model.eval()  # Set the model to evaluation mode
 
     trees = create_dictionary_from_shapefile(input_inventory_path)
-    class_names = dataset.classes
 
     for tree_name in os.listdir(input_tree_images_dir_path):
         image_path = os.path.join(input_tree_images_dir_path, tree_name)
 
-        if os.path.isdir(image_path):
+        if os.path.isdir(image_path) or not image_path.lower().endswith(filetypes):
             continue
 
         prediction = classification_model.predict(image_path)
@@ -88,18 +90,19 @@ def _inventurize_trees(  # pylint: disable=too-many-arguments, too-many-position
 def predict_species(
     model: Callable,
     model_weights: WeightsEnum,
-    num_classes: int,
-    loss_function: _Loss,
-    learning_rate: float,
-    dataset: L.LightningDataModule,
     dataset_dir: Path,
-    batch_size: int,
-    num_workers: int,
-    use_ids: bool,
     tree_images_dir: Path,
     input_inventory_path: Path,
     output_inventory_path: Path,
     trained_model_path: Path,
+    filetypes: list = [".jpg", ".png", ".jpeg"],
+    num_classes: int = None,
+    loss_function: _Loss = nn.CrossEntropyLoss,
+    learning_rate: float = 0.001,
+    dataset: L.LightningDataModule = ImageDataset,
+    batch_size: int = 5,
+    num_workers: int = 0,
+    use_ids: bool = False,
 )-> None:
     """
     Predicts tree species from images and updates the inventory shapefile with the predictions.
@@ -135,15 +138,22 @@ def predict_species(
     dataset_instance.prepare_data()
     dataset_instance.setup(transform=default_transforms)
 
+    class_names = dataset_instance.classes
+
+    if num_classes is None:
+        num_classes = len(class_names)
+
     loss_function = loss_function(label_smoothing=0.1, weight=dataset_instance.loss_weights())
 
     classification_model = ClassificationModel.load_from_checkpoint(trained_model_path, model=model, model_weights=model_weights, num_classes=num_classes, loss_function=loss_function, learning_rate=learning_rate)
 
     _inventurize_trees(
         classification_model=classification_model,
-        dataset=dataset_instance,
+        class_names=class_names,
         input_tree_images_dir_path=tree_images_dir,
         input_inventory_path=input_inventory_path,
         output_inventory_path=output_inventory_path,
-        trained_model_path=trained_model_path,
+        filetypes=filetypes,
     )
+
+#TODO: update architecture
