@@ -8,7 +8,6 @@ import torch
 from pathlib import Path
 from torch import nn
 from torch.nn.modules.loss import _Loss
-from torchvision.io import read_image, decode_image  # instead of decode_image
 from torchvision.models._api import WeightsEnum  # type: ignore
 import torchmetrics
 from torchmetrics import ConfusionMatrix
@@ -63,8 +62,8 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         self.confusion_matrix = ConfusionMatrix(num_classes=num_classes, task="multiclass")
 
-        self.test_confmat = ConfusionMatrix(task="multiclass", num_classes=num_classes)
-        self.class_labels = class_labels
+        #self.test_confmat = ConfusionMatrix(task="multiclass", num_classes=num_classes)
+        #self.class_labels = class_labels
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # pylint: disable=arguments-differ
         r"""
@@ -256,12 +255,6 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             | :math:`L_k = \text{ k-th class index of the k-th input index}`
         """
 
-        inputs, labels = batch
-        outputs = self.forward(inputs)
-        preds = torch.argmax(outputs, dim=1)
-
-        self.test_confmat.update(preds, labels)
-
         self._common_steps(batch, batch_idx, "test", True)
 
     def predict_step(  # pylint: disable=arguments-differ
@@ -301,46 +294,3 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         """
 
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-
-    def predict(self, img_path: Path) -> dict:
-        #TODO: remove this from the classification model
-        r"""
-        The predict function of the classification model.
-
-        Args:
-            img_path: The path to the image to be predicted.
-
-        Returns:
-            A dictionary containing the predicted category and confidence score.
-        """
-        try:
-            picture = decode_image(img_path)
-        except Exception as e:
-            raise ValueError(f"Could not read image: {e}")
-        batch = self.model_weights.transforms()(picture).unsqueeze(0)
-        device = next(self.model.parameters()).device
-        batch = batch.to(device)
-        class_id, score = self.predict_step(batch, 0)
-        return {"category": class_id, "score": score}
-
-    def on_test_epoch_end(self):
-        """
-        Called at the end of the test epoch to compute and visualize the confusion matrix.
-        """
-        confmat = self.test_confmat.compute().cpu().numpy()
-
-        print("✅ Confusion Matrix:")
-        print(confmat)
-
-        # ✅ Optional: add class labels if available
-        # You can define them in your LightningModule init, or pass from outside
-        # Example:
-        class_labels = getattr(self, "class_labels", None)
-
-        disp = ConfusionMatrixDisplay(confusion_matrix=confmat, display_labels=class_labels)
-        disp.plot(cmap="Blues", xticks_rotation=45)
-        plt.title("Test Confusion Matrix")
-        plt.show()
-
-        # Reset confusion matrix for safety (especially if testing multiple times)
-        self.test_confmat.reset()

@@ -1,5 +1,0 @@
-@startuml skimage
-!include https://raw.githubusercontent.com/guipatriota/dracula-plantuml-theme/v1.0.0/theme.puml
-skinparam classAttributeIconSize 0
-
-@enduml

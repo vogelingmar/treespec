@@ -6,6 +6,7 @@ import pytorch_lightning as L
 from treespec.dataset_creation.inventory_tools.inventory_convertion import create_dictionary_from_shapefile, create_shapefile_from_dictionary
 import torch
 import os
+from torchvision.io import read_image, decode_image  # instead of decode_image
 from typing import Callable
 from pathlib import Path
 from typing import Callable
@@ -14,6 +15,28 @@ from torch import nn
 
 from torch.nn.modules.loss import _Loss
 from torchvision.models._api import WeightsEnum  # type: ignore
+
+def _predict(img_path: Path, classification_model: ClassificationModel) -> dict:
+        r"""
+        The predict function using the classification model.
+
+        Args:
+            img_path: The path to the image to be predicted.
+            classification_model: The classification model instance used for prediction.
+
+        Returns:
+            A dictionary containing the predicted category and confidence score.
+        """
+        try:
+            picture = decode_image(img_path)
+        except Exception as e:
+            raise ValueError(f"Could not read image: {e}")
+        batch = classification_model.model_weights.transforms()(picture).unsqueeze(0)
+        device = next(classification_model.model.parameters()).device
+        batch = batch.to(device)
+        class_id, score = classification_model.predict_step(batch, 0)
+        return {"category": class_id, "score": score}
+
 
 
 def _inventurize_trees(  # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -30,9 +53,9 @@ def _inventurize_trees(  # pylint: disable=too-many-arguments, too-many-position
         input_tree_images_dir_path: Directory containing images of trees to classify.
         input_inventory_path: Path to the input inventory shapefile.
         output_inventory_path: Path to save the updated inventory shapefile with predicted species.
-        trained_model_path: Path to the trained classification model weights.
         classification_model: Instance of the ClassificationModel used for prediction.
         class_names: List of class names corresponding to the model's output classes.
+        filetypes: List of acceptable image file extensions.
     """
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     classification_model = classification_model.to(device)
@@ -43,10 +66,11 @@ def _inventurize_trees(  # pylint: disable=too-many-arguments, too-many-position
     for tree_name in os.listdir(input_tree_images_dir_path):
         image_path = os.path.join(input_tree_images_dir_path, tree_name)
 
-        if os.path.isdir(image_path) or not image_path.lower().endswith(filetypes):
-            continue
+        for filetype in filetypes:
+            if os.path.isdir(image_path) or not image_path.lower().endswith(filetype):
+                continue
 
-        prediction = classification_model.predict(image_path)
+        prediction = _predict(image_path, classification_model)
         predicted_class_id = prediction["category"]
         predicted_class = class_names[predicted_class_id]
 
@@ -90,19 +114,12 @@ def _inventurize_trees(  # pylint: disable=too-many-arguments, too-many-position
 def predict_species(
     model: Callable,
     model_weights: WeightsEnum,
-    dataset_dir: Path,
-    tree_images_dir: Path,
+    dataset_dir_path: Path,
+    tree_images_dir_path: Path,
     input_inventory_path: Path,
     output_inventory_path: Path,
     trained_model_path: Path,
     filetypes: list = [".jpg", ".png", ".jpeg"],
-    num_classes: int = None,
-    loss_function: _Loss = nn.CrossEntropyLoss,
-    learning_rate: float = 0.001,
-    dataset: L.LightningDataModule = ImageDataset,
-    batch_size: int = 5,
-    num_workers: int = 0,
-    use_ids: bool = False,
 )-> None:
     """
     Predicts tree species from images and updates the inventory shapefile with the predictions.
@@ -111,49 +128,52 @@ def predict_species(
     function to perform the predictions and update the inventory.
 
     Args:
-        model: The model architecture to be used for classification.
-        model_weights: Pre-trained weights for the model.
-        num_classes: Number of classes for the classification task.
-        loss_function: Loss function to be used during training.
-        learning_rate: Learning rate for the model.
-        dataset: Dataset class to be used for loading data.
-        dataset_dir: Directory containing the dataset.
-        batch_size: Batch size for data loading.
-        num_workers: Number of workers for data loading.
-        use_ids: Whether to use IDs for dataset loading.
-        tree_images_dir: Directory containing images of trees to classify.
+        model: A callable that returns the model architecture.
+        model_weights: Pretrained weights for the model.
+        dataset_dir: Path to the directory containing the dataset used for training the model for setting up the ImageDataset.
+        tree_images_dir: Path to the directory containing images of trees to classify.
         input_inventory_path: Path to the input inventory shapefile.
         output_inventory_path: Path to save the updated inventory shapefile with predicted species.
-        trained_model_path: Path to the trained classification model weights.
+        trained_model_path: Path to the trained classification model checkpoint.
+        filetypes: List of acceptable image file extensions.
     """
 
 
-    dataset_instance = dataset(
-        dataset_dir_path=dataset_dir,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        use_ids=use_ids,
+    dataset_instance = ImageDataset(
+        dataset_dir_path=dataset_dir_path,
+        batch_size=1,
+        num_workers=0,
+        use_ids=True,
     )
     default_transforms = model_weights.transforms()
-    dataset_instance.prepare_data()
     dataset_instance.setup(transform=default_transforms)
 
     class_names = dataset_instance.classes
 
-    if num_classes is None:
-        num_classes = len(class_names)
+    num_classes = len(class_names)
 
-    loss_function = loss_function(label_smoothing=0.1, weight=dataset_instance.loss_weights())
+    loss_function = nn.CrossEntropyLoss(label_smoothing=0.1, weight=dataset_instance.loss_weights())
 
-    classification_model = ClassificationModel.load_from_checkpoint(trained_model_path, model=model, model_weights=model_weights, num_classes=num_classes, loss_function=loss_function, learning_rate=learning_rate)
+    classification_model = ClassificationModel(model=model, model_weights=model_weights, num_classes=num_classes, loss_function=loss_function, learning_rate=0.001)
+    
+    state_dict = torch.load(trained_model_path, map_location="cpu")
+    
+    for key in [
+        "model.classifier.6.weight",
+        "model.classifier.6.bias",
+        "loss_function.weight",
+    ]:
+        if key in state_dict:
+            del state_dict[key]
+
+    classification_model.model.load_state_dict(state_dict, strict=False)
+
 
     _inventurize_trees(
         classification_model=classification_model,
         class_names=class_names,
-        input_tree_images_dir_path=tree_images_dir,
+        input_tree_images_dir_path=tree_images_dir_path,
         input_inventory_path=input_inventory_path,
         output_inventory_path=output_inventory_path,
         filetypes=filetypes,
     )
-
-#TODO: update architecture

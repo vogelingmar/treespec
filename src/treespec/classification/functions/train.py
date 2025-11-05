@@ -26,7 +26,7 @@ def train(
     num_workers: int,
     learning_rate: float,
     input_loss_function: _Loss,
-    trained_model_dir: Path,
+    trained_model_dir_path: Path,
     trained_model_path: Optional[Path] = None,
     train_augmentations: Optional[Transform] = None,
 ) -> None:
@@ -102,7 +102,7 @@ def train(
 
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",
-        dirpath=trained_model_dir,
+        dirpath=trained_model_dir_path,
         filename=filename,
         save_top_k=1,
         mode="min",
@@ -132,7 +132,7 @@ def train(
         )
     trainer.test(model=classification_model, dataloaders=dataset.test_dataloader())
 
-    final_model_path = os.path.join(trained_model_dir, final_name if trained_model_path is None else transfer_learning_name)
+    final_model_path = os.path.join(trained_model_dir_path, final_name if trained_model_path is None else transfer_learning_name)
     trainer.save_checkpoint(final_model_path)
 
 

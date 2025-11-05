@@ -28,7 +28,7 @@ def train(cfg: ClassificationConfig):
         num_workers=train_config_values("num_workers", cfg),
         learning_rate=train_config_values("learning_rate", cfg),
         input_loss_function=train_config_values("loss_function", cfg),
-        trained_model_dir=train_config_values("trained_model_dir", cfg),
+        trained_model_dir_path=train_config_values("trained_model_dir", cfg),
         trained_model_path=train_config_values("trained_model_path", cfg),
         train_augmentations=train_config_values("train_augmentations", cfg),
     )

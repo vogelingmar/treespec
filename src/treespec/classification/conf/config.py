@@ -29,7 +29,7 @@ class PredictParams:
     """Datatype definition for config values of the deep learning model prediction script.
     
     Note:
-    Give the path for the inventories without the file extension."""
+    Give the path including filename for the inventories without the file extension."""
 
     tree_images_dir_path: Path
     input_inventory_path: Path

@@ -30,7 +30,7 @@ def test_train():
         num_workers=0,
         learning_rate=0.001,
         input_loss_function=nn.CrossEntropyLoss,
-        trained_model_dir=os.path.join(mock_temp_dir_path, "trained_model"),
+        trained_model_dir_path=os.path.join(mock_temp_dir_path, "trained_model"),
         train_augmentations=transforms.Compose([transforms.ToTensor(), transforms.RandomResizedCrop(224)])
     )
 

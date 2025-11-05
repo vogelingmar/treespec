@@ -184,5 +184,10 @@ sauen/
 essen/
 multirun/
 id_counter.py
+#config.yaml
+config_model_comparison.yaml
+dataset/
+model/
+uv.lock
 
 .DS_Store

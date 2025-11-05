@@ -1,17 +1,17 @@
 train:
-  model: alexnet
-  model_weights: alexnet_default
+  model: resnet50
+  model_weights: resnet50_default
   dataset: folder
-  dataset_dir: /Users/ingmar/repos/treespec/test/dataset_creation/mock/datasets/dataset_sorted
+  dataset_dir_path: /labeled_dataset
   num_classes: 5
-  use_ids: true
-  epoch_count: 2
+  use_ids: false
+  epoch_count: 20
   batch_size: 5
-  num_workers: 16
-  learning_rate: 0.0001
+  num_workers: 8
+  learning_rate: 0.001
   loss_function: cross_entropy
-  use_augmentations: true
-  trained_model_dir: /Users/ingmar/Downloads/AlexNet_BarkVN-50_50_finetuned
+  trained_model_path: /ResNet50_BarkVN-50_50_finetuned
+  trained_model_dir_path: /output/trained_models/
   train_augmentations: 
     - name: RandomVerticalFlip
       p: 0.1
@@ -27,7 +27,10 @@ train:
       sigma: 20
 
 predict:
-  tree_images_dir: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/run_70/trees_70
-  input_inventory_path: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/run_70/inventory_70/matched_output
-  output_inventory_path: /home/ingmar/Documents/repos/treespec/test/mock/temp/predicted_tree_species_inventory/pred
-  trained_model_path: /home/ingmar/Documents/repos/treespec/test/mock/essen_mock/trained_models/trained_modelsresnet50trees_70_finetuned.pth
+  model: resnet50
+  model_weights: resnet50_default
+  dataset_dir_path: /labeled_dataset
+  tree_images_dir_path: /unlabeled_dataset
+  input_inventory_path: /inventory/inventory
+  output_inventory_path: /output/updated_inventory/inventory
+  trained_model_path: /ResNet50_BarkVN-50_50_finetuned

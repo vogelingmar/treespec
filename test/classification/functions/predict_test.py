@@ -36,15 +36,8 @@ def test_predict_species():
     predict_species(
         model=model,
         model_weights=model_weights,
-        num_classes=num_classes,
-        loss_function=loss_function,
-        learning_rate=learning_rate,
-        dataset=dataset,
-        dataset_dir=dataset_dir,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        use_ids=use_ids,
-        tree_images_dir=tree_images_dir,
+        dataset_dir_path=dataset_dir,
+        tree_images_dir_path=tree_images_dir,
         input_inventory_path=input_inventory_path,
         output_inventory_path=output_inventory_path,
         trained_model_path=trained_model_path,
@@ -88,9 +81,9 @@ def test_inventurize_trees():
         input_tree_images_dir_path=tree_images_dir,
         input_inventory_path=input_inventory_path,
         output_inventory_path=output_inventory_path,
-        trained_model_path=trained_model_path,
         classification_model=classification_model,
-        dataset=dataset,
+        class_names=dataset.classes,
+        filetypes=[".jpg", ".png", ".jpeg"],
     )
 
     assert os.path.exists(output_inventory_path + ".shp")

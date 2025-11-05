@@ -26,7 +26,7 @@ def train_config_values(  # pylint: disable=too-many-locals
     match param:
         case "model":
             match cfg.train.model:
-                case "resnet18":  # TODO: TEST
+                case "resnet18":
                     from torchvision.models import resnet18  # type: ignore
 
                     return resnet18
@@ -50,7 +50,7 @@ def train_config_values(  # pylint: disable=too-many-locals
                     from torchvision.models import googlenet
 
                     return googlenet
-                case "mobilenet_v2":  # TODO: TEST
+                case "mobilenet_v2":
                     from torchvision.models import mobilenet_v2
 
                     return mobilenet_v2
@@ -62,19 +62,19 @@ def train_config_values(  # pylint: disable=too-many-locals
                     from torchvision.models import wide_resnet101_2
 
                     return wide_resnet101_2
-                case "convnext":  # TODO: TEST
+                case "convnext":
                     from torchvision.models import convnext_base
 
                     return convnext_base
-                case "alexnet":  # TODO: TEST
+                case "alexnet":
                     from torchvision.models import alexnet
 
                     return alexnet
-                case "vgg16":  # TODO: TEST
+                case "vgg16":
                     from torchvision.models import vgg16
 
                     return vgg16
-                case "densenet":  # TODO: TEST
+                case "densenet":
                     from torchvision.models import densenet121
 
                     return densenet121
@@ -82,7 +82,7 @@ def train_config_values(  # pylint: disable=too-many-locals
                     raise ValueError(f"Unknown model: {cfg.train.model}")
         case "model_weights":
             match cfg.train.model_weights:
-                case "resnet18_default":  # TODO: TEST
+                case "resnet18_default":
                     from torchvision.models import ResNet18_Weights  # type: ignore
 
                     return ResNet18_Weights.DEFAULT
@@ -106,7 +106,7 @@ def train_config_values(  # pylint: disable=too-many-locals
                     from torchvision.models import GoogLeNet_Weights
 
                     return GoogLeNet_Weights.DEFAULT
-                case "mobilenet_v2_default":  # TODO: TEST
+                case "mobilenet_v2_default":
                     from torchvision.models import MobileNet_V2_Weights
 
                     return MobileNet_V2_Weights.DEFAULT
@@ -118,19 +118,19 @@ def train_config_values(  # pylint: disable=too-many-locals
                     from torchvision.models import Wide_ResNet101_2_Weights
 
                     return Wide_ResNet101_2_Weights.DEFAULT
-                case "convnext_default":  # TODO: TEST
+                case "convnext_default":
                     from torchvision.models import ConvNeXt_Base_Weights
 
                     return ConvNeXt_Base_Weights.DEFAULT
-                case "alexnet_default":  # TODO: TEST
+                case "alexnet_default":
                     from torchvision.models import AlexNet_Weights
 
                     return AlexNet_Weights.DEFAULT
-                case "vgg16_default":  # TODO: TEST
+                case "vgg16_default":
                     from torchvision.models import VGG16_Weights
 
                     return VGG16_Weights.DEFAULT
-                case "densenet_default":  # TODO: TEST
+                case "densenet_default":
                     from torchvision.models import DenseNet121_Weights
 
                     return DenseNet121_Weights.DEFAULT
@@ -152,8 +152,6 @@ def train_config_values(  # pylint: disable=too-many-locals
                     return nn.CrossEntropyLoss
                 case _:
                     raise ValueError(f"Unknown loss function: {cfg.train.loss_function}")
-        case "pre_trained":
-            return cfg.train.pre_trained
         case "train_augmentations":
             default_transforms = train_config_values("model_weights", cfg).transforms()
 
@@ -202,8 +200,8 @@ def train_config_values(  # pylint: disable=too-many-locals
                     ]
                 )
             return train_augmentations
-        case "dataset_dir":
-            return cfg.train.dataset_dir
+        case "dataset_dir_path":
+            return cfg.train.dataset_dir_path
         case "num_classes":
             return cfg.train.num_classes
         case "use_ids":
@@ -216,7 +214,7 @@ def train_config_values(  # pylint: disable=too-many-locals
             return cfg.train.num_workers
         case "learning_rate":
             return cfg.train.learning_rate
-        case "trained_model_dir":
+        case "trained_model_dir_path":
             return cfg.train.trained_model_dir_path
         case "trained_model_path":
             return cfg.train.trained_model_path
@@ -225,7 +223,6 @@ def train_config_values(  # pylint: disable=too-many-locals
 
 
 def predict_config_values(param: str, cfg: ClassificationConfig) -> Optional[Path]:
-    #TODO: tidy up this file
     r"""Extracts the value or object corresponding to a prediction parameter from the configuration.
 
     Args:
@@ -239,8 +236,14 @@ def predict_config_values(param: str, cfg: ClassificationConfig) -> Optional[Pat
         ValueError: If the parameter is unknown or not supported.
     """
     match param:
-        case "tree_images_dir":
-            return cfg.predict.tree_images_dir
+        case "model":
+            return train_config_values("model", cfg)
+        case "model_weights":
+            return train_config_values("model_weights", cfg)
+        case "dataset_dir_path":
+            return train_config_values("dataset_dir_path", cfg)
+        case "tree_images_dir_path":
+            return cfg.predict.tree_images_dir_path
         case "input_inventory_path":
             return cfg.predict.input_inventory_path
         case "output_inventory_path":

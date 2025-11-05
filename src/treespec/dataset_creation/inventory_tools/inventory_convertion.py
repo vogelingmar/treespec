@@ -19,7 +19,12 @@ def create_lists_from_shapefile(shapefile_path: Path, prefix_to_be_applied: Opti
             records: List of records from the shapefile, with keys prefixed if specified.
     """
     points = shapefile.Reader(shapefile_path)
-    points_shape_records = points.shapeRecords()
+    try:
+        points_shape_records = points.shapeRecords()
+    except UnboundLocalError:
+        # Happens with 3D MultipointZ without M-values
+        print(f"⚠️ Warning: Missing M-values in shapefile '{shapefile_path}', using fallback reader.")
+        points_shape_records = list(points.iterShapeRecords())
     points = []
     records = []
     for shaperec in points_shape_records:

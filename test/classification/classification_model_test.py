@@ -39,18 +39,6 @@ def test_training_step(classification_model):
     loss = classification_model.training_step(batch, 0)
     assert loss.item() > 0
 
-
-def test_predict(classification_model):
-    """Tests the predict method of the ClassificationModel"""
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    image = os.path.join(
-        base_dir, "dataset_creation/mock/datasets/dataset_unsorted/tree_crop/36_date_run_rand_23left_Amb.png"
-    )
-    prediction = classification_model.predict(image)
-    assert 0 <= prediction["category"] <= 4
-    assert prediction["score"] > 0
-
-
 def test_configure_optimizers(classification_model):
     """Tests the configure_optimizers method of the ClassificationModel"""
     optimizer = classification_model.configure_optimizers()
