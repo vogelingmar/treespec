@@ -60,16 +60,16 @@ bash setup.sh
 pip install -e .[dev]; pytest test
 ```
   
-3. Configure the settings of the scripts (src/treespec/scripts) in the src/conf/config.yaml file (see config.py/ config_parser.py for available options).
+3. Configure the settings of the scripts (src/treespec/classification/scripts or src/treespec/dataset_creation/scripts) in the src/classification/conf/config.yaml or src/dataset_creation/conf/config.yaml file (see config.py/ config_parser.py for available options).
    
 ```BibTeX
-nano src/conf/config.yaml
+nano src/classification/conf/config.yaml
 ``` 
 
 4. Run any script (example: train.py).
    
 ```BibTeX
-python src/scripts/train.py
+python src/classification/scripts/train.py
 ```
 
 Now you should see the training progress in your terminal, along with some metrics. 
