@@ -19,7 +19,14 @@ treespec is a PyTorch-lightning based deep learning pipeline equipped with tools
 
 ## Installation
 
-### Method 1: Docker Container
+### Method 1: PyPI Package
+Download the current [treespec package](https://pypi.org/project/treespec/) from PyPI using ([PIP](https://pypi.org/project/pip/) required).
+```BibTeX
+pip install treespec
+```
+You can now import dependencies from the package and use them inside of your project.
+
+### Method 2: Docker Container
 Download the current [treespec container](https://hub.docker.com/repository/docker/vogelingmar/treespec/general) on Docker Hub ([Docker](https://docs.docker.com/engine/install/) required).
 ```BibTeX
 docker pull vogelingmar/treespec:latest
@@ -29,7 +36,7 @@ Run the container with docker run and mount folders you want to work with.
 docker run -it --gpus all -v *local_path*:/workspace/data vogelingmar/treespec
 ```
 
-### Method 2: GitHub Repository
+### Method 3: GitHub Repository
 Clone the [treespec repository](https://github.com/vogelingmar/treespec) from GitHub ([Git](https://github.com/git-guides/install-git) required).
 
 When first setting up treespec you have to have [Python3](https://www.python.org/downloads/) installed on your system. To create a virtual environment
