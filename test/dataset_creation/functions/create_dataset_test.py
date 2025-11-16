@@ -162,7 +162,7 @@ def test_create_big_scale_dataset():
 
     dataset_dir_path = os.path.join(output_dir_path, "datasets")
     processed_dir_path = os.path.join(output_dir_path, "pre_processing")
-    date = dates_and_runs.keys().__iter__().next()
+    date = dates_and_runs.keys().__iter__().__next__()  # pylint: disable=unnecessary-dunder-call
     run_numbers = dates_and_runs[date]
 
     assert len(os.listdir(output_dir_path)) > 0, "Processed directory is empty!"

@@ -38,7 +38,7 @@ def test_create_dictionary():
 
     attributes = create_dictionary_from_shapefile(matched_tree_inventory_output_path)
     assert len(attributes) > 0
-    for key in attributes.items():
+    for key in attributes:  # pylint: disable=consider-using-dict-items
         assert isinstance(key, int)
         assert "pred_id" in attributes[key]
 
