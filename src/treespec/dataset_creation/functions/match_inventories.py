@@ -1,13 +1,21 @@
-from treespec.dataset_creation.inventory_tools.inventory_convertion import create_lists_from_shapefile, create_shapefile_from_dictionary
-from scipy.spatial import cKDTree  # type: ignore
+"""Functions to match predicted inventories with groundtruth inventories."""
+
 from pathlib import Path
+
+from scipy.spatial import cKDTree  # type: ignore
+
+from treespec.dataset_creation.inventory_tools.inventory_convertion import (
+    create_lists_from_shapefile,
+    create_shapefile_from_dictionary,
+)
+
 
 def match(  # pylint: disable=too-many-locals
     predicted_inventory_path: Path,
     groundtruth_inventory_path: Path,
     output_inventory_path: Path,
     use_dbh_filter: bool = True,
-)-> None:
+) -> None:
     r"""Match predicted cadastre with inventory points and export to a new shapefile at output_path.
 
     Args:

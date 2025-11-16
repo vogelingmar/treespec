@@ -1,7 +1,6 @@
 train:
   model: resnet50
   model_weights: resnet50_default
-  dataset: folder
   dataset_dir_path: /labeled_dataset
   num_classes: 5
   use_ids: false

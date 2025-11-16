@@ -1,3 +1,5 @@
+"""Tests for the tree_image_extraction module."""
+
 import os
 import shutil
 from treespec.dataset_creation.image_tools.tree_image_extraction import find_all_trees

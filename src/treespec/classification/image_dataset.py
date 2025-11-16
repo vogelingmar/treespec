@@ -35,16 +35,16 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
         self.num_workers = num_workers
         self.use_ids = use_ids
 
-        self.dataset = None
-        self.train = None
-        self.val = None
-        self.test = None
+        self.dataset: Optional[datasets.ImageFolder] = None
+        self.train: Optional[data.Subset] = None
+        self.val: Optional[data.Subset] = None
+        self.test: Optional[data.Subset] = None
 
         self.classes = sorted(folder.name for folder in os.scandir(dataset_dir_path) if folder.is_dir())
 
-    def setup(
+    def setup(  # pylint: disable=arguments-renamed, disable=too-many-locals
         self, transform: Optional[Transform] = None
-    ) -> None:  # pylint: disable=arguments-renamed, disable=too-many-locals
+    ) -> None:
         r"""
         Creates training (80%), validation (10%), and testing (10%) datasets from the folder structure at data_dir,
         ensuring that all images of the same tree (by tree ID prefix) are in the same split.
@@ -118,6 +118,8 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
 
         self.train.dataset.transform = augmentation  # type: ignore
 
+        if self.train is None:
+            raise ValueError("The dataset has not been set up. Please call setup() before getting dataloaders.")
         return data.DataLoader(
             self.train,
             batch_size=self.batch_size,
@@ -130,6 +132,8 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
         Returns a dataloader for the validation subset of the dataset.
         """
 
+        if self.val is None:
+            raise ValueError("The dataset has not been set up. Please call setup() before getting dataloaders.")
         return data.DataLoader(
             self.val,
             batch_size=self.batch_size,
@@ -142,6 +146,8 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
         Returns a dataloader for the testing subset of the dataset.
         """
 
+        if self.test is None:
+            raise ValueError("The dataset has not been set up. Please call setup() before getting dataloaders.")
         return data.DataLoader(
             self.test,
             batch_size=self.batch_size,
@@ -154,6 +160,8 @@ class ImageDataset(L.LightningDataModule):  # pylint: disable=too-many-instance-
         Returns a tensor of weights for the different classes of the dataset to balance training.
         """
 
+        if self.dataset is None:
+            raise ValueError("The dataset has not been set up. Please call setup() before getting loss weights.")
         class_counts = torch.bincount(torch.tensor(self.dataset.targets))
 
         return torch.tensor(1 / class_counts)

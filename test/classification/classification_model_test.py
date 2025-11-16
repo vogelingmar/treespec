@@ -2,7 +2,6 @@
 
 # pylint: disable=redefined-outer-name
 import os
-import numpy as np
 import pytest
 import torch
 import pytorch_lightning as L
@@ -38,6 +37,7 @@ def test_training_step(classification_model):
     batch = [torch.randn(1, 3, 224, 224), torch.tensor([0])]
     loss = classification_model.training_step(batch, 0)
     assert loss.item() > 0
+
 
 def test_configure_optimizers(classification_model):
     """Tests the configure_optimizers method of the ClassificationModel"""

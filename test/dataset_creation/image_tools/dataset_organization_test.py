@@ -1,7 +1,9 @@
+"""Tests for the dataset_organization module."""
+
 import os
 import shutil
+
 from treespec.dataset_creation.image_tools.dataset_organization import organize_datasets
-from treespec.dataset_creation.inventory_tools.inventory_convertion import create_dictionary_from_shapefile
 
 dataset_creation_mock_dir_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "mock")
 
@@ -26,8 +28,8 @@ def test_organize_datasets():
     assert os.path.exists(attribute_path)
     dataset = os.listdir(attribute_path)
     assert len(dataset) == 3
-    for dir in dataset:
-        dir_path = os.path.join(attribute_path, dir)
+    for directory in dataset:
+        dir_path = os.path.join(attribute_path, directory)
         for file in os.listdir(dir_path):
             assert file.endswith(".png")
             parts = file.split("_")

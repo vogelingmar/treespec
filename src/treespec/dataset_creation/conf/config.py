@@ -1,14 +1,16 @@
 """Definition of the dataset creation config parameters"""
 
+# pylint: disable=too-many-instance-attributes
+
 from pathlib import Path
 
 from dataclasses import dataclass
 
 
 @dataclass
-class DatasetCreationParams:  # pylint: disable=too-many-instance-attributes
+class DatasetCreationParams:
     """Configuration of parameters for the create_essen_dataset script.
-    
+
     Note:
     Give the path of the input_tree_inventory_path WITHOUT the .shp ending."""
 
@@ -36,7 +38,7 @@ class DatasetCreationParams:  # pylint: disable=too-many-instance-attributes
 @dataclass
 class SimpleDatasetCreationParams:
     """Configuration of parameters for the create_essen_dataset script.
-    
+
     Note:
     Give the path of the groundtruth_tree_inventory_path WITHOUT the .shp ending."""
 
@@ -62,7 +64,7 @@ class LargeScaleDatasetCreationParams:
 @dataclass
 class TreeInventoryMatchingParams:
     """Configuration of parameters for the matching script.
-    
+
     Note:
     Give the path of the inventories WITHOUT the .shp ending."""
 

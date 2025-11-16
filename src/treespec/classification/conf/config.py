@@ -1,4 +1,5 @@
 """Type definitions for classification configuration values."""
+
 from pathlib import Path
 
 from dataclasses import dataclass
@@ -10,7 +11,6 @@ class TrainParams:  # pylint: disable=too-many-instance-attributes
 
     model: str
     model_weights: str
-    dataset: str
     dataset_dir_path: Path
     num_classes: int
     use_ids: bool
@@ -27,7 +27,7 @@ class TrainParams:  # pylint: disable=too-many-instance-attributes
 @dataclass
 class PredictParams:
     """Datatype definition for config values of the deep learning model prediction script.
-    
+
     Note:
     Give the path including filename for the inventories without the file extension."""
 

@@ -1,6 +1,8 @@
-import pytest
+"""Tests for the pre_processing module."""
+
 import os
 import shutil
+
 from treespec.dataset_creation.image_tools.pre_processing import (
     select_rectangle_images,
     extract_pano_faces,

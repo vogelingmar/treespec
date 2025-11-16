@@ -1,11 +1,12 @@
+"""Tests for the train function."""
+
 import os
 import shutil
 
 from torch import nn
-import torchvision.transforms.v2 as transforms
+import torchvision.transforms.v2 as transforms  # type: ignore
 
-from torchvision.models import googlenet, GoogLeNet_Weights
-from treespec.classification.image_dataset import ImageDataset
+from torchvision.models import googlenet, GoogLeNet_Weights  # type: ignore
 
 from treespec.classification.functions import train
 
@@ -21,7 +22,6 @@ def test_train():
     train.train(
         model=googlenet,
         model_weights=GoogLeNet_Weights.DEFAULT,
-        input_dataset=ImageDataset,
         dataset_dir_path=os.path.join(mock_dataset_creation_dir_path, "datasets", "dataset_sorted"),
         num_classes=5,
         use_ids=True,
@@ -31,7 +31,7 @@ def test_train():
         learning_rate=0.001,
         input_loss_function=nn.CrossEntropyLoss,
         trained_model_dir_path=os.path.join(mock_temp_dir_path, "trained_model"),
-        train_augmentations=transforms.Compose([transforms.ToTensor(), transforms.RandomResizedCrop(224)])
+        train_augmentations=transforms.Compose([transforms.ToTensor(), transforms.RandomResizedCrop(224)]),
     )
 
     assert len(os.listdir(mock_temp_dir_path)) > 0

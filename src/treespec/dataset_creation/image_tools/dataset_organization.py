@@ -34,13 +34,14 @@ def organize_datasets(input_tree_patches_dir_path: Path, output_datasets_dir_pat
     r"""Organizes datasets according to portrayed tree attribute and species.
 
     Args:
-        input_trees_patches_dir_path: Path to directory where the directories containing pictures for each attribute dataset are stored.
+        input_trees_patches_dir_path: Path to directory where the directories containing pictures
+            for each attribute dataset are stored.
         output_dataset_dir_path: Path to directory where the sorted datasets will be created.
         tree_attributes: List of tree attributes for which datasets should be created.
     """
     for attribute in tree_attributes:
-        input_attribute_patches_dir_path = os.path.join(input_tree_patches_dir_path, attribute)
-        output_attribute_dataset_dir_path = os.path.join(output_datasets_dir_path, attribute)
+        input_attribute_patches_dir_path = Path(os.path.join(input_tree_patches_dir_path, attribute))
+        output_attribute_dataset_dir_path = Path(os.path.join(output_datasets_dir_path, attribute))
         os.makedirs(output_attribute_dataset_dir_path, exist_ok=True)
 
         classify_trees_by_species(input_attribute_patches_dir_path, output_attribute_dataset_dir_path)

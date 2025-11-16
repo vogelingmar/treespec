@@ -5,11 +5,12 @@ from pathlib import Path
 from typing import Optional
 import shutil
 import imageio.v2 as imageio
-import numpy as np
 import py360convert
 
 
-def _copy_rectangle_image(rectangle_image_path: Path, output_color_image_filetype: str, output_image_face_dir_path: Path) -> None:
+def _copy_rectangle_image(
+    rectangle_image_path: Path, output_color_image_filetype: str, output_image_face_dir_path: Path
+) -> None:
     r"""Copies and renames a rectangle RGB image and names it based on its orientation.
     Args:
         rectangle_image_path: Path to the input rectangle RGB image.
@@ -55,7 +56,7 @@ def select_rectangle_images(
                 continue
             run = parts[0]
             if run.endswith(str(run_number)):
-                rectangle_image_path = os.path.join(input_rectangle_images_dir_path, file)
+                rectangle_image_path = Path(os.path.join(input_rectangle_images_dir_path, file))
                 _copy_rectangle_image(
                     rectangle_image_path=rectangle_image_path,
                     output_color_image_filetype=output_color_image_filetype,
@@ -64,7 +65,8 @@ def select_rectangle_images(
 
     print(f"Copied images to {output_image_faces_dir_path}")
 
-def extract_pano_faces(
+
+def extract_pano_faces(  # pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
     input_panos_dir_path: Path,
     output_faces_dir_path: Path,
     input_pano_filetype: str,
@@ -73,7 +75,6 @@ def extract_pano_faces(
     apply_center_zoom: bool,
     name_filter: Optional[str] = None,
 ) -> None:
-    # TODO: optimize and refactor method (method extraction)
     r"""Extracts left and right faces from panoramic images in the input directory
     and saves them to the output directory.
 
@@ -84,7 +85,8 @@ def extract_pano_faces(
         output_face_filetype: The file type for the output images (e.g., 'jpg', 'png').
         run_number: The number of the recording run to filter images accordingly.
         apply_center_zoom: Whether to zoom the faces to the center square (apply when using rectangle rgb images).
-        name_filter: Optional filter to select specific types of images (e.g. 'segmentid', 'semanticclass'). If left empty, type = 'rgb' is assumed.
+        name_filter: Optional filter to select specific types of images (e.g. 'segmentid', 'semanticclass').
+            If left empty, type = 'rgb' is assumed.
     """
     os.makedirs(output_faces_dir_path, exist_ok=True)
 
@@ -93,8 +95,13 @@ def extract_pano_faces(
     else:
         image_type = name_filter
 
-    for file in sorted(os.listdir(input_panos_dir_path)):
-        if image_type == "rgb" and file.endswith(f".{input_pano_filetype}") or image_type != "rgb" and file.endswith(f"_{name_filter}.{input_pano_filetype}"):
+    for file in sorted(os.listdir(input_panos_dir_path)):  # pylint: disable=too-many-nested-blocks
+        if (
+            image_type == "rgb"
+            and file.endswith(f".{input_pano_filetype}")
+            or image_type != "rgb"
+            and file.endswith(f"_{name_filter}.{input_pano_filetype}")
+        ):
             filename = os.path.splitext(file)[0]
             parts = filename.split("_")
             if len(parts) < 2:

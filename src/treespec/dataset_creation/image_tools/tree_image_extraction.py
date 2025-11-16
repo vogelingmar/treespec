@@ -1,54 +1,59 @@
 """Functions for extracting tree and bark images from segment ID, color, and semantic image faces."""
 
+# pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
+
 import os
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+from collections import Counter
+from enum import Enum, auto
+
 import imageio.v2 as imageio
 import numpy as np
-from skimage.transform import resize
-from enum import Enum, auto
-from dataclasses import dataclass, field
-from collections import Counter
+from skimage.transform import resize  # pylint: disable=no-name-in-module
 
 
-def determine_output_path(tree_id: int, tree_inventory_dict: dict, output_datasets_dir_path: Path, image_id: str, tree_attribute: str) -> Path:
+def determine_output_path(
+    tree_id: int, tree_inventory_dict: dict, output_datasets_dir_path: Path, image_id: str, tree_attribute: str
+) -> Path:
     r"""
     Determines the output path for a tree image based on its ID and species.
-    
+
     Args:
         tree_id: The ID of the tree.
         tree_inventory_dict: A dictionary containing tree inventory data.
         output_datasets_dir_path: The base directory for output datasets.
         image_id: The ID of the image being processed.
         tree_attribute: The attribute of the tree (e.g., 'tree', 'bark').
-        
+
     Returns:
         The full path where the image should be saved.
     """
 
-    #TODO: refactor code to be more elegant (code duplication)
     if tree_id in tree_inventory_dict.keys():
         tree_species = tree_inventory_dict[tree_id]["BAUMART"]
         tree_attribute_dataset_dir_path = os.path.join(output_datasets_dir_path, tree_attribute)
-        return os.path.join(tree_attribute_dataset_dir_path, f"{tree_id}_{image_id}_{tree_species}.png")
-    elif str(tree_id) in tree_inventory_dict.keys():
+        return Path(os.path.join(tree_attribute_dataset_dir_path, f"{tree_id}_{image_id}_{tree_species}.png"))
+    if str(tree_id) in tree_inventory_dict.keys():
         tree_species = tree_inventory_dict[str(tree_id)]["BAUMART"]
         tree_attribute_dataset_dir_path = os.path.join(output_datasets_dir_path, tree_attribute)
-        return os.path.join(tree_attribute_dataset_dir_path, f"{tree_id}_{image_id}_{tree_species}.png")
-    else:
-        tree_species = "unknown"
-        unkown_trees_dir_path = os.path.join(output_datasets_dir_path, f"unknown_{tree_attribute}s")
-        os.makedirs(unkown_trees_dir_path, exist_ok=True)
-        return os.path.join(unkown_trees_dir_path, f"{tree_id}_{image_id}_{tree_species}.png")
+        return Path(os.path.join(tree_attribute_dataset_dir_path, f"{tree_id}_{image_id}_{tree_species}.png"))
+    tree_species = "unknown"
+    unkown_trees_dir_path = os.path.join(output_datasets_dir_path, f"unknown_{tree_attribute}s")
+    os.makedirs(unkown_trees_dir_path, exist_ok=True)
+    return Path(os.path.join(unkown_trees_dir_path, f"{tree_id}_{image_id}_{tree_species}.png"))
 
 
-def extract_masked_patches_and_bounds(mask: np.ndarray, color_face: np.ndarray) -> Optional[tuple[np.ndarray, np.ndarray, np.ndarray, int, int, int, int]]:
+def extract_masked_patches_and_bounds(
+    mask: np.ndarray, color_face: np.ndarray
+) -> Optional[tuple[np.ndarray, np.ndarray, np.ndarray, int, int, int, int]]:
     r"""Extracts and filters the relevant zoomed and cropped patches from the color face based on the provided mask.
-    
+
     Args:
         mask: A binary mask indicating the area of interest.
         color_face: The color image from which to extract patches.
-        
+
     Returns:
         A tuple containing:
             - zoomed_cropped_color_patch: The cropped color patch with the mask applied,
@@ -62,7 +67,7 @@ def extract_masked_patches_and_bounds(mask: np.ndarray, color_face: np.ndarray) 
 
     patch_coords = np.argwhere(mask)
     if patch_coords.size < 200 * 200 or patch_coords.shape[0] < patch_coords.shape[1]:  # filter small and wide images
-        return
+        return None
 
     patch_bound_y0, patch_bound_x0 = patch_coords.min(axis=0)
     patch_bound_y1, patch_bound_x1 = patch_coords.max(axis=0) + 1  # +1 for slicing
@@ -97,23 +102,30 @@ def determine_colored_area(cropped_color_face: np.ndarray) -> float:
 
 
 class TreeExtractionStatus(Enum):
+    """Enumeration for tree extraction status codes."""
+
     SUCCESS = auto()
     UNKNOWN_SPECIES = auto()
     TREE_RESOLUTION_OR_WIDTH = auto()
     BARK_RESOLUTION_OR_WIDTH = auto()
     FAULTY_BARK = auto()
 
+
 @dataclass
 class ExtractionMetrics:
+    """Class for collecting and printing extraction metrics."""
+
     status_counts: Counter = field(default_factory=Counter)
     total_trees_detected: int = 0
 
     def update(self, status: TreeExtractionStatus):
+        """Updates the metrics with the given status."""
         self.status_counts[status] += 1
 
     def print_summary(self, output_path: Path):
+        """Prints a summary of the extraction metrics."""
         print(f"\n Extraction Summary for output path: {output_path}")
-        print(f"--------------------------------------------")
+        print("--------------------------------------------")
         print(f"Total tree IDs detected:     {self.total_trees_detected}")
         for status in TreeExtractionStatus:
             print(f"{status.name.replace('_', ' ').title()}: {self.status_counts[status]}")
@@ -173,8 +185,13 @@ def create_dataset_images(
             case "bark_crop":
                 output_image = zoomed_cropped_bark_patch
         os.makedirs(os.path.join(output_tree_patch_dir_path, attribute), exist_ok=True)
-        output_path = determine_output_path(tree_id, tree_inventory_dict, output_tree_patch_dir_path, image_id, attribute)
-        imageio.imwrite(output_path, output_image)
+        output_path = determine_output_path(
+            tree_id, tree_inventory_dict, output_tree_patch_dir_path, image_id, attribute
+        )
+        if output_image is not None:
+            imageio.imwrite(output_path, output_image)
+        else:
+            continue
         # If any output_path ends with unknown, return UNKNOWN_SPECIES
         if os.path.basename(output_path).startswith(f"{tree_id}_{image_id}_unknown"):
             return TreeExtractionStatus.UNKNOWN_SPECIES
@@ -243,8 +260,8 @@ def find_all_trees(
     date: str,
     tree_attributes: list,
 ) -> None:
-    r"""Finds and extracts tree images from segment ID, color, and semantic images from the specified directories by matching their IDs.
-    Uses ExtractionMetrics to collect and print summary statistics.
+    r"""Finds and extracts tree images from segment ID, color, and semantic images from the specified directories,
+    by matching their IDs. Uses ExtractionMetrics to collect and print summary statistics.
     """
     metrics = ExtractionMetrics()
     os.makedirs(output_dataset_dir_path, exist_ok=True)
@@ -256,15 +273,19 @@ def find_all_trees(
                 continue
             image_number = parts[0]
             orientation = parts[2]
-            color_face_path = os.path.join(
-                input_color_faces_dir_path, f"{image_number}_rgb_{orientation}.{input_color_faces_filetype}"
+            color_face_path = Path(
+                os.path.join(
+                    input_color_faces_dir_path, f"{image_number}_rgb_{orientation}.{input_color_faces_filetype}"
+                )
             )
-            semanticclass_face_path = os.path.join(
-                input_semanticclass_faces_dir_path,
-                f"{image_number}_semanticclass_{orientation}.{input_semanticclass_faces_filetype}",
+            semanticclass_face_path = Path(
+                os.path.join(
+                    input_semanticclass_faces_dir_path,
+                    f"{image_number}_semanticclass_{orientation}.{input_semanticclass_faces_filetype}",
+                )
             )
 
-            segmentid_face_path = os.path.join(input_segmentid_faces_dir_path, segmentid_face)
+            segmentid_face_path = Path(os.path.join(input_segmentid_faces_dir_path, segmentid_face))
             extract_tree_images(
                 segmentid_face_path=segmentid_face_path,
                 color_face_path=color_face_path,

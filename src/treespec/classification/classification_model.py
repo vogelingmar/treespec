@@ -1,11 +1,8 @@
 """Classification Model to classify tree images."""  # pylint: disable=duplicate-code
 
-from typing import Callable, Optional
-import matplotlib.pyplot as plt
-from sklearn.metrics import ConfusionMatrixDisplay
+from typing import Callable
 
 import torch
-from pathlib import Path
 from torch import nn
 from torch.nn.modules.loss import _Loss
 from torchvision.models._api import WeightsEnum  # type: ignore
@@ -34,7 +31,6 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
         num_classes: int,
         loss_function: _Loss,
         learning_rate: float,
-        class_labels: Optional[list[str]] = None,
     ) -> None:
         super().__init__()
         self.model_weights = model_weights
@@ -46,7 +42,9 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
             self.model.head = nn.Linear(self.model.head.in_features, num_classes)
         elif hasattr(self.model, "classifier"):
             if isinstance(self.model.classifier, nn.Sequential):
-                self.model.classifier[-1] = nn.Linear(self.model.classifier[-1].in_features, num_classes)
+                self.model.classifier[-1] = nn.Linear(
+                    self.model.classifier[-1].in_features, num_classes  # type: ignore
+                )
             else:
                 self.model.classifier = nn.Linear(self.model.classifier.in_features, num_classes)
         else:
@@ -62,8 +60,8 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
         self.confusion_matrix = ConfusionMatrix(num_classes=num_classes, task="multiclass")
 
-        #self.test_confmat = ConfusionMatrix(task="multiclass", num_classes=num_classes)
-        #self.class_labels = class_labels
+        # self.test_confmat = ConfusionMatrix(task="multiclass", num_classes=num_classes)
+        # self.class_labels = class_labels
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:  # pylint: disable=arguments-differ
         r"""
@@ -91,7 +89,8 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
     def calculate_per_class_metrics(self, predictions: torch.Tensor, labels: torch.Tensor) -> dict:
         r"""
-        Calculate true positives, false positives, true negatives, false negatives, precision, recall, and F1-score for each class.
+        Calculate true positives, false positives, true negatives, false negatives, precision, recall,
+        and F1-score for each class.
 
         Args:
             predictions: The output predictions of the model.
@@ -259,7 +258,7 @@ class ClassificationModel(L.LightningModule):  # pylint: disable=too-many-instan
 
     def predict_step(  # pylint: disable=arguments-differ
         self, batch: torch.Tensor, batch_idx: int  # pylint: disable=unused-argument
-    ) -> tuple[int, int]:  # pylint: disable=arguments-differ
+    ) -> tuple[int, float]:  # pylint: disable=arguments-differ
         r"""
         The predict step of the classification model.
 

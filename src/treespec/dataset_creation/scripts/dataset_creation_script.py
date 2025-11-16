@@ -1,8 +1,9 @@
 """Creates datasets using the Treespec pipeline."""
 
+from pathlib import Path
+
 import hydra
 from hydra.core.config_store import ConfigStore
-from pathlib import Path
 
 from treespec.dataset_creation.conf.config import DatasetCreationConfig
 from treespec.dataset_creation.functions.create_dataset import (
@@ -71,4 +72,4 @@ if __name__ == "__main__":
     # create_dataset_script()  # pylint: disable=no-value-for-parameter
     # create_simple_dataset_script()  # pylint: disable=no-value-for-parameter
     create_big_scale_dataset_script()  # pylint: disable=no-value-for-parameter
-    pass
+    # pass

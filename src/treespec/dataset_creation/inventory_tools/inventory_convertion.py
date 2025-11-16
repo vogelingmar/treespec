@@ -1,9 +1,10 @@
 """Inventory conversion tools for dataset creation and prediction matching."""
 
-import shapefile  # type: ignore
-from pathlib import Path
 import os
+from pathlib import Path
 from typing import Optional
+
+import shapefile  # type: ignore
 
 
 def create_lists_from_shapefile(shapefile_path: Path, prefix_to_be_applied: Optional[str]) -> tuple[list, list]:
@@ -23,7 +24,7 @@ def create_lists_from_shapefile(shapefile_path: Path, prefix_to_be_applied: Opti
         points_shape_records = points.shapeRecords()
     except UnboundLocalError:
         # Happens with 3D MultipointZ without M-values
-        print(f"⚠️ Warning: Missing M-values in shapefile '{shapefile_path}', using fallback reader.")
+        print(f"Warning: Missing M-values in shapefile '{shapefile_path}', using fallback reader.")
         points_shape_records = list(points.iterShapeRecords())
     points = []
     records = []

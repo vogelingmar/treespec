@@ -3,7 +3,6 @@
 # pylint: disable=redefined-outer-name
 import os
 import pytest
-import torch
 
 from treespec.classification.image_dataset import ImageDataset
 
@@ -42,9 +41,7 @@ def test_setup(use_ids):
     def extract_ids(subset):
         if hasattr(subset, "indices"):
             return set(os.path.basename(subset.dataset.samples[i][0]).split("_")[0] for i in subset.indices)
-        else:
-            # fallback for ImageFolder
-            return set(os.path.basename(sample[0]).split("_")[0] for sample in subset.samples)
+        return set(os.path.basename(sample[0]).split("_")[0] for sample in subset.samples)
 
     train_ids = extract_ids(dataset.train)
     val_ids = extract_ids(dataset.val)

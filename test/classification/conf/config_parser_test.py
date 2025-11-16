@@ -1,11 +1,16 @@
-import pytest
+"""Tests for the config_parser module."""
+
 import os
 from types import SimpleNamespace
 from pathlib import Path
+
+import pytest
+
 from treespec.classification.conf import config_parser
 
 
 classification_mock_temp_dir_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "mock", "temp")
+
 
 @pytest.fixture
 def mock_classification_config():
@@ -13,7 +18,6 @@ def mock_classification_config():
         train=SimpleNamespace(
             model="resnet50",
             model_weights="resnet50_default",
-            dataset="folder",
             dataset_dir_path=Path("/test_path/mock"),
             num_classes=7,
             use_ids=True,
@@ -43,10 +47,9 @@ def mock_classification_config():
     )
 
 
-def test_train_config_values(mock_classification_config):
+def test_train_config_values(mock_classification_config):  # pylint: disable=redefined-outer-name
     assert callable(config_parser.train_config_values("model", mock_classification_config))
     assert hasattr(config_parser.train_config_values("model_weights", mock_classification_config), "transforms")
-    assert callable(config_parser.train_config_values("dataset", mock_classification_config))
     assert callable(config_parser.train_config_values("loss_function", mock_classification_config))
     assert hasattr(config_parser.train_config_values("train_augmentations", mock_classification_config), "__call__")
     assert isinstance(config_parser.train_config_values("dataset_dir_path", mock_classification_config), Path)
@@ -60,7 +63,7 @@ def test_train_config_values(mock_classification_config):
     assert isinstance(config_parser.train_config_values("trained_model_path", mock_classification_config), Path)
 
 
-def test_predict_config_values(mock_classification_config):
+def test_predict_config_values(mock_classification_config):  # pylint: disable=redefined-outer-name
     assert callable(config_parser.train_config_values("model", mock_classification_config))
     assert hasattr(config_parser.train_config_values("model_weights", mock_classification_config), "transforms")
     assert isinstance(config_parser.train_config_values("dataset_dir_path", mock_classification_config), Path)

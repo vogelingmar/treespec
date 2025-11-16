@@ -1,5 +1,8 @@
+"""Tests for the match_inventories function."""
+
 import os
 import shutil
+
 from treespec.dataset_creation.functions.match_inventories import match
 from treespec.dataset_creation.inventory_tools.inventory_convertion import create_dictionary_from_shapefile
 

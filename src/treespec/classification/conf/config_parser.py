@@ -1,15 +1,18 @@
-"""The config parser for the treespec classification module. It extracts values or objects based on the provided parameter and configuration."""
+"""The config parser for the treespec classification module.
+It extracts values or objects based on the provided parameter and configuration."""
 
-from typing import Optional
-from pathlib import Path
 # pylint: disable=import-outside-toplevel, too-many-return-statements
+
+from typing import Optional, Any
+from types import SimpleNamespace
+
 from treespec.classification.conf.config import ClassificationConfig
 
 
-def train_config_values(  # pylint: disable=too-many-locals
+def train_config_values(  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     param: str,
     cfg: ClassificationConfig,
-) -> Optional[any]:
+) -> Optional[Any]:
     r"""Extracts the value or object corresponding to a training parameter from the configuration.
 
     Args:
@@ -31,7 +34,7 @@ def train_config_values(  # pylint: disable=too-many-locals
 
                     return resnet18
                 case "resnet50":
-                    from torchvision.models import resnet50  # type: ignore
+                    from torchvision.models import resnet50
 
                     return resnet50
                 case "resnet152":
@@ -83,7 +86,7 @@ def train_config_values(  # pylint: disable=too-many-locals
         case "model_weights":
             match cfg.train.model_weights:
                 case "resnet18_default":
-                    from torchvision.models import ResNet18_Weights  # type: ignore
+                    from torchvision.models import ResNet18_Weights
 
                     return ResNet18_Weights.DEFAULT
                 case "resnet50_default":
@@ -136,14 +139,6 @@ def train_config_values(  # pylint: disable=too-many-locals
                     return DenseNet121_Weights.DEFAULT
                 case _:
                     raise ValueError(f"Unknown model weights: {cfg.train.model_weights}")
-        case "dataset":
-            match cfg.train.dataset:
-                case "folder":
-                    from treespec.classification.image_dataset import ImageDataset
-
-                    return ImageDataset
-                case _:
-                    raise ValueError(f"Unknown dataset: {cfg.train.dataset}")
         case "loss_function":
             match cfg.train.loss_function:
                 case "cross_entropy":
@@ -153,9 +148,15 @@ def train_config_values(  # pylint: disable=too-many-locals
                 case _:
                     raise ValueError(f"Unknown loss function: {cfg.train.loss_function}")
         case "train_augmentations":
-            default_transforms = train_config_values("model_weights", cfg).transforms()
+            if train_config_values("model_weights", cfg) is None:
+                weights_cfg = SimpleNamespace(train=SimpleNamespace(model_weights=f"{cfg.train.model}_default"))
+                default_transforms = train_config_values("model_weights", weights_cfg).transforms()  # type: ignore
+            else:
+                default_transforms = train_config_values("model_weights", cfg).transforms()  # type: ignore
 
             train_augmentations = default_transforms
+            if cfg.train.train_augmentations is None:
+                return train_augmentations
 
             for entry in cfg.train.train_augmentations:
                 augmentation_class = None
@@ -222,7 +223,7 @@ def train_config_values(  # pylint: disable=too-many-locals
             raise ValueError(f"Unknown parameter: {param}")
 
 
-def predict_config_values(param: str, cfg: ClassificationConfig) -> Optional[Path]:
+def predict_config_values(param: str, cfg: ClassificationConfig) -> Optional[Any]:
     r"""Extracts the value or object corresponding to a prediction parameter from the configuration.
 
     Args:

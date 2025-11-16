@@ -9,7 +9,7 @@ from treespec.dataset_creation.inventory_tools.inventory_convertion import creat
 from treespec.dataset_creation.functions import match_inventories
 
 
-def pre_process(
+def pre_process(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     input_color_images_dir_path: Path,
     input_color_image_filetype: str,
     input_color_images_format: str,
@@ -24,13 +24,14 @@ def pre_process(
     processed_segmentid_image_filetype: str,
     processed_semanticclass_images_path: Path,
     processed_semanticclass_image_filetype: str,
-)-> None:
-    r"""Pre-processes the input images by extracting faces from panoramas or selecting rectangle images depending on the input_color_images_format.
+) -> None:
+    r"""Pre-processes the input images by extracting faces from panoramas or selecting rectangle
+        images depending on the input_color_images_format.
 
     Args:
         input_color_images_dir_path: Path to the directory containing the input color images or panoramas.
         input_color_image_filetype: Filetype of the input color images or panoramas (e.g. "jpg", "png", "tif").
-        input_color_images_format: Format of the input color images, either "pano" for panoramas or "rectangle" for rectangle images.
+        input_color_images_format: Format of the input color images, either "pano" or "rectangle" images.
         input_segmentid_images_dir_path: Path to the directory containing the input segmentid panoramas.
         input_segmentid_image_filetype: Filetype of the input segmentid panoramas (e.g. "jpg", "png", "tif").
         input_semanticclass_images_dir_path: Path to the directory containing the input semanticclass panoramas.
@@ -40,8 +41,10 @@ def pre_process(
         processed_color_image_filetype: Filetype of the processed color images (e.g. "jpg", "png", "tif").
         processed_segmentid_images_path: Path to the directory where the processed segmentid images will be saved.
         processed_segmentid_image_filetype: Filetype of the processed segmentid images (e.g. "jpg", "png", "tif").
-        processed_semanticclass_images_path: Path to the directory where the processed semanticclass images will be saved.
-        processed_semanticclass_image_filetype: Filetype of the processed semanticclass images (e.g. "jpg", "png", "tif").
+        processed_semanticclass_images_path: Path to the directory where the processed
+            semanticclass images will be saved.
+        processed_semanticclass_image_filetype: Filetype of the processed semanticclass images
+            (e.g. "jpg", "png", "tif").
     """
 
     if input_color_images_format == "pano":
@@ -84,7 +87,7 @@ def pre_process(
     )
 
 
-def create_dataset(
+def create_dataset(  # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
     input_color_images_dir_path: Path,
     input_color_image_filetype: str,
     input_color_images_format: str,
@@ -104,12 +107,12 @@ def create_dataset(
     output_dataset_dir_path: Path,
     input_tree_inventory_path: Path,
     tree_attributes: list,
-)-> None:
+) -> None:
     r"""Creates a dataset from one run.
     Args:
         input_color_images_dir_path: Path to the directory containing the input color images or panoramas.
         input_color_image_filetype: Filetype of the input color images or panoramas (e.g. "jpg", "png", "tif").
-        input_color_images_format: Format of the input color images, either "pano" for panoramas or "rectangle" for rectangle images.
+        input_color_images_format: Format of the input color images, either "pano" or "rectangle" images.
         input_segmentid_images_dir_path: Path to the directory containing the input segmentid panoramas.
         input_segmentid_image_filetype: Filetype of the input segmentid panoramas (e.g. "jpg", "png", "tif").
         input_semanticclass_images_dir_path: Path to the directory containing the input semanticclass panoramas.
@@ -121,11 +124,14 @@ def create_dataset(
         processed_color_image_filetype: Filetype of the processed color images (e.g. "jpg", "png", "tif").
         processed_segmentid_images_path: Path to the directory where the processed segmentid images will be saved.
         processed_segmentid_image_filetype: Filetype of the processed segmentid images (e.g. "jpg", "png", "tif").
-        processed_semanticclass_images_path: Path to the directory where the processed semanticclass images will be saved.
-        processed_semanticclass_image_filetype: Filetype of the processed semanticclass images (e.g. "jpg", "png", "tif").
+        processed_semanticclass_images_path: Path to the directory where the
+            processed semanticclass images will be saved.
+        processed_semanticclass_image_filetype: Filetype of the processed semanticclass images
+            (e.g. "jpg", "png", "tif").
         output_dataset_dir_path: Path to the directory where the output dataset will be saved.
         input_tree_inventory_path: Path to the tree inventory file.
-        tree_attributes: List of tree attributes to be included in the dataset (e.g. ["tree", "tree_crop", "bark", "bark_crop"]).
+        tree_attributes: List of tree attributes to be included in the dataset
+            (e.g. ["tree", "tree_crop", "bark", "bark_crop"]).
     """
 
     start_time = time.time()
@@ -166,7 +172,10 @@ def create_dataset(
         tree_attributes=tree_attributes,
     )
     tree_extraction_end_time = time.time()
-    print(f"Tree extraction for date {date} run {run_number} took {tree_extraction_end_time - tree_extraction_start_time} seconds.")
+    print(
+        f"Tree extraction for date {date} run {run_number} took",
+        f"{tree_extraction_end_time - tree_extraction_start_time} seconds.",
+    )
 
     dataset_organization_start_time = time.time()
     dataset_organization.organize_datasets(
@@ -175,12 +184,15 @@ def create_dataset(
         tree_attributes=tree_attributes,
     )
     dataset_organization_end_time = time.time()
-    print(f"Dataset organization for date {date} run {run_number} took {dataset_organization_end_time - dataset_organization_start_time} seconds.")
+    print(
+        f"Dataset organization for date {date} run {run_number} took",
+        f"{dataset_organization_end_time - dataset_organization_start_time} seconds.",
+    )
     end_time = time.time()
-    print(f"Dataset creation for date {date} run {run_number} took {end_time - start_time} seconds.")
+    print(f"Dataset creation for date {date} run {run_number} took", f"{end_time - start_time} seconds.")
 
 
-def create_simple_dataset(
+def create_simple_dataset(  # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
     input_color_images_format: str,
     date: str,
     groundtruth_tree_inventory_path: Path,
@@ -192,21 +204,22 @@ def create_simple_dataset(
 ) -> None:
     r"""Creates a dataset from many runs of one date.
     Args:
-        input_color_images_format: Format of the input color images, either "pano" for panoramas or "rectangle" for rectangle images.
+        input_color_images_format: Format of the input color images, either "pano" or "rectangle" images.
         date: Date of the input images in the format "YYYY-MM-DD".
         groundtruth_tree_inventory_path: Path to the ground truth tree inventory file.
         input_dir_path: Path to the directory containing the input images and inventories.
         processed_dir_path: Path to the directory where the processed images will be saved.
-        pre_processed: Boolean indicating whether the input images have already been pre-processed and with that lie in the correct directory.
+        pre_processed: Boolean indicating whether the input images have already been pre-processed
+            and with that lie in the correct directory.
         output_dataset_dir_path: Path to the directory where the output dataset will be saved.
         run_numbers: List of run numbers to be processed.
     """
     start_time = time.time()
 
     input_color_images_dir_path = (
-        os.path.join(input_dir_path, "panos")
+        Path(os.path.join(input_dir_path, "panos"))
         if input_color_images_format == "pano"
-        else os.path.join(input_dir_path, "images")
+        else Path(os.path.join(input_dir_path, "images"))
     )
     input_color_image_filetype = "jpg"
     input_segmentid_image_filetype = "tif"
@@ -216,24 +229,30 @@ def create_simple_dataset(
     processed_semanticclass_image_filetype = "png"
 
     for run_number in run_numbers:
-        input_segmentid_images_dir_path = os.path.join(input_dir_path, "panos", f"rend{run_number}")
-        input_semanticclass_images_dir_path = os.path.join(input_dir_path, "panos", f"rend{run_number}")
-        processed_color_images_path = os.path.join(
-            processed_dir_path, date, f"run{run_number}", f"color_faces_{date}_{run_number}"
+        input_segmentid_images_dir_path = Path(os.path.join(input_dir_path, "panos", f"rend{run_number}"))
+        input_semanticclass_images_dir_path = Path(os.path.join(input_dir_path, "panos", f"rend{run_number}"))
+        processed_color_images_path = Path(
+            os.path.join(processed_dir_path, date, f"run{run_number}", f"color_faces_{date}_{run_number}")
         )
-        processed_segmentid_images_path = os.path.join(
-            processed_dir_path, date, f"run{run_number}", f"segmentid_faces_{date}_{run_number}"
+        processed_segmentid_images_path = Path(
+            os.path.join(processed_dir_path, date, f"run{run_number}", f"segmentid_faces_{date}_{run_number}")
         )
-        processed_semanticclass_images_path = os.path.join(
-            processed_dir_path, date, f"run{run_number}", f"semanticclass_faces_{date}_{run_number}"
+        processed_semanticclass_images_path = Path(
+            os.path.join(processed_dir_path, date, f"run{run_number}", f"semanticclass_faces_{date}_{run_number}")
         )
         tree_attributes = ["tree", "tree_crop", "bark", "bark_crop"]
 
-        predicted_tree_inventory_path = os.path.join(
-            input_dir_path, "inventory", f"run{run_number}", f"inventory{run_number}"
+        predicted_tree_inventory_path = Path(
+            os.path.join(input_dir_path, "inventory", f"run{run_number}", f"inventory{run_number}")
         )
-        matched_tree_inventory_output_path = os.path.join(
-            processed_dir_path, date, f"run{run_number}", f"matched_inventory_{date}_{run_number}", "matched_inventory"
+        matched_tree_inventory_output_path = Path(
+            os.path.join(
+                processed_dir_path,
+                date,
+                f"run{run_number}",
+                f"matched_inventory_{date}_{run_number}",
+                "matched_inventory",
+            )
         )
         match_inventories.match(
             predicted_inventory_path=predicted_tree_inventory_path,
@@ -274,24 +293,24 @@ def create_big_scale_dataset(input_dir_path: Path, output_dir_path: Path, dates_
         input_dir_path: Path to the directory containing the input images and inventories.
         output_dir_path: Path to the directory where the output dataset will be saved.
         dates_and_runs: Dictionary with dates as keys and lists of run numbers as values."""
-    
+
     start_time = time.time()
-    
+
     date_dirs = sorted(os.listdir(input_dir_path))
     for date_dir in date_dirs:
         if date_dir in dates_and_runs.keys():
             run_numbers = dates_and_runs[date_dir]
             input_color_images_format = "pano"
             date = date_dir
-            groundtruth_tree_inventory_path = os.path.join(input_dir_path, "groundtruth_inventory", "inventory")
-            processed_dir_path = os.path.join(output_dir_path, "pre_processing")
+            groundtruth_tree_inventory_path = input_dir_path / "groundtruth_inventory" / "inventory"
+            processed_dir_path = output_dir_path / "pre_processing"
             pre_processed = False
-            output_dataset_dir_path = os.path.join(output_dir_path, "datasets")
+            output_dataset_dir_path = output_dir_path / "datasets"
             # Do not overwrite the original input_dir_path here. Create a date-specific
             # input directory so subsequent loop iterations don't keep joining paths
             # onto an already-joined path (which produced nested folders like
             # '/data/2022-09-12/2022-09-122').
-            date_input_dir = os.path.join(input_dir_path, date_dir)
+            date_input_dir = input_dir_path / date_dir
 
             create_simple_dataset(
                 input_color_images_format=input_color_images_format,

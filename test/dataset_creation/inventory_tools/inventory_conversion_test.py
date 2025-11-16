@@ -1,3 +1,5 @@
+"""Tests for the inventory_convertion module."""
+
 import os
 import shutil
 
@@ -11,7 +13,8 @@ dataset_creation_mock_path = os.path.join(os.path.dirname(os.path.dirname(__file
 
 
 def test_create_lists_from_shapefile():
-    """Tests the create_lists_from_shapefile function by checking if the output lists contain points and records with the expected prefix."""
+    """Tests the create_lists_from_shapefile function by checking
+    if the output lists contain points and records with the expected prefix."""
     matched_tree_inventory_output_path = os.path.join(
         dataset_creation_mock_path, "inventories", "inventory_matched", "matched_output"
     )
@@ -27,20 +30,22 @@ def test_create_lists_from_shapefile():
 
 
 def test_create_dictionary():
-    """Tests the create_dictionary function by checking if the output dictionary contains attributes with integer keys and 'pred_id'."""
+    """Tests the create_dictionary function by checking if the output dictionary contains
+    attributes with integer keys and 'pred_id'."""
     matched_tree_inventory_output_path = os.path.join(
         dataset_creation_mock_path, "inventories", "inventory_matched", "matched_output"
     )
 
     attributes = create_dictionary_from_shapefile(matched_tree_inventory_output_path)
     assert len(attributes) > 0
-    for key in attributes.keys():
+    for key in attributes.items():
         assert isinstance(key, int)
         assert "pred_id" in attributes[key]
 
 
 def test_create_shp_from_dict():
-    """Tests the create_shp_from_dict function by checking if the output shapefile and its associated files are created successfully."""
+    """Tests the create_shp_from_dict function by checking if the output
+    shapefile and its associated files are created successfully."""
     dictionary = {
         "14": {
             "ANGELEDAT": "",

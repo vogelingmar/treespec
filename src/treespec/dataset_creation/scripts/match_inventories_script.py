@@ -2,7 +2,7 @@
 
 import hydra
 from hydra.core.config_store import ConfigStore
-from treespec.dataset_creation.conf import DatasetCreationConfig
+from treespec.dataset_creation.conf.config import DatasetCreationConfig
 from treespec.dataset_creation.functions.match_inventories import match
 
 cs = ConfigStore.instance()

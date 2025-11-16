@@ -1,11 +1,15 @@
+"""Tests for the predict function."""
+
+import shutil
+import os
+
+from torch import nn
+from torchvision.models import googlenet, GoogLeNet_Weights  # type: ignore
+
 from treespec.classification.functions.predict import predict_species, _inventurize_trees
 from treespec.dataset_creation.inventory_tools.inventory_convertion import create_dictionary_from_shapefile
 from treespec.classification.image_dataset import ImageDataset
 from treespec.classification.classification_model import ClassificationModel
-from torchvision.models import googlenet, GoogLeNet_Weights, resnet50, ResNet50_Weights
-from torch import nn
-import os
-import shutil
 
 test_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
@@ -14,14 +18,7 @@ def test_predict_species():
 
     model = googlenet
     model_weights = GoogLeNet_Weights.DEFAULT
-    num_classes = 5
-    loss_function = nn.CrossEntropyLoss
-    learning_rate = 1e-3
-    dataset = ImageDataset
     dataset_dir = os.path.join(test_path, "dataset_creation", "mock", "datasets", "dataset_sorted")
-    batch_size = 2
-    num_workers = 8
-    use_ids = True
     tree_images_dir = os.path.join(test_path, "dataset_creation", "mock", "datasets", "dataset_unsorted", "tree_crop")
     input_inventory_path = os.path.join(
         test_path, "dataset_creation", "mock", "inventories", "inventory_matched", "matched_output"
@@ -56,9 +53,6 @@ def test_inventurize_trees():
     )
     output_inventory_path = os.path.join(
         dataset_creation_mock_dir_path, "temp", "predicted_species_inventory", "pred_species_inventory"
-    )
-    trained_model_path = os.path.join(
-        test_path, "classification", "mock", "trained_classification_models", "GoogLeNet_dataset_sorted_3_finetuned"
     )
 
     dataset = ImageDataset(
